@@ -37,6 +37,19 @@ export default function AuthPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  // OTP cooldown timer
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (resendCooldown > 0 && (step === 'otp-input' || step === 'forgot-password-otp')) {
+      interval = setInterval(() => {
+        setResendCooldown((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [resendCooldown, step]);
+
   // Load remembered email on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -97,25 +110,58 @@ export default function AuthPage() {
     }
   };
 
-  // Submit Handler for Email input step
+  // Submit Handler for Email input step with validations
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
 
-    if (mode === 'sign-in') {
-      // Sign In Flow: moves directly to password input screen
-      setErrorMsg(null);
-      setSuccessMsg(null);
-      setStep('password-login');
-    } else {
-      // Create Account Flow: dispatches OTP
-      await handleSendOtp(e);
+    setLoadingStep(mode === 'sign-in' ? 'signing-in' : 'sending-otp');
+    setErrorMsg(null);
+    setSuccessMsg(null);
+
+    try {
+      // Verify email existence in DB
+      const checkRes = await fetch('/api/auth/check-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!checkRes.ok) {
+        throw new Error('Failed to verify email address status.');
+      }
+
+      const { exists } = await checkRes.json();
+
+      if (mode === 'create-account' && exists) {
+        setLoadingStep(null);
+        setErrorMsg('Account already exists. Please sign in.');
+        return;
+      }
+
+      if (mode === 'sign-in' && !exists) {
+        setLoadingStep(null);
+        setErrorMsg('No account found. Create an account.');
+        return;
+      }
+
+      // Execute next step
+      if (mode === 'sign-in') {
+        setStep('password-login');
+        setLoadingStep(null);
+      } else {
+        // Create Account Flow: dispatches OTP
+        await handleSendOtp(e);
+      }
+    } catch (err: any) {
+      setErrorMsg(err.message || 'An error occurred during verification.');
+      setLoadingStep(null);
     }
   };
 
   // Send OTP
   const handleSendOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e?.preventDefault();
     if (!email) return;
 
     setLoadingStep('sending-otp');
@@ -141,6 +187,7 @@ export default function AuthPage() {
 
       setSuccessMsg(data.message || 'Verification code sent to your email.');
       setStep(step === 'forgot-password-email' ? 'forgot-password-otp' : 'otp-input');
+      setResendCooldown(60); // Trigger 60s cooldown
     } catch (err: any) {
       setErrorMsg(err.message);
     } finally {
@@ -386,7 +433,31 @@ export default function AuthPage() {
           {errorMsg && (
             <div className="mb-4 bg-rose-500/10 border border-rose-500/20 text-rose-400 p-3 rounded-lg text-xs leading-relaxed transition-all duration-300">
               <span className="font-semibold block mb-0.5">Error</span>
-              {errorMsg}
+              <span>{errorMsg}</span>
+              {errorMsg.includes('already exists') && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode('sign-in');
+                    setErrorMsg(null);
+                  }}
+                  className="block mt-2 font-bold underline hover:text-rose-300 cursor-pointer"
+                >
+                  Switch to Sign In
+                </button>
+              )}
+              {errorMsg.includes('No account found') && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode('create-account');
+                    setErrorMsg(null);
+                  }}
+                  className="block mt-2 font-bold underline hover:text-rose-300 cursor-pointer"
+                >
+                  Create Account
+                </button>
+              )}
             </div>
           )}
 
@@ -551,13 +622,13 @@ export default function AuthPage() {
                       : 'bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white shadow-indigo-600/10'
                   }`}
                 >
-                  {loadingStep === 'sending-otp' ? (
+                  {loadingStep === 'sending-otp' || loadingStep === 'signing-in' ? (
                     <span className="flex items-center justify-center space-x-2">
                       <svg className="animate-spin h-4 w-4 text-current" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth={4} />
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                       </svg>
-                      <span>Sending verification code...</span>
+                      <span>Verifying email...</span>
                     </span>
                   ) : (
                     mode === 'sign-in' ? 'Continue with Email' : 'Send Verification Code'
@@ -611,10 +682,37 @@ export default function AuthPage() {
                   )}
                 </button>
 
+                {/* Cooldown Resend Section */}
+                <div className="text-center pt-2">
+                  {resendCooldown > 0 ? (
+                    <p className={`text-[11px] font-semibold ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                      Didn't receive the code? Resend available in {resendCooldown}s
+                    </p>
+                  ) : (
+                    <div className="space-y-1">
+                      <p className={`text-[11px] ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                        Didn't receive the code?
+                      </p>
+                      <button
+                        type="button"
+                        onClick={async (e) => {
+                          await handleSendOtp(e);
+                        }}
+                        className={`text-xs font-bold transition duration-200 cursor-pointer ${
+                          isDarkMode ? 'text-teal-400 hover:text-teal-300' : 'text-indigo-600 hover:text-indigo-500'
+                        }`}
+                      >
+                        Resend OTP
+                      </button>
+                    </div>
+                  )}
+                </div>
+
                 <div className="text-center">
                   <button
                     type="button"
                     onClick={() => {
+                      setOtpCode('');
                       setErrorMsg(null);
                       setSuccessMsg(null);
                       setStep(step === 'forgot-password-otp' ? 'forgot-password-email' : 'email-input');

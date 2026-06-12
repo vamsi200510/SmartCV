@@ -14,16 +14,18 @@
 * Account creation working
 * Onboarding wizard working
 * Dashboard working
+* Existing user Sign In flow
+* Remember Me feature
+* Show/Hide Password toggles
+* Password Strength Indicator
+* Forgot Password flow
+* Google OAuth button event isolation fixes
+* Resend email OTP delivery
+* SaaS Dashboard & Profile UI finalization (gradients, segmented switch, SVG icons, empty states)
 
 ## In Progress
 
-* Existing user Sign In flow
-* Remember Me
-* Show/Hide Password
-* Password Strength Indicator
-* Forgot Password flow
-* Google button event bug fixes
-* Resend email OTP delivery
+* None
 
 ## Not Started
 

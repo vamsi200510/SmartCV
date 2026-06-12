@@ -73,14 +73,20 @@ CREATE INDEX IF NOT EXISTS otp_verifications_email_idx ON public.otp_verificatio
       });
 
     if (insertError) {
+      console.error('[AUTH-OTP] Database insert failed:', insertError);
       throw insertError;
     }
+    console.log(`[AUTH-OTP] Database insert success for ${email}`);
 
     // 4. Send Email via Resend
     const resendKey = process.env.RESEND_API_KEY;
+    console.log(`[AUTH-OTP] Generated OTP code for ${email}`);
+
     if (resendKey && resendKey !== 're_your_api_key_here' && resendKey.trim() !== '') {
       const resend = new Resend(resendKey);
-      await resend.emails.send({
+      
+      console.log(`[AUTH-OTP] Sending Resend email to ${email}...`);
+      const { data, error } = await resend.emails.send({
         from: 'SmartCV Auth <onboarding@resend.dev>',
         to: email,
         subject: 'Your SmartCV Verification Code',
@@ -96,6 +102,15 @@ CREATE INDEX IF NOT EXISTS otp_verifications_email_idx ON public.otp_verificatio
           </div>
         `,
       });
+
+      console.log('[AUTH-OTP] Resend Send API Response:', { data, error });
+
+      if (error) {
+        console.error('[AUTH-OTP] Resend Send Failed:', error);
+        throw new Error(error.message || 'Resend failed to deliver the email.');
+      }
+
+      console.log(`[AUTH-OTP] Email sent successfully. Resend ID: ${data?.id}`);
       return NextResponse.json({ success: true, message: 'OTP sent to your email.' });
     } else {
       // Local Developer Fallback
@@ -105,8 +120,7 @@ CREATE INDEX IF NOT EXISTS otp_verifications_email_idx ON public.otp_verificatio
       return NextResponse.json({
         success: true,
         devMode: true,
-        message: 'Developer Mode: OTP logged to the server command line console.',
-        otp: otp // Returning OTP for easy copy-paste in dev environment testing
+        message: 'Developer Mode: OTP logged to the server command line console.'
       });
     }
   } catch (err: any) {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
@@ -33,9 +33,10 @@ const EXPERIENCE_LEVELS = [
 ];
 
 export default function OnboardingPage() {
-  const { user, refreshProfile } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
   const router = useRouter();
   const [step, setStep] = useState(1);
+  const [fullName, setFullName] = useState('');
   const [department, setDepartment] = useState('');
   const [careerGoal, setCareerGoal] = useState('');
   const [experienceLevel, setExperienceLevel] = useState('');
@@ -43,10 +44,26 @@ export default function OnboardingPage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(true);
 
+  // Sync Google display name if available, but do not pre-fill if it's just the email prefix
+  useEffect(() => {
+    if (profile?.full_name && !fullName && user?.email) {
+      const emailPrefix = user.email.split('@')[0];
+      if (profile.full_name !== emailPrefix) {
+        setFullName(profile.full_name);
+      }
+    }
+  }, [profile, fullName, user]);
+
   const handleNext = () => {
-    if (step === 1 && !department) {
-      setErrorMsg('Please select a department.');
-      return;
+    if (step === 1) {
+      if (!fullName.trim()) {
+        setErrorMsg('Please enter your full name.');
+        return;
+      }
+      if (!department) {
+        setErrorMsg('Please select a department.');
+        return;
+      }
     }
     if (step === 2 && !careerGoal) {
       setErrorMsg('Please select a career goal.');
@@ -76,6 +93,7 @@ export default function OnboardingPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          fullName,
           department,
           careerGoal,
           experienceLevel,
@@ -88,7 +106,7 @@ export default function OnboardingPage() {
       }
 
       await refreshProfile();
-      router.push('/dashboard');
+      router.push('/dashboard?new=true');
     } catch (err: any) {
       console.error('Error submitting onboarding:', err);
       setErrorMsg(err.message || 'Failed to submit onboarding profile.');
@@ -119,21 +137,47 @@ export default function OnboardingPage() {
           </span>
         </div>
 
-        {/* Theme Toggle */}
-        <button
-          onClick={() => setIsDarkMode(!isDarkMode)}
-          className={`p-2 rounded-lg border transition ${isDarkMode ? 'border-slate-800 hover:bg-slate-900 text-teal-400' : 'border-slate-200 hover:bg-slate-100 text-indigo-600'}`}
-        >
-          {isDarkMode ? (
-            <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        {/* Theme Toggle Segmented Control */}
+        <div className={`relative flex items-center p-0.5 rounded-xl border transition-all duration-300 ${isDarkMode ? 'bg-slate-950 border-slate-900 shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]' : 'bg-slate-100 border-slate-200 shadow-[inset_0_2px_4px_rgba(0,0,0,0.05)]'}`}>
+          {/* Sliding capsule background */}
+          <div
+            className={`absolute h-[26px] rounded-lg shadow-sm transition-all duration-300 ease-out border ${
+              isDarkMode
+                ? 'bg-slate-900 border-slate-800 text-teal-400'
+                : 'bg-white border-slate-200/80 text-indigo-600'
+            }`}
+            style={{
+              width: '64px',
+              transform: `translateX(${isDarkMode ? '64px' : '0px'})`
+            }}
+          />
+          
+          <button
+            type="button"
+            onClick={() => setIsDarkMode(false)}
+            className={`relative z-10 flex items-center justify-center space-x-1 w-[64px] py-1 rounded-lg text-[10px] font-bold transition-colors duration-200 cursor-pointer ${
+              !isDarkMode ? 'text-indigo-600' : 'text-slate-550 hover:text-slate-700'
+            }`}
+          >
+            <svg className="h-3 w-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 9H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m2.122 0l-.707-.707m12.02-12.02l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
             </svg>
-          ) : (
-            <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <span>Light</span>
+          </button>
+          
+          <button
+            type="button"
+            onClick={() => setIsDarkMode(true)}
+            className={`relative z-10 flex items-center justify-center space-x-1 w-[64px] py-1 rounded-lg text-[10px] font-bold transition-colors duration-200 cursor-pointer ${
+              isDarkMode ? 'text-teal-400' : 'text-slate-500 hover:text-slate-350'
+            }`}
+          >
+            <svg className="h-3 w-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
             </svg>
-          )}
-        </button>
+            <span>Dark</span>
+          </button>
+        </div>
       </header>
 
       {/* Main Content */}
@@ -145,7 +189,7 @@ export default function OnboardingPage() {
             <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">
               <span>Step {step} of 3</span>
               <span>
-                {step === 1 && 'Select Department'}
+                {step === 1 && 'Profile Details'}
                 {step === 2 && 'Career Goal'}
                 {step === 3 && 'Experience Level'}
               </span>
@@ -165,43 +209,71 @@ export default function OnboardingPage() {
             </div>
           )}
 
-          {/* STEP 1: DEPARTMENTS */}
+          {/* STEP 1: PROFILE DETAILS */}
           {step === 1 && (
-            <div>
-              <div className="mb-6">
+            <div className="space-y-5">
+              <div>
                 <h2 className={`text-xl font-extrabold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                  Select your Department
+                  Profile Details
                 </h2>
                 <p className={`text-xs mt-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                  Help us understand your educational focus and domain.
+                  Help us understand your educational focus and verify your identity.
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 mb-8">
-                {DEPARTMENTS.map((dept) => {
-                  const isSelected = department === dept.id;
-                  return (
-                    <button
-                      key={dept.id}
-                      onClick={() => {
-                        setDepartment(dept.id);
-                        setErrorMsg(null);
-                      }}
-                      className={`p-4 rounded-xl border text-left flex flex-col justify-between h-24 transition duration-200 cursor-pointer ${
-                        isSelected
-                          ? isDarkMode
-                            ? 'bg-teal-500/10 border-teal-500 text-teal-400 shadow-[0_0_15px_rgba(20,184,166,0.1)]'
-                            : 'bg-indigo-50 border-indigo-600 text-indigo-600'
-                          : isDarkMode
-                          ? 'bg-slate-950/60 border-slate-800/80 text-slate-300 hover:border-slate-700'
-                          : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100/80'
-                      }`}
-                    >
-                      <span className="text-xl">{dept.icon}</span>
-                      <span className="text-xs font-bold">{dept.label}</span>
-                    </button>
-                  );
-                })}
+              {/* Full Name Input Field */}
+              <div>
+                <label htmlFor="fullName" className={`block text-[10px] font-semibold mb-1.5 uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                  Full Name
+                </label>
+                <input
+                  id="fullName"
+                  type="text"
+                  required
+                  placeholder="e.g. Vamsi Krishna"
+                  value={fullName}
+                  onChange={(e) => {
+                    setFullName(e.target.value);
+                    setErrorMsg(null);
+                  }}
+                  className={`w-full px-4 py-2.5 rounded-xl text-xs font-medium border focus:outline-none focus:ring-1 transition duration-200 ${
+                    isDarkMode
+                      ? 'bg-slate-950 border-slate-800 text-white focus:border-teal-500 focus:ring-teal-500'
+                      : 'bg-slate-50 border-slate-200 text-slate-900 focus:border-indigo-500 focus:ring-indigo-500'
+                  }`}
+                />
+              </div>
+
+              <div>
+                <label className={`block text-[10px] font-semibold mb-1.5 uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                  Select your Department
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  {DEPARTMENTS.map((dept) => {
+                    const isSelected = department === dept.id;
+                    return (
+                      <button
+                        key={dept.id}
+                        onClick={() => {
+                          setDepartment(dept.id);
+                          setErrorMsg(null);
+                        }}
+                        className={`p-4 rounded-xl border text-left flex flex-col justify-between h-24 transition duration-200 cursor-pointer ${
+                          isSelected
+                            ? isDarkMode
+                              ? 'bg-teal-500/10 border-teal-500 text-teal-400 shadow-[0_0_15px_rgba(20,184,166,0.1)]'
+                              : 'bg-indigo-50 border-indigo-600 text-indigo-600'
+                            : isDarkMode
+                            ? 'bg-slate-950/60 border-slate-800/80 text-slate-300 hover:border-slate-700'
+                            : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100/80'
+                        }`}
+                      >
+                        <span className="text-xl">{dept.icon}</span>
+                        <span className="text-xs font-bold">{dept.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           )}
@@ -308,7 +380,7 @@ export default function OnboardingPage() {
               <button
                 onClick={handlePrev}
                 disabled={loading}
-                className={`px-4 py-2 border text-xs font-bold rounded-lg transition duration-200 cursor-pointer ${
+                className={`px-4 py-2 border text-xs font-bold rounded-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer ${
                   isDarkMode
                     ? 'border-slate-800 hover:bg-slate-900 text-slate-300'
                     : 'border-slate-200 hover:bg-slate-50 text-slate-700'
@@ -323,7 +395,7 @@ export default function OnboardingPage() {
             {step < 3 ? (
               <button
                 onClick={handleNext}
-                className={`px-5 py-2 text-xs font-bold rounded-lg transition duration-200 cursor-pointer ${
+                className={`px-5 py-2 text-xs font-bold rounded-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer ${
                   isDarkMode
                     ? 'bg-teal-500 hover:bg-teal-450 text-slate-950 shadow-lg shadow-teal-500/10'
                     : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/10'
@@ -335,10 +407,10 @@ export default function OnboardingPage() {
               <button
                 onClick={handleSubmit}
                 disabled={loading}
-                className={`px-5 py-2 text-xs font-bold rounded-lg transition duration-200 cursor-pointer ${
+                className={`px-5 py-2 text-xs font-bold rounded-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer ${
                   isDarkMode
-                    ? 'bg-teal-500 hover:bg-teal-450 active:bg-teal-650 text-slate-950 shadow-lg shadow-teal-500/10'
-                    : 'bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white shadow-lg shadow-indigo-600/10'
+                    ? 'bg-teal-500 hover:bg-teal-450 active:bg-teal-600 text-slate-950 shadow-lg shadow-teal-500/10'
+                    : 'bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-750 text-white shadow-lg shadow-indigo-600/10'
                 }`}
               >
                 {loading ? 'Submitting...' : 'Complete Onboarding'}

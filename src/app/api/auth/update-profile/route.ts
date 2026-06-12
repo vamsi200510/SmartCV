@@ -28,9 +28,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { department, careerGoal, experienceLevel } = await request.json();
+        const { fullName, department, careerGoal, experienceLevel } = await request.json();
 
-    if (!department || !careerGoal || !experienceLevel) {
+    if (!fullName || !department || !careerGoal || !experienceLevel) {
       return NextResponse.json(
         { error: 'All onboarding fields are required.' },
         { status: 400 }
@@ -41,6 +41,7 @@ export async function POST(request: NextRequest) {
     const { data: profile, error: updateError } = await supabaseAdmin
       .from('user_profiles')
       .update({
+        full_name: fullName,
         department,
         career_goal: careerGoal,
         experience_level: experienceLevel,
