@@ -11,20 +11,18 @@ import {
   Cpu, 
   RefreshCw, 
   Layers, 
-  Star, 
-  Plus, 
   HelpCircle, 
   Mail, 
   Globe, 
   Compass, 
   ChevronDown, 
   ChevronRight,
-  TrendingUp,
-  Award,
-  Zap,
-  Users,
   Moon,
-  Sun
+  Sun,
+  Calendar,
+  Layers2,
+  FileSearch,
+  BookOpen
 } from 'lucide-react';
 
 const TEMPLATES = [
@@ -48,48 +46,59 @@ const FEATURES = [
   },
   {
     icon: <Layers className="h-6 w-6 text-blue-500" />,
-    title: "Canva-Style Drag Editor",
+    title: "Flexible Layout Editor",
     desc: "Reorder sections, toggle columns, customize headers, and format typography with zero coding experience."
   },
   {
     icon: <RefreshCw className="h-6 w-6 text-pink-500" />,
     title: "Dynamic Smart Enhancements",
-    desc: "Get instant structural recommendations based on senior designer templates and industry metrics."
+    desc: "Get instant structural recommendations based on industry metrics and recruiter standards."
   }
 ];
 
 const CAROUSEL_TEMPLATES = [
-  { id: 1, title: 'Linear Modern', bg: 'from-slate-900 via-slate-950 to-slate-900', text: 'text-slate-100', role: 'Backend Engineer' },
-  { id: 2, title: 'Notion Editorial', bg: 'from-amber-50/50 to-orange-100/50', text: 'text-slate-900', role: 'Content Writer' },
-  { id: 3, title: 'Framer Creative', bg: 'from-pink-500/10 via-purple-500/10 to-indigo-500/10', text: 'text-indigo-950 dark:text-indigo-100', role: 'UX Researcher' },
-  { id: 4, title: 'Stripe Corporate', bg: 'from-blue-600/5 via-indigo-600/5 to-purple-600/5', text: 'text-slate-800 dark:text-slate-200', role: 'Finance Analyst' }
+  { id: 1, title: 'Developer Modern', bg: 'from-slate-900 via-slate-950 to-slate-900', text: 'text-slate-100', role: 'Backend Engineer' },
+  { id: 2, title: 'Editorial Executive', bg: 'from-amber-50/50 to-orange-100/50', text: 'text-slate-900', role: 'Content Writer' },
+  { id: 3, title: 'Creative Designer', bg: 'from-pink-500/10 via-purple-500/10 to-indigo-500/10', text: 'text-indigo-950 dark:text-indigo-100', role: 'UX Researcher' },
+  { id: 4, title: 'Structured Analyst', bg: 'from-blue-600/5 via-indigo-600/5 to-purple-600/5', text: 'text-slate-800 dark:text-slate-200', role: 'Finance Analyst' }
 ];
 
-const TESTIMONIALS = [
+const WHY_SMARTCV = [
   {
-    quote: "Using SmartCV felt exactly like swiping designs on Canva. The Tinder template swiper helped me pick a modern resume layout in 30 seconds. Landed an interview at Linear next week!",
-    author: "Aditya Sen",
-    role: "Senior Software Engineer",
-    avatar: "AS"
+    icon: <Shield className="h-6 w-6 text-teal-400" />,
+    title: "ATS Validation Native",
+    desc: "Every grid block and text column is structured according to parsing specifications, ensuring parsing algorithms read your resume content with 100% precision."
   },
   {
-    quote: "The ATS scanning score checker was incredibly accurate. It identified three missing keywords in my product design bio, raising my score from 65 to 94. Truly a premium experience.",
-    author: "Priya Sharma",
-    role: "Lead Product Designer",
-    avatar: "PS"
+    icon: <Cpu className="h-6 w-6 text-indigo-400" />,
+    title: "AI Optimization Core",
+    desc: "Automatically checks for industry-specific terminology and checks your formatting constraints using dynamic backend checkers."
   },
   {
-    quote: "SmartCV's layouts look like high-end Canva mockups rather than generic templates. The spacing, typography hierarchy, and gradients look incredibly professional.",
-    author: "Meera Nair",
-    role: "Director of HR Operations",
-    avatar: "MN"
+    icon: <Layers className="h-6 w-6 text-purple-400" />,
+    title: "Clean Typography Hierarchy",
+    desc: "Optimized fonts, line-height proportions, margins, and spacing built by expert engineers to make resumes stand out on screen and print."
+  },
+  {
+    icon: <Check className="h-6 w-6 text-emerald-400" />,
+    title: "Zero Branding Restrictions",
+    desc: "Your data belongs entirely to you. Export standard high-contrast vector PDFs with no third-party watermark logs, limits, or branding."
   }
+];
+
+const ROADMAP_ITEMS = [
+  { title: "AI Resume Builder", desc: "Interactive builder generating role-specific items tailored to career targets.", status: "In Development", icon: <Cpu className="h-5 w-5 text-purple-450" /> },
+  { title: "ATS Analyzer", desc: "Live keyword scanning and structural hierarchy scoring parameters.", status: "In Development", icon: <FileSearch className="h-5 w-5 text-teal-450" /> },
+  { title: "Resume Template Swiper", desc: "Interactive card deck to quickly evaluate layout options.", status: "In Development", icon: <Layers2 className="h-5 w-5 text-indigo-450" /> },
+  { title: "Resume Import", desc: "Parse and ingest existing PDF/Word resumes into the SmartCV format.", status: "In Development", icon: <RefreshCw className="h-5 w-5 text-pink-450" /> },
+  { title: "Portfolio Generator", desc: "Build a custom, shareable hosting page derived from your resume.", status: "In Development", icon: <Globe className="h-5 w-5 text-emerald-450" /> },
+  { title: "AI Career Assistant", desc: "Tailored guidelines comparing your layout parameters with target job posts.", status: "In Development", icon: <BookOpen className="h-5 w-5 text-amber-455" /> }
 ];
 
 const FAQS = [
   {
     q: "How does the AI optimize my resume templates?",
-    a: "Our AI model cross-references your resume content with thousands of job posts, advising on keywords, structure, action verbs, and sizing to match professional recruiters' standards."
+    a: "Our AI model will cross-reference your resume content with job posts, advising on keywords, structure, action verbs, and sizing to match professional recruiters' standards."
   },
   {
     q: "What makes the templates ATS-friendly?",
@@ -101,7 +110,7 @@ const FAQS = [
   },
   {
     q: "Is there a free tier available?",
-    a: "Yes, our standard account is free to edit, preview, and build. Premium Canva-style templates and advanced AI analysis require a Pro subscription."
+    a: "Yes, our standard account is free to edit, preview, and build. Advanced AI analysis and templates will be available in future releases."
   }
 ];
 
@@ -217,7 +226,7 @@ export default function Home() {
               SmartCV
             </span>
             <span className={`text-[8.5px] block font-bold tracking-widest uppercase -mt-0.5 ${isDarkMode ? 'text-slate-550' : 'text-slate-400'}`}>
-              Canva Pro Edition
+              AI Resume Platform
             </span>
           </div>
         </div>
@@ -225,8 +234,9 @@ export default function Home() {
         {/* Navigation Middle Links */}
         <nav className="hidden md:flex items-center space-x-8 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
           <a href="#features" className="hover:text-indigo-500 dark:hover:text-teal-400 transition-colors">Features</a>
-          <a href="#swiper" className="hover:text-indigo-500 dark:hover:text-teal-400 transition-colors">Template Swiper</a>
-          <a href="#pricing" className="hover:text-indigo-500 dark:hover:text-teal-400 transition-colors">Pricing</a>
+          <a href="#swiper" className="hover:text-indigo-500 dark:hover:text-teal-400 transition-colors">Template Gallery</a>
+          <a href="#why-smartcv" className="hover:text-indigo-500 dark:hover:text-teal-400 transition-colors">Why SmartCV</a>
+          <a href="#roadmap" className="hover:text-indigo-500 dark:hover:text-teal-400 transition-colors">Roadmap</a>
           <a href="#faqs" className="hover:text-indigo-500 dark:hover:text-teal-400 transition-colors">FAQs</a>
         </nav>
 
@@ -243,7 +253,7 @@ export default function Home() {
             />
             <button
               onClick={() => setIsDarkMode(false)}
-              className={`relative z-10 flex items-center justify-center w-[56px] py-1 rounded-lg text-[10px] font-bold cursor-pointer ${!isDarkMode ? 'text-indigo-600' : 'text-slate-500 hover:text-slate-300'}`}
+              className={`relative z-10 flex items-center justify-center w-[56px] py-1 rounded-lg text-[10px] font-bold cursor-pointer ${!isDarkMode ? 'text-indigo-600' : 'text-slate-550 hover:text-slate-300'}`}
             >
               <Sun className="h-3 w-3 mr-1" />
               <span>Light</span>
@@ -260,7 +270,7 @@ export default function Home() {
           {/* Action CTAs */}
           <div className="flex items-center space-x-2">
             <Link
-              href="/auth?mode=sign-in"
+              href="/auth?mode=signin"
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${
                 isDarkMode ? 'text-slate-300 hover:bg-slate-900 border border-slate-850' : 'text-slate-700 hover:bg-slate-100 border border-slate-250 shadow-sm bg-white'
               }`}
@@ -268,7 +278,7 @@ export default function Home() {
               Sign In
             </Link>
             <Link
-              href="/auth?mode=create-account"
+              href="/auth?mode=signup"
               className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] text-white shadow-lg ${
                 isDarkMode ? 'bg-gradient-to-r from-teal-500 to-indigo-600 shadow-teal-500/10' : 'bg-indigo-600 shadow-indigo-600/15 hover:bg-indigo-500'
               }`}
@@ -288,23 +298,23 @@ export default function Home() {
             isDarkMode ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' : 'bg-indigo-50 text-indigo-750 border border-indigo-100'
           }`}>
             <Sparkles className="h-3.5 w-3.5 mr-1.5 animate-pulse text-indigo-400" />
-            Voted #1 Resume Builder on Product Hunt
+            AI Resume Platform
           </span>
 
           <h1 className={`text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight max-w-4xl leading-tight ${isDarkMode ? 'text-white' : 'text-slate-950'}`}>
             Design your career path with{' '}
             <span className="bg-gradient-to-r from-teal-400 via-indigo-500 to-purple-500 bg-clip-text text-transparent animate-gradient-shift">
-              SmartCV Pro
+              SmartCV
             </span>
           </h1>
 
-          <p className={`text-sm sm:text-lg max-w-2xl leading-relaxed font-medium ${isDarkMode ? 'text-slate-400' : 'text-slate-550'}`}>
-            Create premium, ATS-optimized resumes in minutes using AI. Swipe templates, verify structure score, and impress executive recruiters.
+          <p className={`text-sm sm:text-lg max-w-2xl leading-relaxed font-medium ${isDarkMode ? 'text-slate-400' : 'text-slate-555'}`}>
+            Build ATS-friendly resumes, optimize your career profile, and prepare for your next opportunity. Built and Developed by Vamsi Krishna Tadisetti.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-center pt-4">
             <Link
-              href="/auth?mode=create-account"
+              href="/auth?mode=signup"
               className={`inline-flex items-center space-x-2 px-7 py-3.5 rounded-2xl text-sm font-bold text-white shadow-xl transition-all duration-300 hover:scale-[1.03] active:scale-[0.97] hover:shadow-2xl cursor-pointer ${
                 isDarkMode 
                   ? 'bg-gradient-to-r from-teal-500 via-indigo-600 to-purple-600 shadow-teal-500/20' 
@@ -320,25 +330,25 @@ export default function Home() {
                 isDarkMode ? 'border-slate-850 hover:bg-slate-900 text-slate-300 bg-slate-950/20' : 'border-slate-200 hover:bg-slate-100 text-slate-700 bg-white'
               }`}
             >
-              Swipe Templates
+              Explore Templates
             </a>
           </div>
         </section>
 
-        {/* 2. TEMPLATE SWIPER (Tinder/JioHotstar Card Stack) */}
+        {/* 2. TEMPLATE SWIPER (Deck Swipe Experience) */}
         <section id="swiper" className="py-20 bg-slate-900/10 dark:bg-slate-950/20 border-y border-slate-900/10 dark:border-slate-900/60 relative z-10 overflow-hidden">
           <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             
             {/* Swiper Texts */}
             <div className="lg:col-span-5 space-y-5 text-left animate-fade-in-up">
               <span className={`text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'text-teal-400' : 'text-indigo-650'}`}>
-                Swipe-To-Build Concept
+                Swipe-To-Select Concept
               </span>
               <h2 className={`text-3xl sm:text-4xl font-extrabold tracking-tight leading-tight ${isDarkMode ? 'text-white' : 'text-slate-950'}`}>
-                Find your perfect format using our card stack
+                Find your perfect format using our card deck
               </h2>
-              <p className={`text-xs sm:text-sm leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-550'}`}>
-                Drag cards left or right to browse Canva-style design structures. Swipe right to approve templates, and swipe left to dismiss. The matching layouts will populate your dashboard builder.
+              <p className={`text-xs sm:text-sm leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-555'}`}>
+                Drag cards left or right to browse layout structures. Swipe right to approve templates, and swipe left to dismiss. The matching layouts will populate your dashboard builder.
               </p>
               
               {/* Selected List Badge Indicators */}
@@ -425,7 +435,7 @@ export default function Home() {
                         <span className="text-[9px] font-extrabold uppercase tracking-widest text-slate-500">Resume Outline</span>
                       </div>
                       
-                      {/* Canva Mockup Graphics */}
+                      {/* Dashboard Mockup Graphics */}
                       <div className={`rounded-xl p-4 bg-gradient-to-tr ${cards[0].color} text-white flex flex-col justify-between h-28 shadow-md relative overflow-hidden`}>
                         <div className="absolute right-0 top-0 translate-x-4 -translate-y-4 w-24 h-24 bg-white/10 rounded-full blur-xl" />
                         <div>
@@ -510,7 +520,7 @@ export default function Home() {
             <h2 className={`text-3xl sm:text-4xl font-extrabold tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-950'}`}>
               Browse layout variants in real-time
             </h2>
-            <p className={`text-xs sm:text-sm max-w-xl mx-auto leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+            <p className={`text-xs sm:text-sm max-w-xl mx-auto leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-550'}`}>
               Our carousel showcases modern resume layouts featuring elegant spacing, premium dark card options, and high contrast typography.
             </p>
           </div>
@@ -571,7 +581,7 @@ export default function Home() {
             <h2 className={`text-3xl sm:text-4xl font-extrabold tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-950'}`}>
               Everything you need to land interviews
             </h2>
-            <p className={`text-xs sm:text-sm max-w-xl mx-auto leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+            <p className={`text-xs sm:text-sm max-w-xl mx-auto leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-550'}`}>
               Avoid boring text files. Use custom spacing frameworks, automated keyphrase scoring, and beautiful grids designed for visual excellence.
             </p>
           </div>
@@ -608,45 +618,41 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 5. TESTIMONIALS */}
-        <section className="py-20 bg-slate-900/10 dark:bg-slate-950/20 border-y border-slate-900/10 dark:border-slate-900/60 relative z-10">
-          <div className="max-w-6xl mx-auto px-6 space-y-12">
-            <div className="text-center space-y-4 animate-fade-in-up">
+        {/* 5. WHY SMARTCV SECTION (REAL CAPABILITIES ONLY) */}
+        <section id="why-smartcv" className="py-20 bg-slate-900/10 dark:bg-slate-950/20 border-y border-slate-900/10 dark:border-slate-900/60 relative z-10">
+          <div className="max-w-6xl mx-auto px-6 space-y-12 animate-fade-in-up">
+            <div className="text-center space-y-4">
               <span className={`text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'text-pink-400' : 'text-indigo-600'}`}>
-                User Testimonials
+                Core Advantage
               </span>
               <h2 className={`text-3xl sm:text-4xl font-extrabold tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-950'}`}>
-                Trusted by thousands of professionals
+                Why SmartCV?
               </h2>
+              <p className={`text-xs sm:text-sm max-w-xl mx-auto leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                We build utilities tailored specifically for modern software engineers, product managers, and designers looking to highlight key data fields cleanly.
+              </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {TESTIMONIALS.map((t, idx) => (
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              {WHY_SMARTCV.map((item, idx) => (
                 <div
                   key={idx}
-                  className={`border rounded-2xl p-6 shadow-sm flex flex-col justify-between backdrop-blur-md ${
-                    isDarkMode ? 'bg-slate-900/20 border-slate-900/60' : 'bg-white border-slate-200/50 shadow-slate-200/50'
+                  className={`border rounded-2xl p-6 shadow-sm flex flex-col justify-between backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${
+                    isDarkMode ? 'bg-slate-900/20 border-slate-900/60 hover:border-slate-800' : 'bg-white border-slate-200/50 hover:border-slate-300 shadow-slate-200/50 shadow-sm'
                   }`}
                 >
                   <div className="space-y-4">
-                    <div className="flex items-center space-x-1">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="h-3.5 w-3.5 fill-amber-400 stroke-amber-450" />
-                      ))}
+                    <div className={`h-9 w-9 rounded-lg flex items-center justify-center ${
+                      isDarkMode ? 'bg-slate-950 border border-slate-850' : 'bg-slate-50 border border-slate-250'
+                    }`}>
+                      {item.icon}
                     </div>
-                    <p className={`text-xs sm:text-[13px] leading-relaxed font-medium ${isDarkMode ? 'text-slate-350' : 'text-slate-655'}`}>
-                      "{t.quote}"
+                    <h3 className={`text-sm font-bold tracking-tight ${isDarkMode ? 'text-slate-200' : 'text-slate-900'}`}>
+                      {item.title}
+                    </h3>
+                    <p className={`text-xs leading-relaxed font-semibold ${isDarkMode ? 'text-slate-400' : 'text-slate-550'}`}>
+                      {item.desc}
                     </p>
-                  </div>
-
-                  <div className="flex items-center space-x-3 mt-6 border-t border-slate-800/10 dark:border-slate-800/40 pt-4">
-                    <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-teal-500 to-indigo-600 text-white font-bold text-xs flex items-center justify-center shadow-md">
-                      {t.avatar}
-                    </div>
-                    <div>
-                      <h4 className={`text-xs font-bold ${isDarkMode ? 'text-slate-250' : 'text-slate-900'}`}>{t.author}</h4>
-                      <span className="text-[10px] text-slate-500 font-semibold">{t.role}</span>
-                    </div>
                   </div>
                 </div>
               ))}
@@ -654,114 +660,47 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 6. PRICING SECTION */}
-        <section id="pricing" className="py-20 max-w-6xl mx-auto px-6 relative z-10 space-y-12">
+        {/* 6. ROADMAP COMING SOON SECTION */}
+        <section id="roadmap" className="py-20 max-w-6xl mx-auto px-6 relative z-10 space-y-12">
           <div className="text-center space-y-4 animate-fade-in-up">
             <span className={`text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'text-teal-400' : 'text-indigo-650'}`}>
-              Transparent Pricing
+              Roadmap Roadmap
             </span>
             <h2 className={`text-3xl sm:text-4xl font-extrabold tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-950'}`}>
-              Simple plans for any stage of your job hunt
+              Product Development Pipeline
             </h2>
-            <p className={`text-xs sm:text-sm max-w-xl mx-auto leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-550'}`}>
-              Pick a free account to customize sections, or update to Pro for advanced AI optimizer tools and swipeable premium design cards.
+            <p className={`text-xs sm:text-sm max-w-xl mx-auto leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-555'}`}>
+              SmartCV is continuously evolving. Explore the core modules currently being designed and deployed under our tech roadmap.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            
-            {/* Free Plan */}
-            <div className={`border rounded-[26px] p-8 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 ${
-              isDarkMode ? 'bg-slate-900/20 border-slate-900/60 hover:border-slate-800' : 'bg-white border-slate-200 hover:border-slate-300'
-            }`}>
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-base font-extrabold">Standard Free</h3>
-                  <p className="text-xs text-slate-500 mt-1">Basic editor & structural layouts.</p>
-                </div>
-                <div className="flex items-baseline">
-                  <span className={`text-3xl font-extrabold ${isDarkMode ? 'text-white' : 'text-slate-950'}`}>$0</span>
-                  <span className="text-xs text-slate-500 ml-1.5">/ forever</span>
-                </div>
-                <ul className="space-y-3 text-xs font-semibold text-slate-550 dark:text-slate-400">
-                  <li className="flex items-center"><Check className="h-4 w-4 mr-2 text-teal-400 shrink-0" /> Standard drag section editor</li>
-                  <li className="flex items-center"><Check className="h-4 w-4 mr-2 text-teal-400 shrink-0" /> Basic template layouts</li>
-                  <li className="flex items-center"><Check className="h-4 w-4 mr-2 text-teal-400 shrink-0" /> PDF vector format exports</li>
-                </ul>
-              </div>
-              <Link
-                href="/auth?mode=create-account"
-                className={`w-full text-center py-2.5 rounded-xl text-xs font-bold mt-8 transition-colors duration-200 cursor-pointer ${
-                  isDarkMode ? 'bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-850' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200'
+            {ROADMAP_ITEMS.map((item, idx) => (
+              <div
+                key={idx}
+                className={`border rounded-2xl p-6 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 ${
+                  isDarkMode ? 'bg-slate-900/20 border-slate-900/60 hover:border-slate-800' : 'bg-white border-slate-200 hover:border-slate-300 shadow-sm shadow-slate-200/50'
                 }`}
               >
-                Start Free Account
-              </Link>
-            </div>
-
-            {/* Pro Plan (Highlighted) */}
-            <div className={`border-2 rounded-[28px] p-8 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 relative overflow-hidden shadow-xl ${
-              isDarkMode 
-                ? 'bg-slate-900/40 border-purple-600 shadow-purple-600/5 hover:border-purple-500' 
-                : 'bg-white border-indigo-600 shadow-indigo-600/5 hover:border-indigo-500'
-            }`}>
-              <div className="absolute right-0 top-0 translate-x-5 -translate-y-5 h-20 w-20 bg-gradient-to-tr from-teal-400 to-indigo-600 rounded-full blur-xl pointer-events-none" />
-              <div className="space-y-6 relative z-10">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h3 className="text-base font-extrabold bg-gradient-to-r from-teal-400 to-indigo-500 bg-clip-text text-transparent">Professional Pro</h3>
-                    <p className="text-xs text-slate-500 mt-1">For active applicants and growth roles.</p>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${
+                      isDarkMode ? 'bg-slate-950 border border-slate-850 shadow-inner' : 'bg-slate-50 border border-slate-200'
+                    }`}>
+                      {item.icon}
+                    </div>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[8.5px] font-extrabold uppercase bg-amber-500/10 text-amber-400 border border-amber-500/15 animate-pulse">
+                      {item.status}
+                    </span>
                   </div>
-                  <span className="inline-flex px-2 py-0.5 rounded-full text-[8.5px] font-extrabold uppercase bg-teal-500/10 text-teal-400 border border-teal-500/10">Popular</span>
+                  
+                  <div>
+                    <h3 className={`text-sm font-bold ${isDarkMode ? 'text-slate-200' : 'text-slate-850'}`}>{item.title}</h3>
+                    <p className={`text-xs mt-1.5 leading-relaxed font-semibold ${isDarkMode ? 'text-slate-450' : 'text-slate-500'}`}>{item.desc}</p>
+                  </div>
                 </div>
-                <div className="flex items-baseline">
-                  <span className={`text-3xl font-extrabold ${isDarkMode ? 'text-white' : 'text-slate-950'}`}>$9</span>
-                  <span className="text-xs text-slate-500 ml-1.5">/ month</span>
-                </div>
-                <ul className="space-y-3 text-xs font-semibold text-slate-550 dark:text-slate-450">
-                  <li className="flex items-center"><Check className="h-4 w-4 mr-2 text-teal-400 shrink-0" /> Unlock all 5+ swiper templates</li>
-                  <li className="flex items-center"><Check className="h-4 w-4 mr-2 text-teal-400 shrink-0" /> Unlimited AI Optimizer analysis</li>
-                  <li className="flex items-center"><Check className="h-4 w-4 mr-2 text-teal-400 shrink-0" /> ATS Real-Time Keyword Scoring</li>
-                  <li className="flex items-center"><Check className="h-4 w-4 mr-2 text-teal-400 shrink-0" /> Premium vector graphics & glows</li>
-                </ul>
               </div>
-              <Link
-                href="/auth?mode=create-account"
-                className="w-full text-center py-2.5 rounded-xl text-xs font-bold mt-8 text-white bg-gradient-to-r from-teal-500 via-indigo-600 to-purple-650 hover:opacity-95 shadow-md shadow-indigo-600/15 cursor-pointer"
-              >
-                Upgrade to Pro
-              </Link>
-            </div>
-
-            {/* Enterprise Plan */}
-            <div className={`border rounded-[26px] p-8 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 ${
-              isDarkMode ? 'bg-slate-900/20 border-slate-900/60 hover:border-slate-800' : 'bg-white border-slate-200 hover:border-slate-300'
-            }`}>
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-base font-extrabold">Executive Team</h3>
-                  <p className="text-xs text-slate-500 mt-1">Multi-user workspace access.</p>
-                </div>
-                <div className="flex items-baseline">
-                  <span className={`text-3xl font-extrabold ${isDarkMode ? 'text-white' : 'text-slate-950'}`}>$15</span>
-                  <span className="text-xs text-slate-500 ml-1.5">/ month</span>
-                </div>
-                <ul className="space-y-3 text-xs font-semibold text-slate-550 dark:text-slate-400">
-                  <li className="flex items-center"><Check className="h-4 w-4 mr-2 text-teal-400 shrink-0" /> Everything inside Pro included</li>
-                  <li className="flex items-center"><Check className="h-4 w-4 mr-2 text-teal-400 shrink-0" /> Consolidated dashboard team view</li>
-                  <li className="flex items-center"><Check className="h-4 w-4 mr-2 text-teal-400 shrink-0" /> Priority API support response</li>
-                </ul>
-              </div>
-              <Link
-                href="/auth?mode=create-account"
-                className={`w-full text-center py-2.5 rounded-xl text-xs font-bold mt-8 transition-colors duration-200 cursor-pointer ${
-                  isDarkMode ? 'bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-850' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200'
-                }`}
-              >
-                Contact Enterprise
-              </Link>
-            </div>
-
+            ))}
           </div>
         </section>
 
@@ -826,8 +765,11 @@ export default function Home() {
               </div>
               <span className="font-extrabold text-base tracking-tight bg-gradient-to-r from-teal-400 via-indigo-500 to-purple-500 bg-clip-text text-transparent">SmartCV</span>
             </div>
-            <p className="text-xs leading-relaxed max-w-sm font-semibold">
-              The premium Canva Pro-style resume builder designed to help professionals pass ATS validation filters and get hired.
+            <p className="text-xs leading-relaxed max-w-sm font-bold">
+              AI Resume Platform designed to help professionals format sections cleanly and build high-performance portfolios.
+            </p>
+            <p className="text-[10px] font-extrabold tracking-wider text-slate-500 dark:text-slate-400 uppercase">
+              Built and Developed by Vamsi Krishna Tadisetti
             </p>
             <div className="flex items-center space-x-4 pt-2">
               <a href="#" className="hover:text-indigo-400 transition-colors"><Mail className="h-4 w-4" /></a>
@@ -841,8 +783,8 @@ export default function Home() {
             <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-900 dark:text-slate-300">Product</h4>
             <ul className="space-y-2 text-xs font-semibold">
               <li><a href="#features" className="hover:text-indigo-400 transition-colors">Features</a></li>
-              <li><a href="#swiper" className="hover:text-indigo-400 transition-colors">Template Swiper</a></li>
-              <li><a href="#pricing" className="hover:text-indigo-400 transition-colors">Pricing Plans</a></li>
+              <li><a href="#swiper" className="hover:text-indigo-400 transition-colors">Template Gallery</a></li>
+              <li><a href="#roadmap" className="hover:text-indigo-400 transition-colors">Coming Soon</a></li>
             </ul>
           </div>
 
@@ -868,9 +810,9 @@ export default function Home() {
 
         </div>
 
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between border-t border-slate-900/10 dark:border-slate-900/60 mt-12 pt-6 text-[10px] font-bold tracking-widest uppercase">
-          <span>&copy; {new Date().getFullYear()} SmartCV Inc. All rights reserved.</span>
-          <span className="mt-2 sm:mt-0">Canva Design Partner Pro Edition</span>
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between border-t border-slate-900/10 dark:border-slate-900/60 mt-12 pt-6 text-[10px] font-bold tracking-widest uppercase text-slate-550">
+          <span>&copy; {new Date().getFullYear()} SmartCV. Built and Developed by Vamsi Krishna Tadisetti.</span>
+          <span className="mt-2 sm:mt-0">AI Resume Platform</span>
         </div>
       </footer>
 

@@ -22,6 +22,13 @@
 * Google OAuth button event isolation fixes
 * Resend email OTP delivery
 * SaaS Dashboard & Profile UI finalization (gradients, segmented switch, SVG icons, empty states)
+* Root landing page rebranding (removed third-party brand names, added Why SmartCV, and Coming Soon roadmap)
+* Route parameters state synchronization (mode=signin/signup query parameter selection logic for AuthPage)
+* Resume Template Discovery Module (12 Premium Layouts, Filters, Recommendation Carousel)
+* Slide-Over Template Details Drawer (ATS specifications, recruiter rating)
+* Fullscreen Canva-style Preview Modal (zoom in/out, fit, next/prev cycling, select template)
+* Database Selection Storage APIs (`/api/resumes`, `/api/resumes/select-template`)
+* Initialized Builder Canvas page with live scaled rendering
 
 ## In Progress
 
@@ -31,8 +38,7 @@
 
 * Resume Library
 * Resume Profiles
-* Resume Builder
-* Resume Templates
+* Resume Builder Form (Phase 2 data collection forms)
 * Gemini Integration
 * ATS Analysis
 * PDF Export
@@ -49,4 +55,4 @@ Configured:
 
 ## Next Task
 
-Finish authentication module completely before starting Resume Builder.
+Begin Phase 2: Resume Builder interactive data forms and live data compilation sync.

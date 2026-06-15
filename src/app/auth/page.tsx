@@ -17,7 +17,15 @@ type AuthStep =
 
 export default function AuthPage() {
   const router = useRouter();
-  const [mode, setMode] = useState<AuthMode>('sign-in');
+  const [mode, setMode] = useState<AuthMode>(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const queryMode = params.get('mode');
+      if (queryMode === 'signup') return 'create-account';
+      if (queryMode === 'signin') return 'sign-in';
+    }
+    return 'sign-in';
+  });
   const [step, setStep] = useState<AuthStep>('email-input');
   const [email, setEmail] = useState('');
   const [otpCode, setOtpCode] = useState('');
@@ -50,13 +58,21 @@ export default function AuthPage() {
     return () => clearInterval(interval);
   }, [resendCooldown, step]);
 
-  // Load remembered email on mount
+  // Load remembered email and parse tab mode on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedEmail = localStorage.getItem('smartcv_remembered_email');
       if (savedEmail) {
         setEmail(savedEmail);
         setRememberMe(true);
+      }
+      
+      const params = new URLSearchParams(window.location.search);
+      const queryMode = params.get('mode');
+      if (queryMode === 'signin') {
+        setMode('sign-in');
+      } else if (queryMode === 'signup') {
+        setMode('create-account');
       }
     }
   }, []);

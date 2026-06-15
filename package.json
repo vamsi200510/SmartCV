@@ -11,8 +11,12 @@
   "dependencies": {
     "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.108.1",
+    "framer-motion": "^12.40.0",
     "lucide-react": "^1.18.0",
+    "mammoth": "^1.12.0",
     "next": "16.2.9",
+    "pdf-parse": "^2.4.5",
+    "puppeteer": "^25.1.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "resend": "^6.12.4"
