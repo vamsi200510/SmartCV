@@ -358,6 +358,22 @@ export default function TemplateRenderer({
       padding: var(--resume-padding-inner) !important;
     }
 
+    /* Density spacing overrides for px-12, p-3, p-3.5, p-4 and mb-2.5 */
+    .resume-preview-container-${templateId} .px-12 {
+      padding-left: var(--resume-padding) !important;
+      padding-right: var(--resume-padding) !important;
+    }
+
+    .resume-preview-container-${templateId} .p-3,
+    .resume-preview-container-${templateId} .p-3\\.5,
+    .resume-preview-container-${templateId} .p-4 {
+      padding: calc(var(--resume-padding) * 0.4) !important;
+    }
+
+    .resume-preview-container-${templateId} .mb-2\\.5 {
+      margin-bottom: calc(var(--resume-section-margin) * 0.4) !important;
+    }
+
     /* Flex gap and padding defaults */
     .resume-preview-container-${templateId} .gap-8 {
       gap: var(--resume-gap) !important;
@@ -404,6 +420,57 @@ export default function TemplateRenderer({
     }
     .resume-preview-container-${templateId} .space-y-0.5 > :not([hidden]) ~ :not([hidden]) {
       margin-top: calc(var(--resume-element-spacing) * 0.25) !important;
+    }
+
+    /* Theme Color Customization Overrides */
+    .resume-preview-container-${templateId} .text-teal-600,
+    .resume-preview-container-${templateId} .text-indigo-600,
+    .resume-preview-container-${templateId} .text-indigo-700,
+    .resume-preview-container-${templateId} .text-indigo-655,
+    .resume-preview-container-${templateId} .text-indigo-650,
+    .resume-preview-container-${templateId} .text-rose-450,
+    .resume-preview-container-${templateId} .text-rose-500,
+    .resume-preview-container-${templateId} .text-rose-600,
+    .resume-preview-container-${templateId} .text-emerald-655,
+    .resume-preview-container-${templateId} .text-emerald-600,
+    .resume-preview-container-${templateId} .text-emerald-700,
+    .resume-preview-container-${templateId} .text-emerald-800,
+    .resume-preview-container-${templateId} .text-purple-700,
+    .resume-preview-container-${templateId} .text-purple-800,
+    .resume-preview-container-${templateId} .text-amber-705,
+    .resume-preview-container-${templateId} .text-amber-700,
+    .resume-preview-container-${templateId} .text-amber-800,
+    .resume-preview-container-${templateId} .text-amber-850 {
+      color: ${primaryColorValue} !important;
+    }
+
+    .resume-preview-container-${templateId} .border-teal-500,
+    .resume-preview-container-${templateId} .border-indigo-100,
+    .resume-preview-container-${templateId} .border-indigo-600,
+    .resume-preview-container-${templateId} .border-rose-500\\/50,
+    .resume-preview-container-${templateId} .border-emerald-500,
+    .resume-preview-container-${templateId} .border-emerald-100,
+    .resume-preview-container-${templateId} .border-indigo-100\\/50,
+    .resume-preview-container-${templateId} .border-indigo-100\\/30,
+    .resume-preview-container-${templateId} .border-purple-100\\/50 {
+      border-color: ${primaryColorValue}77 !important;
+    }
+
+    .resume-preview-container-${templateId} .bg-indigo-50,
+    .resume-preview-container-${templateId} .bg-indigo-50\\/50,
+    .resume-preview-container-${templateId} .bg-rose-50,
+    .resume-preview-container-${templateId} .bg-emerald-50,
+    .resume-preview-container-${templateId} .bg-purple-50\\/40,
+    .resume-preview-container-${templateId} .bg-purple-50 {
+      background-color: ${primaryColorValue}15 !important;
+    }
+
+    .resume-preview-container-${templateId} .bg-gradient-to-r {
+      background-image: linear-gradient(to right, ${primaryColorValue}, ${primaryColorValue}cc) !important;
+    }
+
+    .resume-preview-container-${templateId} .bg-gradient-to-tr {
+      background-image: linear-gradient(to top right, ${primaryColorValue}, ${primaryColorValue}aa) !important;
     }
   `;
 
@@ -1555,7 +1622,7 @@ function CleanAcademic({ data }: { data: ResumeData }) {
     if (!customization.visibleSections) return true;
     return customization.visibleSections.includes(sec);
   };
-  const sectionOrder = customization.sectionOrder || ['summary', 'education', 'experience', 'projects', 'skills', 'certifications', 'achievements', 'additionalInfo'];
+  const sectionOrder = customization.sectionOrder || ['summary', 'experience', 'projects', 'skills', 'education', 'certifications', 'achievements', 'additionalInfo'];
 
   const renderSection = (sec: string) => {
     if (!isVisible(sec)) return null;

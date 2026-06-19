@@ -35,25 +35,26 @@ async function run() {
       await page.screenshot({ path: path.join(screenshotDir, '02_email_entered.png') });
 
       // Click continue
-      await Promise.all([
-        page.click('button[type="submit"]'),
-        page.waitForNavigation({ waitUntil: 'networkidle2' })
-      ]);
+      await page.click('button[type="submit"]');
+      await page.waitForSelector('#password', { timeout: 10000 });
       await page.screenshot({ path: path.join(screenshotDir, '03_after_email_submit.png') });
 
       // Try typing password
       console.log('Waiting for password input...');
-      await page.waitForSelector('#password');
       await page.type('#password', 'password123');
       await page.screenshot({ path: path.join(screenshotDir, '04_password_entered.png') });
 
       // Click submit
       console.log('Submitting credentials...');
-      await Promise.all([
-        page.click('button[type="submit"]'),
-        page.waitForNavigation({ waitUntil: 'networkidle2' })
-      ]);
+      await page.click('button[type="submit"]');
+      await page.waitForFunction(() => window.location.href.includes('/dashboard'), { timeout: 15000 });
     }
+
+    console.log('Waiting for Dashboard console to initialize...');
+    await page.waitForFunction(() => {
+      return !document.body.innerText.includes('Initializing SmartCV Console') && 
+             document.body.innerText.includes('Workspace Hub');
+    }, { timeout: 15000 });
 
     console.log(`Successfully authenticated! Current URL: ${page.url()}`);
     await page.screenshot({ path: path.join(screenshotDir, '05_dashboard_home.png') });
@@ -119,11 +120,11 @@ async function run() {
     
     // 6. Monitor progress and handle duplicate detection dialog if visible
     console.log('Waiting for extraction processing or duplicate warning...');
-    await page.waitForTimeout ? await page.waitForTimeout(3000) : await new Promise(r => setTimeout(r, 3000));
+    await page.waitForFunction(() => document.querySelector('select') || document.body.textContent.includes('Duplicate Detected'), { timeout: 15000 });
     await page.screenshot({ path: path.join(screenshotDir, '09_processing_or_duplicate.png') });
 
     const isDuplicate = await page.evaluate(() => {
-      return !!document.querySelector('.text-amber-500') || document.body.textContent.includes('Duplicate Detected');
+      return document.body.textContent.includes('Duplicate Detected');
     });
 
     if (isDuplicate) {
@@ -140,7 +141,7 @@ async function run() {
       if (importAgainBtn) {
         await importAgainBtn.click();
         console.log('Clicked Import Again, waiting for processing to complete...');
-        await page.waitForTimeout ? await page.waitForTimeout(4000) : await new Promise(r => setTimeout(r, 4000));
+        await page.waitForSelector('select', { timeout: 15000 });
       } else {
         console.log('Import Again button not found');
       }
@@ -173,10 +174,10 @@ async function run() {
     if (!reviewBtn) {
       throw new Error('Could not find Review & Continue button');
     }
-    await Promise.all([
-      reviewBtn.click(),
-      page.waitForNavigation({ waitUntil: 'networkidle2' })
-    ]);
+    await reviewBtn.click();
+    await page.waitForFunction(() => window.location.href.includes('/builder'), { timeout: 15000 });
+    console.log('Waiting for builder form inputs to load...');
+    await page.waitForSelector('input', { timeout: 15000 });
 
     console.log(`Builder loaded! Current URL: ${page.url()}`);
     await page.screenshot({ path: path.join(screenshotDir, '12_builder_initial.png') });
@@ -240,22 +241,38 @@ async function run() {
       throw new Error('Could not find Save & Exit button');
     }
     
-    await Promise.all([
-      saveExitBtn.click(),
-      page.waitForNavigation({ waitUntil: 'networkidle2' })
-    ]);
+    await saveExitBtn.click();
+    await page.waitForFunction(() => window.location.href.includes('/dashboard'), { timeout: 15000 });
+
+    console.log('Waiting for Dashboard console to re-initialize...');
+    await page.waitForFunction(() => {
+      return !document.body.innerText.includes('Initializing SmartCV Console') && 
+             document.body.innerText.includes('Workspace Hub');
+    }, { timeout: 15000 });
 
     console.log(`Redirected after Save & Exit. Current URL: ${page.url()}`);
     await page.screenshot({ path: path.join(screenshotDir, '16_dashboard_after_save.png') });
 
     // 11. Navigate back to builder and test PDF Export
-    console.log('Testing PDF Export flow...');
-    const editResumeBtn = await page.$('button[class*="indigo-50"]');
+    console.log('Waiting for resume list drafts to load...');
+    await page.waitForFunction(() => {
+      const buttons = Array.from(document.querySelectorAll('button'));
+      return buttons.some(btn => btn.innerText.includes('Edit Resume'));
+    }, { timeout: 15000 });
+
+    const buttonsList = await page.$$('button');
+    let editResumeBtn = null;
+    for (const btn of buttonsList) {
+      const text = await page.evaluate(el => el.textContent, btn);
+      if (text.includes('Edit Resume')) {
+        editResumeBtn = btn;
+        break;
+      }
+    }
     if (editResumeBtn) {
-      await Promise.all([
-        editResumeBtn.click(),
-        page.waitForNavigation({ waitUntil: 'networkidle2' })
-      ]);
+      await editResumeBtn.click();
+      await page.waitForFunction(() => window.location.href.includes('/builder'), { timeout: 15000 });
+      await page.waitForSelector('input', { timeout: 15000 }); // Wait for loader to disappear
       console.log('Re-entered builder canvas. Clicking Export PDF...');
       
       const actionBtns = await page.$$('button');

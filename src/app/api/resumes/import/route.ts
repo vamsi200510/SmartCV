@@ -2,7 +2,8 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import pdf from 'pdf-parse';
+// @ts-ignore
+import { PDFParse } from 'pdf-parse';
 import * as mammoth from 'mammoth';
 
 // Standardized resume sections partitioning
@@ -106,7 +107,8 @@ export async function POST(request: NextRequest) {
 
     // File type validation & text extraction
     if (file.name.endsWith('.pdf')) {
-      const pdfData = await pdf(buffer);
+      const parser = new PDFParse({ data: buffer });
+      const pdfData = await parser.getText();
       rawText = pdfData.text;
     } else if (file.name.endsWith('.docx')) {
       const docxResult = await mammoth.extractRawText({ buffer });
