@@ -14,6 +14,10 @@
   --font-geist: var(--font-geist-sans), sans-serif;
   --font-poppins: var(--font-poppins), sans-serif;
   --font-manrope: var(--font-manrope), sans-serif;
+  --font-source-sans: var(--font-source-sans), sans-serif;
+  --font-ibm-plex: var(--font-ibm-plex), sans-serif;
+  --font-plus-jakarta: var(--font-plus-jakarta), sans-serif;
+  --font-lato: var(--font-lato), sans-serif;
 }
 
 @media (prefers-color-scheme: dark) {

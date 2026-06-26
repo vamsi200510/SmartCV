@@ -1,0 +1,183 @@
+[
+  {
+    "resume": "r0.pdf",
+    "textLength": 16,
+    "geminiSuccess": true,
+    "parseError": null,
+    "validationPassed": true,
+    "rejectReason": null,
+    "confidence": {
+      "personal": 1,
+      "summary": 1,
+      "experience": 1,
+      "education": 1,
+      "projects": 1,
+      "skills": 1,
+      "certifications": 1,
+      "achievements": 1,
+      "additionalInfo": 0.9
+    },
+    "accuracy": 86,
+    "missingFields": [
+      "skills"
+    ],
+    "durationMs": 19234
+  },
+  {
+    "resume": "r1.pdf",
+    "textLength": 16,
+    "geminiSuccess": true,
+    "parseError": null,
+    "validationPassed": true,
+    "rejectReason": null,
+    "confidence": {
+      "personal": 1,
+      "summary": 1,
+      "experience": 1,
+      "education": 1,
+      "projects": 0,
+      "skills": 0.9,
+      "certifications": 0,
+      "achievements": 0.8,
+      "additionalInfo": 0.7
+    },
+    "accuracy": 100,
+    "missingFields": [],
+    "durationMs": 13929
+  },
+  {
+    "resume": "r2.pdf",
+    "textLength": 16,
+    "geminiSuccess": true,
+    "parseError": null,
+    "validationPassed": true,
+    "rejectReason": null,
+    "confidence": {
+      "personal": 1,
+      "summary": 1,
+      "experience": 0.8,
+      "education": 1,
+      "projects": 0,
+      "skills": 0.6,
+      "certifications": 0,
+      "achievements": 0,
+      "additionalInfo": 0
+    },
+    "accuracy": 100,
+    "missingFields": [],
+    "durationMs": 19250
+  },
+  {
+    "resume": "r3.pdf",
+    "textLength": 16,
+    "geminiSuccess": true,
+    "parseError": null,
+    "validationPassed": true,
+    "rejectReason": null,
+    "confidence": {
+      "personal": 1,
+      "summary": 1,
+      "experience": 1,
+      "education": 1,
+      "projects": 0,
+      "skills": 0.1,
+      "certifications": 0.9,
+      "achievements": 0.8,
+      "additionalInfo": 0.9
+    },
+    "accuracy": 86,
+    "missingFields": [
+      "skills"
+    ],
+    "durationMs": 17734
+  },
+  {
+    "resume": "r4.pdf",
+    "textLength": 16,
+    "geminiSuccess": true,
+    "parseError": null,
+    "validationPassed": true,
+    "rejectReason": null,
+    "confidence": {
+      "personal": 0.3,
+      "summary": 0,
+      "experience": 1,
+      "education": 1,
+      "projects": 0,
+      "skills": 0.9,
+      "certifications": 1,
+      "achievements": 0.9,
+      "additionalInfo": 0
+    },
+    "accuracy": 57,
+    "missingFields": [
+      "email",
+      "phone",
+      "summary"
+    ],
+    "durationMs": 15613
+  },
+  {
+    "resume": "r5.pdf",
+    "textLength": 16,
+    "geminiSuccess": true,
+    "parseError": null,
+    "validationPassed": true,
+    "rejectReason": null,
+    "confidence": {
+      "personal": 1,
+      "summary": 1,
+      "experience": 1,
+      "education": 0,
+      "projects": 0,
+      "skills": 0.7,
+      "certifications": 0,
+      "achievements": 0,
+      "additionalInfo": 0
+    },
+    "accuracy": 86,
+    "missingFields": [
+      "education"
+    ],
+    "durationMs": 13754
+  },
+  {
+    "resume": "r6.pdf",
+    "textLength": 0,
+    "geminiSuccess": false,
+    "parseError": "{\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash\\nPlease retry in 50.929543931s.\",\"status\":\"RESOURCE_EXHAUSTED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Learn more about Gemini API quotas\",\"url\":\"https://ai.google.dev/gemini-api/docs/rate-limits\"}]},{\"@type\":\"type.googleapis.com/google.rpc.QuotaFailure\",\"violations\":[{\"quotaMetric\":\"generativelanguage.googleapis.com/generate_content_free_tier_requests\",\"quotaId\":\"GenerateRequestsPerDayPerProjectPerModel-FreeTier\",\"quotaDimensions\":{\"location\":\"global\",\"model\":\"gemini-2.5-flash\"},\"quotaValue\":\"20\"}]},{\"@type\":\"type.googleapis.com/google.rpc.RetryInfo\",\"retryDelay\":\"50s\"}]}}",
+    "validationPassed": false,
+    "rejectReason": "Crash: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash\\nPlease retry in 50.929543931s.\",\"status\":\"RESOURCE_EXHAUSTED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Learn more about Gemini API quotas\",\"url\":\"https://ai.google.dev/gemini-api/docs/rate-limits\"}]},{\"@type\":\"type.googleapis.com/google.rpc.QuotaFailure\",\"violations\":[{\"quotaMetric\":\"generativelanguage.googleapis.com/generate_content_free_tier_requests\",\"quotaId\":\"GenerateRequestsPerDayPerProjectPerModel-FreeTier\",\"quotaDimensions\":{\"location\":\"global\",\"model\":\"gemini-2.5-flash\"},\"quotaValue\":\"20\"}]},{\"@type\":\"type.googleapis.com/google.rpc.RetryInfo\",\"retryDelay\":\"50s\"}]}}",
+    "accuracy": 0,
+    "missingFields": [
+      "all"
+    ],
+    "durationMs": 0
+  },
+  {
+    "resume": "r7.pdf",
+    "textLength": 0,
+    "geminiSuccess": false,
+    "parseError": "{\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash\\nPlease retry in 37.859201438s.\",\"status\":\"RESOURCE_EXHAUSTED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Learn more about Gemini API quotas\",\"url\":\"https://ai.google.dev/gemini-api/docs/rate-limits\"}]},{\"@type\":\"type.googleapis.com/google.rpc.QuotaFailure\",\"violations\":[{\"quotaMetric\":\"generativelanguage.googleapis.com/generate_content_free_tier_requests\",\"quotaId\":\"GenerateRequestsPerDayPerProjectPerModel-FreeTier\",\"quotaDimensions\":{\"location\":\"global\",\"model\":\"gemini-2.5-flash\"},\"quotaValue\":\"20\"}]},{\"@type\":\"type.googleapis.com/google.rpc.RetryInfo\",\"retryDelay\":\"37s\"}]}}",
+    "validationPassed": false,
+    "rejectReason": "Crash: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash\\nPlease retry in 37.859201438s.\",\"status\":\"RESOURCE_EXHAUSTED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Learn more about Gemini API quotas\",\"url\":\"https://ai.google.dev/gemini-api/docs/rate-limits\"}]},{\"@type\":\"type.googleapis.com/google.rpc.QuotaFailure\",\"violations\":[{\"quotaMetric\":\"generativelanguage.googleapis.com/generate_content_free_tier_requests\",\"quotaId\":\"GenerateRequestsPerDayPerProjectPerModel-FreeTier\",\"quotaDimensions\":{\"location\":\"global\",\"model\":\"gemini-2.5-flash\"},\"quotaValue\":\"20\"}]},{\"@type\":\"type.googleapis.com/google.rpc.RetryInfo\",\"retryDelay\":\"37s\"}]}}",
+    "accuracy": 0,
+    "missingFields": [
+      "all"
+    ],
+    "durationMs": 0
+  },
+  {
+    "resume": "r8.pdf",
+    "textLength": 0,
+    "geminiSuccess": false,
+    "parseError": "{\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash\\nPlease retry in 24.644835395s.\",\"status\":\"RESOURCE_EXHAUSTED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Learn more about Gemini API quotas\",\"url\":\"https://ai.google.dev/gemini-api/docs/rate-limits\"}]},{\"@type\":\"type.googleapis.com/google.rpc.QuotaFailure\",\"violations\":[{\"quotaMetric\":\"generativelanguage.googleapis.com/generate_content_free_tier_requests\",\"quotaId\":\"GenerateRequestsPerDayPerProjectPerModel-FreeTier\",\"quotaDimensions\":{\"location\":\"global\",\"model\":\"gemini-2.5-flash\"},\"quotaValue\":\"20\"}]},{\"@type\":\"type.googleapis.com/google.rpc.RetryInfo\",\"retryDelay\":\"24s\"}]}}",
+    "validationPassed": false,
+    "rejectReason": "Crash: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash\\nPlease retry in 24.644835395s.\",\"status\":\"RESOURCE_EXHAUSTED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Learn more about Gemini API quotas\",\"url\":\"https://ai.google.dev/gemini-api/docs/rate-limits\"}]},{\"@type\":\"type.googleapis.com/google.rpc.QuotaFailure\",\"violations\":[{\"quotaMetric\":\"generativelanguage.googleapis.com/generate_content_free_tier_requests\",\"quotaId\":\"GenerateRequestsPerDayPerProjectPerModel-FreeTier\",\"quotaDimensions\":{\"location\":\"global\",\"model\":\"gemini-2.5-flash\"},\"quotaValue\":\"20\"}]},{\"@type\":\"type.googleapis.com/google.rpc.RetryInfo\",\"retryDelay\":\"24s\"}]}}",
+    "accuracy": 0,
+    "missingFields": [
+      "all"
+    ],
+    "durationMs": 0
+  }
+]

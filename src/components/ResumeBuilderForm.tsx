@@ -1536,6 +1536,10 @@ export default function ResumeBuilderForm({
               <option value="Geist">Geist (Modern Tech)</option>
               <option value="Poppins">Poppins (Friendly Geometric)</option>
               <option value="Manrope">Manrope (Grotesque Sans)</option>
+              <option value="Source Sans 3">Source Sans 3 (Adobe Classic)</option>
+              <option value="IBM Plex Sans">IBM Plex Sans (Corporate)</option>
+              <option value="Plus Jakarta Sans">Plus Jakarta Sans (Elegant)</option>
+              <option value="Lato">Lato (Professional)</option>
             </select>
           </div>
 

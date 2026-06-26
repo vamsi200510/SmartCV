@@ -71,13 +71,12 @@ export default function DashboardPage() {
   const [isImporting, setIsImporting] = useState(false);
   const [importStatus, setImportStatus] = useState('Extracting resume data...');
   const [importError, setImportError] = useState<string | null>(null);
-  const [duplicateWarning, setDuplicateWarning] = useState<any>(null);
+
   const [importedData, setImportedData] = useState<any>(null);
   const [selectedCategoryOverride, setSelectedCategoryOverride] = useState('Experienced');
 
-  const handleImportResume = async (file: File, forceImportAgain = false) => {
+  const handleImportResume = async (file: File) => {
     setImportError(null);
-    setDuplicateWarning(null);
 
     if (file.size > 10 * 1024 * 1024) {
       setImportError("File exceeds maximum size limit of 10MB.");
@@ -95,9 +94,7 @@ export default function DashboardPage() {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      if (forceImportAgain) {
-        formData.append('importAgain', 'true');
-      }
+
 
       const response = await fetch('/api/resumes/import', {
         method: 'POST',
@@ -110,12 +107,7 @@ export default function DashboardPage() {
         throw new Error(result.error || 'Unable to extract resume data. Please complete fields manually.');
       }
 
-      if (result.duplicateDetected) {
-        setDuplicateWarning(result);
-        setIsImporting(false);
-        clearTimeout(warningTimer);
-        return;
-      }
+
 
       // Success! Move to summary
       setImportedData(result);
@@ -145,6 +137,12 @@ export default function DashboardPage() {
         console.error('Failed to update overridden category in database:', err);
       }
     }
+
+    // Stage 7: Builder redirect on client
+    console.log('[DEBUG-STAGE-7-CLIENT] Redirecting to builder:', {
+      redirectUrl: `/builder?resumeId=${importedData.id}`,
+      resumeId: importedData.id
+    });
 
     router.push(`/builder?resumeId=${importedData.id}`);
   };
@@ -226,10 +224,10 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
-    if (user) {
+    if (user && step === 'dashboard') {
       fetchResumes();
     }
-  }, [user]);
+  }, [user, step]);
 
   // Sync profile details to Settings edit fields when profile shifts
   useEffect(() => {
@@ -274,7 +272,8 @@ export default function DashboardPage() {
       const { error } = await supabase
         .from('resumes')
         .delete()
-        .eq('id', resumeId);
+        .eq('id', resumeId)
+        .eq('user_id', user.id);
 
       if (error) throw error;
       
@@ -759,6 +758,7 @@ export default function DashboardPage() {
             {/* Step 1: Default dashboard Views mapping active tabs */}
             {step === 'dashboard' && (
               <motion.div
+                key="dashboard"
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
@@ -949,7 +949,7 @@ export default function DashboardPage() {
                     {loadingResumes ? (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {[...Array(3)].map((_, i) => (
-                          <div key={i} className="border border-slate-150 bg-white rounded-2xl p-5 h-44 animate-pulse" />
+                          <div key={`skeleton-${i}`} className="border border-slate-150 bg-white rounded-2xl p-5 h-44 animate-pulse" />
                         ))}
                       </div>
                     ) : resumes.length > 0 ? (
@@ -965,7 +965,7 @@ export default function DashboardPage() {
                               <div className="flex justify-between items-center">
                                 <span className={`text-[8.5px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md ${
                                   isDarkMode ? 'bg-slate-950 text-indigo-400' : 'bg-slate-50 text-indigo-650'
-                                }}`}>
+                                }`}>
                                   {resume.category}
                                 </span>
                                 <button
@@ -1121,14 +1121,14 @@ export default function DashboardPage() {
                     {/* Chat messages viewport */}
                     <div className="flex-grow overflow-y-auto p-5 space-y-4">
                       {aiChat.map((msg, idx) => (
-                        <div key={idx} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                        <div key={`msg-${idx}-${msg.sender}`} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                           <div className={`max-w-[80%] rounded-2xl p-4 text-xs font-medium leading-relaxed text-justify ${
                             msg.sender === 'user'
                               ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/5'
                               : 'bg-slate-50 border border-slate-200/50 text-slate-750'
                           }`}>
                             {msg.text.split('\n').map((para, pIdx) => (
-                              <p key={pIdx} className={pIdx > 0 ? 'mt-2 font-mono text-[11px] bg-slate-950 text-slate-200 p-3 rounded-xl select-all border border-slate-800' : ''}>
+                              <p key={`para-${pIdx}`} className={pIdx > 0 ? 'mt-2 font-mono text-[11px] bg-slate-950 text-slate-200 p-3 rounded-xl select-all border border-slate-800' : ''}>
                                 {para}
                               </p>
                             ))}
@@ -1290,6 +1290,7 @@ export default function DashboardPage() {
               {/* Step 1.5: CREATION METHOD SELECTION */}
               {step === 'creation-method-selection' && (
                 <motion.div
+                  key="creation-method-selection"
                   initial={{ opacity: 0, scale: 0.98 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.98 }}
@@ -1354,6 +1355,7 @@ export default function DashboardPage() {
             {/* Step 2: RESUME TYPE SELECTION CREATION FLOW WIZARD */}
             {step === 'type-selection' && (
               <motion.div
+                key="type-selection"
                 initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.98 }}
@@ -1480,6 +1482,7 @@ export default function DashboardPage() {
             {/* Step 3: IMPORT RESUME PANEL */}
             {step === 'import-resume' && (
               <motion.div
+                key="import-resume"
                 initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.98 }}
@@ -1578,6 +1581,7 @@ export default function DashboardPage() {
             {/* Step 4: IMPORT SUMMARY PANEL */}
             {step === 'import-summary' && importedData && (
               <motion.div
+                key="import-summary"
                 initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.98 }}
@@ -1679,51 +1683,7 @@ export default function DashboardPage() {
                   </button>
                 </div>
               </motion.div>
-            )}
-
-            {/* Duplicate detection modal overlay */}
-            {duplicateWarning && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4">
-                <div className={`w-full max-w-md border rounded-2xl p-6 space-y-4 shadow-xl ${
-                  isDarkMode ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-900'
-                }`}>
-                  <div className="flex items-start gap-3">
-                    <div className="h-10 w-10 rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/10 flex items-center justify-center shrink-0">
-                      <AlertCircle size={18} />
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-bold">Duplicate Detected</h3>
-                      <p className="text-[10.5px] text-slate-450 leading-relaxed mt-1">
-                        This resume appears to have been imported already. We found an existing draft matching this candidate.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex justify-end gap-3 pt-2">
-                    <button
-                      onClick={() => {
-                        setDuplicateWarning(null);
-                        setImportFile(null);
-                      }}
-                      className={`h-9 px-4 border rounded-xl text-xs font-bold transition cursor-pointer ${
-                        isDarkMode ? 'bg-slate-950 border-slate-800 hover:bg-slate-850 text-slate-300' : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-655'
-                      }`}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (importFile) {
-                          handleImportResume(importFile, true);
-                        }
-                      }}
-                      className="h-9 px-4 bg-indigo-650 hover:bg-indigo-600 text-white rounded-xl text-xs font-bold transition cursor-pointer"
-                    >
-                      Import Again
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
+              )}
 
           </AnimatePresence>
 

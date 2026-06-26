@@ -131,7 +131,7 @@ export default function TemplateDetailsDrawer({
               <div className="flex items-center gap-0.5">
                 {[...Array(5)].map((_, i) => (
                   <Star
-                    key={i}
+                    key={`star-${i}`}
                     size={14}
                     className={
                       i < template.recruiter_rating 
@@ -151,9 +151,9 @@ export default function TemplateDetailsDrawer({
           <div className="space-y-3">
             <h3 className={`text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>// STRATEGIC FOR</h3>
             <div className="flex flex-wrap gap-2">
-              {template.best_for.map((tag, idx) => (
+              {template.best_for.map((tag) => (
                 <div 
-                  key={idx} 
+                  key={tag} 
                   className={`border px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 ${
                     isDarkMode 
                       ? 'bg-indigo-500/5 border-indigo-500/10 text-indigo-300' 

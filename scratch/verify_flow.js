@@ -41,7 +41,7 @@ async function run() {
 
       // Try typing password
       console.log('Waiting for password input...');
-      await page.type('#password', 'password123');
+      await page.type('#password', 'Vamsi.2005');
       await page.screenshot({ path: path.join(screenshotDir, '04_password_entered.png') });
 
       // Click submit

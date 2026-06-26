@@ -71,7 +71,7 @@ export interface ResumeData {
     interests?: string;
   };
   customization?: {
-    fontFamily?: 'Inter' | 'Geist' | 'Poppins' | 'Manrope';
+    fontFamily?: 'Inter' | 'Geist' | 'Poppins' | 'Manrope' | 'Source Sans 3' | 'IBM Plex Sans' | 'Plus Jakarta Sans' | 'Lato';
     fontSize?: 'small' | 'medium' | 'large' | 'extraLarge';
     density?: 'compact' | 'balanced' | 'spacious';
     primaryColor?: string;
@@ -187,55 +187,140 @@ export const defaultSampleData: ResumeData = {
   }
 };
 
+function cleanValue(val: any): string {
+  if (val === null || val === undefined) return '';
+  const s = String(val).trim();
+  const lower = s.toLowerCase();
+  if (
+    lower === 'n/a' || 
+    lower === 'n/a.' ||
+    lower === 'unknown' || 
+    lower === 'null' || 
+    lower === 'undefined' || 
+    lower === '--' ||
+    lower === 'n / a' ||
+    lower === 'n-a' ||
+    lower === 'none'
+  ) {
+    return '';
+  }
+  return s;
+}
+
 // Helper function to safely sanitize and guarantee default fallbacks for all fields
 export function sanitizeResumeData(data: any): ResumeData {
+  const cleanStr = (val: any) => cleanValue(val);
+
+  const cleanExperience = (expList: any[]) => {
+    return (expList || [])
+      .map((exp: any) => {
+        const role = cleanStr(exp?.role);
+        const company = cleanStr(exp?.company);
+        const duration = cleanStr(exp?.duration);
+        const location = cleanStr(exp?.location);
+        const bullets = (exp?.bullets || []).map((b: any) => cleanStr(b)).filter(Boolean);
+        
+        if (!role && !company && !duration && !location && bullets.length === 0) {
+          return null;
+        }
+        return { role, company, duration, location, bullets };
+      })
+      .filter(Boolean) as any[];
+  };
+
+  const cleanEducation = (eduList: any[]) => {
+    return (eduList || [])
+      .map((edu: any) => {
+        const degree = cleanStr(edu?.degree);
+        const school = cleanStr(edu?.school);
+        const duration = cleanStr(edu?.duration);
+        const details = cleanStr(edu?.details);
+        
+        if (!degree && !school && !duration && !details) {
+          return null;
+        }
+        return { degree, school, duration, details };
+      })
+      .filter(Boolean) as any[];
+  };
+
+  const cleanProjects = (projList: any[]) => {
+    return (projList || [])
+      .map((proj: any) => {
+        const name = cleanStr(proj?.name);
+        const technologies = (proj?.technologies || []).map((t: any) => cleanStr(t)).filter(Boolean);
+        const description = cleanStr(proj?.description);
+        const bullets = (proj?.bullets || []).map((b: any) => cleanStr(b)).filter(Boolean);
+        
+        if (!name && !description && technologies.length === 0 && bullets.length === 0) {
+          return null;
+        }
+        return { name, technologies, description, bullets };
+      })
+      .filter(Boolean) as any[];
+  };
+
+  const cleanSkills = (skillsList: any[]) => {
+    return (skillsList || [])
+      .map((skill: any) => {
+        const category = cleanStr(skill?.category);
+        const items = (skill?.items || []).map((i: any) => cleanStr(i)).filter(Boolean);
+        if (!category && items.length === 0) {
+          return null;
+        }
+        return { category, items };
+      })
+      .filter(Boolean) as any[];
+  };
+
+  const cleanCertifications = (certList: any[]) => {
+    return (certList || [])
+      .map((cert: any) => {
+        const name = cleanStr(cert?.name);
+        const issuer = cleanStr(cert?.issuer);
+        const date = cleanStr(cert?.date);
+        if (!name && !issuer && !date) {
+          return null;
+        }
+        return { name, issuer, date };
+      })
+      .filter(Boolean) as any[];
+  };
+
+  const cleanAchievements = (achList: any[]) => {
+    return (achList || [])
+      .map((ach: any) => {
+        const title = cleanStr(ach?.title);
+        const description = cleanStr(ach?.description);
+        if (!title && !description) {
+          return null;
+        }
+        return { title, description };
+      })
+      .filter(Boolean) as any[];
+  };
+
   return {
     personalInfo: {
-      fullName: data?.personalInfo?.fullName || '',
-      title: data?.personalInfo?.title || '',
-      email: data?.personalInfo?.email || '',
-      phone: data?.personalInfo?.phone || '',
-      location: data?.personalInfo?.location || '',
-      website: data?.personalInfo?.website || '',
-      github: data?.personalInfo?.github || '',
-      linkedin: data?.personalInfo?.linkedin || '',
-      summary: data?.personalInfo?.summary || '',
+      fullName: cleanStr(data?.personalInfo?.fullName),
+      title: cleanStr(data?.personalInfo?.title),
+      email: cleanStr(data?.personalInfo?.email),
+      phone: cleanStr(data?.personalInfo?.phone),
+      location: cleanStr(data?.personalInfo?.location),
+      website: cleanStr(data?.personalInfo?.website),
+      github: cleanStr(data?.personalInfo?.github),
+      linkedin: cleanStr(data?.personalInfo?.linkedin),
+      summary: cleanStr(data?.personalInfo?.summary),
     },
-    experience: (data?.experience || []).map((exp: any) => ({
-      role: exp?.role || '',
-      company: exp?.company || '',
-      duration: exp?.duration || '',
-      location: exp?.location || '',
-      bullets: Array.isArray(exp?.bullets) ? exp.bullets : []
-    })),
-    education: (data?.education || []).map((edu: any) => ({
-      degree: edu?.degree || '',
-      school: edu?.school || '',
-      duration: edu?.duration || '',
-      details: edu?.details || ''
-    })),
-    projects: (data?.projects || []).map((proj: any) => ({
-      name: proj?.name || '',
-      technologies: Array.isArray(proj?.technologies) ? proj.technologies : [],
-      description: proj?.description || '',
-      bullets: Array.isArray(proj?.bullets) ? proj.bullets : []
-    })),
-    skills: (data?.skills || []).map((skill: any) => ({
-      category: skill?.category || '',
-      items: Array.isArray(skill?.items) ? skill.items : []
-    })),
-    certifications: (data?.certifications || []).map((cert: any) => ({
-      name: cert?.name || '',
-      issuer: cert?.issuer || '',
-      date: cert?.date || ''
-    })),
-    achievements: (data?.achievements || []).map((ach: any) => ({
-      title: ach?.title || '',
-      description: ach?.description || ''
-    })),
+    experience: cleanExperience(data?.experience),
+    education: cleanEducation(data?.education),
+    projects: cleanProjects(data?.projects),
+    skills: cleanSkills(data?.skills),
+    certifications: cleanCertifications(data?.certifications),
+    achievements: cleanAchievements(data?.achievements),
     additionalInfo: {
-      languages: data?.additionalInfo?.languages || '',
-      interests: data?.additionalInfo?.interests || '',
+      languages: cleanStr(data?.additionalInfo?.languages),
+      interests: cleanStr(data?.additionalInfo?.interests),
     },
     customization: {
       fontFamily: data?.customization?.fontFamily || 'Inter',
@@ -272,7 +357,11 @@ export default function TemplateRenderer({
     'Inter': 'var(--font-inter)',
     'Geist': 'var(--font-geist)',
     'Poppins': 'var(--font-poppins)',
-    'Manrope': 'var(--font-manrope)'
+    'Manrope': 'var(--font-manrope)',
+    'Source Sans 3': 'var(--font-source-sans)',
+    'IBM Plex Sans': 'var(--font-ibm-plex)',
+    'Plus Jakarta Sans': 'var(--font-plus-jakarta)',
+    'Lato': 'var(--font-lato)'
   };
   const fontSizes: Record<string, string> = {
     'small': '10.5px',
@@ -553,7 +642,7 @@ function ATSProfessional({ data }: { data: ResumeData }) {
               {data.experience.map((exp, idx) => (
                 <div key={idx}>
                   <div className="flex justify-between font-bold">
-                    <span>{exp.role} — {exp.company}</span>
+                    <span>{exp.role && exp.company ? `${exp.role} — ${exp.company}` : (exp.role || exp.company)}</span>
                     <span>{exp.duration}</span>
                   </div>
                   {exp.location && <div className="text-slate-600 italic text-[10px] mb-1">{exp.location}</div>}
@@ -607,7 +696,7 @@ function ATSProfessional({ data }: { data: ResumeData }) {
               {data.education.map((edu, idx) => (
                 <div key={idx} className="flex justify-between">
                   <div>
-                    <span className="font-bold">{edu.degree}</span> - {edu.school}
+                    {edu.degree && edu.school ? <><span className="font-bold">{edu.degree}</span> - {edu.school}</> : <span className="font-bold">{edu.degree || edu.school}</span>}
                     {edu.details && <div className="text-slate-600 text-[10px]">{edu.details}</div>}
                   </div>
                   <span className="font-bold">{edu.duration}</span>
@@ -624,7 +713,7 @@ function ATSProfessional({ data }: { data: ResumeData }) {
             <div className="space-y-1">
               {data.certifications.map((cert, idx) => (
                 <div key={idx} className="flex justify-between">
-                  <span><span className="font-bold">{cert.name}</span> — {cert.issuer}</span>
+                  <span><span className="font-bold">{cert.name}</span>{cert.issuer ? ` — ${cert.issuer}` : ''}</span>
                   <span className="font-bold">{cert.date}</span>
                 </div>
               ))}
@@ -639,7 +728,7 @@ function ATSProfessional({ data }: { data: ResumeData }) {
             <div className="space-y-1">
               {data.achievements.map((ach, idx) => (
                 <div key={idx} className="text-justify">
-                  <span className="font-bold">• {ach.title}</span> — {ach.description}
+                  <span className="font-bold">• {ach.title}</span>{ach.description ? ` — ${ach.description}` : ''}
                 </div>
               ))}
             </div>
@@ -765,7 +854,7 @@ function TechMinimal({ data }: { data: ResumeData }) {
                     <span className="font-bold text-slate-900">{exp.role}</span>
                     <span className="text-teal-600 font-semibold">{exp.duration}</span>
                   </div>
-                  <div className="text-slate-500 text-[9.5px]">{exp.company} | {exp.location || 'Remote'}</div>
+                  {exp.company || exp.location ? <div className="text-slate-500 text-[9.5px]">{exp.company}{exp.location ? ` | ${exp.location}` : ''}</div> : null}
                   <ul className="list-disc pl-4 space-y-1 mt-1 text-[9.5px]">
                     {exp.bullets.map((bullet, bIdx) => (
                       <li key={bIdx} className="text-justify">{bullet}</li>
@@ -815,7 +904,7 @@ function TechMinimal({ data }: { data: ResumeData }) {
             <div className="mt-3 space-y-1.5 text-[9.5px]">
               {data.achievements.map((ach, idx) => (
                 <div key={idx}>
-                  <span className="font-bold">• {ach.title}</span> — {ach.description}
+                  <span className="font-bold">• {ach.title}</span>{ach.description ? ` — ${ach.description}` : ''}
                 </div>
               ))}
             </div>
@@ -976,7 +1065,7 @@ function SiliconValley({ data }: { data: ResumeData }) {
             <div className="space-y-1">
               {data.certifications.map((cert, idx) => (
                 <div key={idx} className="flex justify-between">
-                  <span><span className="font-bold text-slate-955">{cert.name}</span> — {cert.issuer}</span>
+                  <span><span className="font-bold text-slate-955">{cert.name}</span>{cert.issuer ? ` — ${cert.issuer}` : ''}</span>
                   <span className="text-slate-500 font-semibold text-[10px]">{cert.date}</span>
                 </div>
               ))}
@@ -991,7 +1080,7 @@ function SiliconValley({ data }: { data: ResumeData }) {
             <div className="space-y-1">
               {data.achievements.map((ach, idx) => (
                 <div key={idx} className="text-justify">
-                  <span className="font-bold text-slate-955">• {ach.title}</span> — {ach.description}
+                  <span className="font-bold text-slate-955">• {ach.title}</span>{ach.description ? ` — ${ach.description}` : ''}
                 </div>
               ))}
             </div>
@@ -1296,7 +1385,7 @@ function ExecutivePro({ data }: { data: ResumeData }) {
                 <div key={idx} className="flex justify-between items-baseline">
                   <div>
                     <span className="font-bold text-slate-955 text-[10.5px]">{cert.name}</span>
-                    <span className="text-slate-600 text-[10px]"> — {cert.issuer}</span>
+                    {cert.issuer && <span className="text-slate-600 text-[10px]"> — {cert.issuer}</span>}
                   </div>
                   <span className="text-slate-500 font-semibold text-[9.5px]">{cert.date}</span>
                 </div>
@@ -1312,7 +1401,7 @@ function ExecutivePro({ data }: { data: ResumeData }) {
             <div className="space-y-2 text-slate-700">
               {data.achievements.map((ach, idx) => (
                 <div key={idx} className="text-justify text-[10.5px]">
-                  <span className="font-bold text-slate-955">• {ach.title}</span> — {ach.description}
+                  <span className="font-bold text-slate-955">• {ach.title}</span>{ach.description ? ` — ${ach.description}` : ''}
                 </div>
               ))}
             </div>
@@ -1535,7 +1624,7 @@ function CreativePortfolio({ data }: { data: ResumeData }) {
             <div className="space-y-1">
               {data.certifications.map((cert, idx) => (
                 <div key={idx} className="flex justify-between">
-                  <span><span className="font-bold text-slate-800">{cert.name}</span> — {cert.issuer}</span>
+                  <span><span className="font-bold text-slate-800">{cert.name}</span>{cert.issuer ? ` — ${cert.issuer}` : ''}</span>
                   <span className="text-slate-400 text-[9px] font-semibold">{cert.date}</span>
                 </div>
               ))}
@@ -1550,7 +1639,7 @@ function CreativePortfolio({ data }: { data: ResumeData }) {
             <div className="space-y-1">
               {data.achievements.map((ach, idx) => (
                 <div key={idx} className="text-justify text-slate-650 text-[10px]">
-                  <span className="font-bold text-slate-800">• {ach.title}</span> — {ach.description}
+                  <span className="font-bold text-slate-800">• {ach.title}</span>{ach.description ? ` — ${ach.description}` : ''}
                 </div>
               ))}
             </div>
@@ -1644,7 +1733,7 @@ function CleanAcademic({ data }: { data: ResumeData }) {
               {data.education.map((edu, idx) => (
                 <div key={idx} className="flex justify-between">
                   <div>
-                    <span className="font-bold">{edu.school}</span> - {edu.degree}
+                    {edu.school && edu.degree ? <><span className="font-bold">{edu.school}</span> - {edu.degree}</> : <span className="font-bold">{edu.school || edu.degree}</span>}
                     {edu.details && <p className="italic text-slate-600 text-[9.5px]">{edu.details}</p>}
                   </div>
                   <span className="italic">{edu.duration}</span>
@@ -1714,7 +1803,7 @@ function CleanAcademic({ data }: { data: ResumeData }) {
             <div className="space-y-2">
               {data.certifications.map((cert, idx) => (
                 <div key={idx} className="flex justify-between">
-                  <span><span className="font-bold">{cert.name}</span> — {cert.issuer}</span>
+                  <span><span className="font-bold">{cert.name}</span>{cert.issuer ? ` — ${cert.issuer}` : ''}</span>
                   <span className="italic">{cert.date}</span>
                 </div>
               ))}
@@ -1729,7 +1818,7 @@ function CleanAcademic({ data }: { data: ResumeData }) {
             <div className="space-y-1">
               {data.achievements.map((ach, idx) => (
                 <div key={idx} className="text-justify">
-                  <span className="font-bold">• {ach.title}</span> — {ach.description}
+                  <span className="font-bold">• {ach.title}</span>{ach.description ? ` — ${ach.description}` : ''}
                 </div>
               ))}
             </div>
@@ -1878,7 +1967,7 @@ function ImpactStartup({ data }: { data: ResumeData }) {
             <div className="space-y-2">
               {data.certifications.map((cert, idx) => (
                 <div key={idx} className="flex justify-between items-baseline">
-                  <span><span className="font-bold text-slate-900">{cert.name}</span> — <span className="text-slate-655">{cert.issuer}</span></span>
+                  <span><span className="font-bold text-slate-900">{cert.name}</span>{cert.issuer ? <> — <span className="text-slate-655">{cert.issuer}</span></> : ''}</span>
                   <span className="text-emerald-600 font-semibold text-[9.5px]">{cert.date}</span>
                 </div>
               ))}
@@ -1893,7 +1982,7 @@ function ImpactStartup({ data }: { data: ResumeData }) {
             <div className="space-y-1.5 text-slate-655">
               {data.achievements.map((ach, idx) => (
                 <div key={idx} className="text-justify text-[10px]">
-                  <span className="font-bold text-slate-900">• {ach.title}</span> — {ach.description}
+                  <span className="font-bold text-slate-900">• {ach.title}</span>{ach.description ? ` — ${ach.description}` : ''}
                 </div>
               ))}
             </div>
@@ -1986,7 +2075,7 @@ function FAANGElite({ data }: { data: ResumeData }) {
               {data.experience.map((exp, idx) => (
                 <div key={idx}>
                   <div className="flex justify-between font-bold">
-                    <span>{exp.company} — {exp.role}</span>
+                    <span>{exp.company && exp.role ? `${exp.company} — ${exp.role}` : (exp.company || exp.role)}</span>
                     <span className="font-semibold text-slate-600">{exp.duration}</span>
                   </div>
                   <ul className="list-disc pl-5 space-y-0.5 mt-0.5">
@@ -2007,7 +2096,7 @@ function FAANGElite({ data }: { data: ResumeData }) {
             <div className="space-y-2">
               {data.projects.map((proj, idx) => (
                 <div key={idx}>
-                  <div className="font-bold">{proj.name} — <span className="font-normal italic text-slate-605">{proj.technologies.join(', ')}</span></div>
+                  <div className="font-bold">{proj.name}{proj.technologies && proj.technologies.length > 0 ? <> — <span className="font-normal italic text-slate-605">{proj.technologies.join(', ')}</span></> : ''}</div>
                   <p className="text-[10px] mt-0.5 text-justify leading-relaxed">{proj.description}</p>
                 </div>
               ))}
@@ -2037,7 +2126,7 @@ function FAANGElite({ data }: { data: ResumeData }) {
               {data.education.map((edu, idx) => (
                 <div key={idx} className="flex justify-between">
                   <div>
-                    <span className="font-bold">{edu.school}</span> — <span className="italic">{edu.degree}</span>
+                    {edu.school && edu.degree ? <><span className="font-bold">{edu.school}</span> — <span className="italic">{edu.degree}</span></> : <span className="font-bold">{edu.school || edu.degree}</span>}
                     {edu.details && <span className="text-slate-600 text-[9.5px] ml-2">({edu.details})</span>}
                   </div>
                   <span className="font-semibold text-slate-600">{edu.duration}</span>
@@ -2054,7 +2143,7 @@ function FAANGElite({ data }: { data: ResumeData }) {
             <div className="space-y-1">
               {data.certifications.map((cert, idx) => (
                 <div key={idx} className="flex justify-between">
-                  <span><span className="font-bold">{cert.name}</span> — <span className="italic">{cert.issuer}</span></span>
+                  <span><span className="font-bold">{cert.name}</span>{cert.issuer ? <> — <span className="italic">{cert.issuer}</span></> : ''}</span>
                   <span className="font-semibold text-slate-600">{cert.date}</span>
                 </div>
               ))}
@@ -2069,7 +2158,7 @@ function FAANGElite({ data }: { data: ResumeData }) {
             <div className="space-y-0.5">
               {data.achievements.map((ach, idx) => (
                 <div key={idx} className="text-[10px]">
-                  <span className="font-bold">• {ach.title}</span> — {ach.description}
+                  <span className="font-bold">• {ach.title}</span>{ach.description ? ` — ${ach.description}` : ''}
                 </div>
               ))}
             </div>
@@ -2224,7 +2313,7 @@ function OnePageCompact({ data }: { data: ResumeData }) {
             <div className="mt-2 space-y-1">
               {data.certifications.map((cert, idx) => (
                 <div key={idx} className="flex justify-between text-[8.5px]">
-                  <span><span className="font-bold">{cert.name}</span> — {cert.issuer}</span>
+                  <span><span className="font-bold">{cert.name}</span>{cert.issuer ? ` — ${cert.issuer}` : ''}</span>
                   <span className="text-slate-500 font-semibold">{cert.date}</span>
                 </div>
               ))}
@@ -2239,7 +2328,7 @@ function OnePageCompact({ data }: { data: ResumeData }) {
             <div className="mt-2 space-y-0.5 text-[8.5px] text-slate-600">
               {data.achievements.map((ach, idx) => (
                 <div key={idx}>
-                  <span className="font-bold text-slate-900">• {ach.title}</span> — {ach.description}
+                  <span className="font-bold text-slate-900">• {ach.title}</span>{ach.description ? ` — ${ach.description}` : ''}
                 </div>
               ))}
             </div>
@@ -2424,7 +2513,7 @@ function ModernTwoColumn({ data }: { data: ResumeData }) {
             <div className="space-y-2 text-[10.5px]">
               {data.achievements.map((ach, idx) => (
                 <div key={idx} className="text-justify text-slate-650">
-                  <span className="font-bold text-slate-900">• {ach.title}</span> — {ach.description}
+                  <span className="font-bold text-slate-900">• {ach.title}</span>{ach.description ? ` — ${ach.description}` : ''}
                 </div>
               ))}
             </div>
@@ -2578,7 +2667,7 @@ function ProductManagerPro({ data }: { data: ResumeData }) {
             <div className="space-y-1.5 text-[10px]">
               {data.certifications.map((cert, idx) => (
                 <div key={idx} className="flex justify-between">
-                  <span><span className="font-bold text-slate-905">{cert.name}</span> — {cert.issuer}</span>
+                  <span><span className="font-bold text-slate-905">{cert.name}</span>{cert.issuer ? ` — ${cert.issuer}` : ''}</span>
                   <span className="text-purple-700 font-bold">{cert.date}</span>
                 </div>
               ))}
@@ -2593,7 +2682,7 @@ function ProductManagerPro({ data }: { data: ResumeData }) {
             <div className="space-y-1.5 text-[10px] text-slate-650">
               {data.achievements.map((ach, idx) => (
                 <div key={idx}>
-                  <span className="font-bold text-slate-905">• {ach.title}</span> — {ach.description}
+                  <span className="font-bold text-slate-905">• {ach.title}</span>{ach.description ? ` — ${ach.description}` : ''}
                 </div>
               ))}
             </div>
