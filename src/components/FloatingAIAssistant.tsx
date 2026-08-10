@@ -58,56 +58,46 @@ export default function FloatingAIAssistant({ onOpen, isOpen }: FloatingAIAssist
       <motion.button
         onClick={() => { if (!isDragging) onOpen(); }}
         animate={{
-          scale: isDragging ? 1.03 : 1,
-          opacity: isDragging ? 0.9 : 1,
+          scale: isDragging ? 1.04 : 1,
           y: isDragging ? -3 : 0,
         }}
         whileHover={{
-          scale: isDragging ? 1.03 : 1.05,
-          y: isDragging ? -3 : -3,
+          scale: isDragging ? 1.04 : 1.06,
+          y: -2,
         }}
-        whileTap={{ scale: 0.95 }}
+        whileTap={{ scale: 0.96 }}
         title="Open SmartCV AI Assistant (drag to reposition)"
+        className="liquid-glass-interactive liquid-glass-circle shadow-lg group relative"
         style={{
-          // Pure white circle — no blue, no gradient
-          width: 56,
-          height: 56,
-          borderRadius: '50%',
-          background: '#ffffff',
-          border: '1.5px solid #E5E7EB',
-          boxShadow: isDragging
-            ? '0 12px 28px rgba(0,0,0,0.15), 0 2px 6px rgba(0,0,0,0.06)'
-            : '0 4px 16px rgba(0,0,0,0.10), 0 1px 3px rgba(0,0,0,0.06)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          position: 'relative',
-          overflow: 'hidden',
+          width: 58,
+          height: 58,
           padding: 0,
           cursor: cursorStyle,
-          transition: 'box-shadow 0.2s ease, border-color 0.2s ease',
         }}
       >
-        {/*
-          The chatbot PNG has a white square background baked in.
-          We use mix-blend-mode: multiply so the white in the image
-          becomes transparent against the white button — only the robot
-          icon is visible.
-        */}
-        <img
-          src="/Chatbot_logo_transparent.png"
-          alt="AI"
-          style={{
-            width: 40,
-            height: 40,
-            objectFit: 'contain',
-            display: 'block',
-            pointerEvents: 'none',
-            userSelect: 'none',
-          }}
-          draggable={false}
-        />
+        {/* Specular Gloss Overlay */}
+        <span className="liquid-glass-specular" aria-hidden="true" />
+        
+        {/* Chromatic Edge Dispersion Refraction */}
+        <span className="liquid-glass-refraction" aria-hidden="true" />
 
+        {/* Embedded Robot Icon with subtle drop shadow */}
+        <div className="relative z-10 flex items-center justify-center p-1.5 liquid-glass-content">
+          <img
+            src="/Chatbot_logo_transparent.png"
+            alt="AI"
+            style={{
+              width: 38,
+              height: 38,
+              objectFit: 'contain',
+              display: 'block',
+              pointerEvents: 'none',
+              userSelect: 'none',
+              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.14))',
+            }}
+            draggable={false}
+          />
+        </div>
       </motion.button>
 
       {/* Hover tooltip — renders outside button overflow:hidden */}

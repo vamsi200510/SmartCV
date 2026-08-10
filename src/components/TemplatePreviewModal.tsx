@@ -70,102 +70,98 @@ export default function TemplatePreviewModal({
     }`}>
       
       {/* Top Navbar Toolbar */}
-      <header className={`h-16 border-b px-6 flex items-center justify-between shrink-0 transition-colors duration-300 ${
-        'border-slate-200 bg-white'
-      }`}>
+      <header className="h-16 border-b px-6 flex items-center justify-between shrink-0 transition-colors duration-300 border-slate-200/80 bg-white/85 backdrop-blur-md">
         
         {/* Left side: Template Info */}
         <div className="flex items-center gap-3">
           <button
             onClick={onClose}
             title="Close Preview"
-            className={`h-9 w-9 rounded-lg border flex items-center justify-center transition duration-200 cursor-pointer ${
-              'border-slate-250 bg-white hover:bg-slate-100 text-slate-500 hover:text-slate-800 shadow-sm'
-            }`}
+            className="liquid-glass-interactive liquid-glass-square h-9 w-9 text-slate-600 hover:text-slate-900 shadow-xs cursor-pointer"
           >
-            <X size={16} />
+            <span className="liquid-glass-specular" aria-hidden="true" />
+            <span className="liquid-glass-refraction" aria-hidden="true" />
+            <X size={16} className="relative z-10 liquid-glass-content" />
           </button>
           <div className="hidden sm:block">
-            <h3 className={`text-sm font-black leading-none text-slate-950`}>
+            <h3 className="text-sm font-black leading-none text-slate-950">
               {title || template.name}
             </h3>
-            <span className={`text-[9px] font-bold tracking-wider uppercase mt-1 block text-slate-400`}>
+            <span className="text-[9px] font-bold tracking-wider uppercase mt-1 block text-slate-400">
               {title ? `${template.name} · ${template.layout_type}` : `${template.layout_type} · ${template.page_length}`}
             </span>
           </div>
         </div>
 
         {/* Center: Zoom & Navigation Controls */}
-        <div className={`flex items-center gap-2 sm:gap-4 p-1.5 rounded-xl border transition-colors duration-300 ${
-          'bg-slate-100 border-slate-200 shadow-sm'
-        }`}>
+        <div className="flex items-center gap-1.5 sm:gap-2.5 p-1 rounded-full liquid-glass-toolbar shadow-xs">
           {/* Prev template */}
           {!data && (
             <>
               <button
                 onClick={onPrev}
-                className={`h-8 w-8 rounded-lg flex items-center justify-center transition duration-150 cursor-pointer ${
-                  'hover:bg-slate-200 text-slate-600 hover:text-slate-900'
-                }`}
+                className="liquid-glass-interactive liquid-glass-circle h-8 w-8 text-slate-600 hover:text-slate-900 cursor-pointer"
                 title="Previous Template (←)"
               >
-                <ChevronLeft size={16} />
+                <span className="liquid-glass-specular" aria-hidden="true" />
+                <span className="liquid-glass-refraction" aria-hidden="true" />
+                <ChevronLeft size={16} className="relative z-10 liquid-glass-content" />
               </button>
-              <div className={`h-4 w-[1px] bg-slate-250`} />
+              <div className="h-4 w-[1px] bg-slate-200/80" />
             </>
           )}
 
           {/* Zoom controls */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1">
             <button
               onClick={handleZoomOut}
               disabled={zoom <= 50}
-              className={`h-8 w-8 rounded-lg flex items-center justify-center transition duration-150 cursor-pointer ${
-                'hover:bg-slate-200 disabled:opacity-30 disabled:hover:bg-transparent text-slate-655 hover:text-slate-900'
-              }`}
+              className="liquid-glass-interactive liquid-glass-circle h-7 w-7 text-slate-600 hover:text-slate-900 disabled:opacity-30 cursor-pointer"
               title="Zoom Out"
             >
-              <ZoomOut size={15} />
+              <span className="liquid-glass-specular" aria-hidden="true" />
+              <span className="liquid-glass-refraction" aria-hidden="true" />
+              <ZoomOut size={14} className="relative z-10 liquid-glass-content" />
             </button>
             
-            <span className={`text-xs font-mono font-bold min-w-10 text-center text-slate-700`}>
+            <span className="text-xs font-mono font-bold min-w-10 text-center text-slate-700 select-none">
               {zoom}%
             </span>
 
             <button
               onClick={handleZoomIn}
               disabled={zoom >= 150}
-              className={`h-8 w-8 rounded-lg flex items-center justify-center transition duration-150 cursor-pointer ${
-                'hover:bg-slate-200 disabled:opacity-30 disabled:hover:bg-transparent text-slate-655 hover:text-slate-900'
-              }`}
+              className="liquid-glass-interactive liquid-glass-circle h-7 w-7 text-slate-600 hover:text-slate-900 disabled:opacity-30 cursor-pointer"
               title="Zoom In"
             >
-              <ZoomIn size={15} />
+              <span className="liquid-glass-specular" aria-hidden="true" />
+              <span className="liquid-glass-refraction" aria-hidden="true" />
+              <ZoomIn size={14} className="relative z-10 liquid-glass-content" />
             </button>
 
             <button
               onClick={handleFitToScreen}
-              className={`h-8 w-8 rounded-lg flex items-center justify-center transition duration-150 cursor-pointer ${
-                'hover:bg-slate-200 text-slate-655 hover:text-slate-900'
-              }`}
+              className="liquid-glass-interactive liquid-glass-circle h-7 w-7 text-slate-600 hover:text-slate-900 cursor-pointer"
               title="Fit to Screen"
             >
-              <Maximize2 size={13} />
+              <span className="liquid-glass-specular" aria-hidden="true" />
+              <span className="liquid-glass-refraction" aria-hidden="true" />
+              <Maximize2 size={12} className="relative z-10 liquid-glass-content" />
             </button>
           </div>
 
           {/* Next template */}
           {!data && (
             <>
-              <div className={`h-4 w-[1px] bg-slate-250`} />
+              <div className="h-4 w-[1px] bg-slate-200/80" />
               <button
                 onClick={onNext}
-                className={`h-8 w-8 rounded-lg flex items-center justify-center transition duration-150 cursor-pointer ${
-                  'hover:bg-slate-200 text-slate-600 hover:text-slate-900'
-                }`}
+                className="liquid-glass-interactive liquid-glass-circle h-8 w-8 text-slate-600 hover:text-slate-900 cursor-pointer"
                 title="Next Template (→)"
               >
-                <ChevronRight size={16} />
+                <span className="liquid-glass-specular" aria-hidden="true" />
+                <span className="liquid-glass-refraction" aria-hidden="true" />
+                <ChevronRight size={16} className="relative z-10 liquid-glass-content" />
               </button>
             </>
           )}
@@ -176,16 +172,24 @@ export default function TemplatePreviewModal({
           <button
             onClick={onUse}
             disabled={isLoading}
-            className="px-5 h-10 bg-gradient-to-r from-teal-500 to-indigo-650 hover:from-teal-400 hover:to-indigo-600 disabled:opacity-50 text-white text-xs font-black uppercase tracking-wider rounded-lg transition duration-200 flex items-center gap-1.5 shadow-md shadow-indigo-650/10 cursor-pointer"
+            className="liquid-glass-interactive liquid-glass-pill px-5 h-9 text-white text-xs font-black uppercase tracking-wider transition duration-200 flex items-center gap-1.5 shadow-md cursor-pointer disabled:opacity-50"
+            style={{
+              background: 'linear-gradient(140deg, rgba(37, 99, 235, 0.92) 0%, rgba(79, 70, 229, 0.88) 100%)',
+              borderColor: 'rgba(255, 255, 255, 0.45)',
+            }}
           >
-            {isLoading ? (
-              <span className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-            ) : (
-              <>
-                <Check size={14} className="stroke-[3]" />
-                <span>{data ? 'Edit Resume' : 'Use Template'}</span>
-              </>
-            )}
+            <span className="liquid-glass-specular" aria-hidden="true" />
+            <span className="liquid-glass-refraction" aria-hidden="true" />
+            <span className="relative z-10 flex items-center gap-1.5 liquid-glass-content">
+              {isLoading ? (
+                <span className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+              ) : (
+                <>
+                  <Check size={14} className="stroke-[3]" />
+                  <span>{data ? 'Edit Resume' : 'Use Template'}</span>
+                </>
+              )}
+            </span>
           </button>
         </div>
       </header>

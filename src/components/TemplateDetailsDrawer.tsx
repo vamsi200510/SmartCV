@@ -70,9 +70,11 @@ export default function TemplateDetailsDrawer({
           <button
             onClick={onClose}
             aria-label="Close drawer"
-            className="h-9 w-9 rounded-full border border-[#E2E8F0] flex items-center justify-center transition duration-200 bg-white hover:bg-slate-50 text-[#64748B] hover:text-[#0F172A] shadow-sm cursor-pointer"
+            className="liquid-glass-interactive liquid-glass-circle h-9 w-9 text-[#64748B] hover:text-[#0F172A] shadow-xs cursor-pointer"
           >
-            <X size={16} />
+            <span className="liquid-glass-specular" aria-hidden="true" />
+            <span className="liquid-glass-refraction" aria-hidden="true" />
+            <X size={16} className="relative z-10 liquid-glass-content" />
           </button>
         </div>
 
@@ -166,10 +168,14 @@ export default function TemplateDetailsDrawer({
         <div className="p-6 border-t border-[#E2E8F0] flex flex-col gap-3 bg-slate-50/60">
           <button
             onClick={onPreview}
-            className="w-full h-11 text-xs font-bold rounded-xl border border-[#E2E8F0] transition duration-200 flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-[#64748B] hover:text-[#0F172A] shadow-sm cursor-pointer"
+            className="liquid-glass-interactive liquid-glass-pill w-full h-11 text-xs font-bold text-[#475569] hover:text-[#0F172A] shadow-xs flex items-center justify-center gap-2 cursor-pointer"
           >
-            <Eye size={14} />
-            <span>Open Fullscreen Preview</span>
+            <span className="liquid-glass-specular" aria-hidden="true" />
+            <span className="liquid-glass-refraction" aria-hidden="true" />
+            <span className="relative z-10 flex items-center gap-2 liquid-glass-content">
+              <Eye size={14} />
+              <span>Open Fullscreen Preview</span>
+            </span>
           </button>
 
           <button

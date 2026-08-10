@@ -668,15 +668,17 @@ export default function BuilderPage() {
       <div className="fixed inset-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #C7C9D3 0.8px, transparent 0.8px)', backgroundSize: '22px 22px', opacity: 0.25 }} />
 
       {/* ── TOP BAR (Header matching reference screenshot) ─────────────── */}
-      <header className="h-[52px] border-b border-[#ECEDF3] bg-white px-5 flex items-center justify-between sticky top-0 z-40 shrink-0 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+      <header className="h-[52px] border-b border-[#ECEDF3] bg-white/80 backdrop-blur-md px-5 flex items-center justify-between sticky top-0 z-40 shrink-0 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
         {/* Left: Back button + Title & ATS Sub-metadata */}
         <div className="flex items-center gap-3 min-w-0">
           <button
             onClick={() => router.replace('/dashboard')}
-            className="h-8 w-8 rounded-lg border border-[#E2E8F0] bg-white text-[#64748B] hover:bg-[#F8FAFC] hover:text-[#0F172A] flex items-center justify-center transition-all cursor-pointer shadow-xs"
+            className="liquid-glass-interactive liquid-glass-square h-8 w-8 text-[#475569] hover:text-[#0F172A] flex items-center justify-center transition-all cursor-pointer shadow-xs"
             title="Back to Dashboard"
           >
-            <ArrowLeft size={15} />
+            <span className="liquid-glass-specular" aria-hidden="true" />
+            <span className="liquid-glass-refraction" aria-hidden="true" />
+            <ArrowLeft size={15} className="relative z-10 liquid-glass-content" />
           </button>
 
           <div className="flex flex-col leading-tight min-w-0">
@@ -723,28 +725,32 @@ export default function BuilderPage() {
         </div>
 
         {/* Center: Floating Pill Tabs (Form | Design | Split | Preview) */}
-        <div className="hidden lg:flex items-center bg-[#F1F5F9]/80 p-1 rounded-full border border-[#E2E8F0] gap-0.5 shadow-inner">
+        <div className="hidden lg:flex items-center liquid-glass-toolbar p-1 rounded-full gap-1 shadow-sm">
           {viewModes.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
               onClick={() => setViewMode(id)}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold transition-all duration-150 cursor-pointer ${
+              className={`liquid-glass-interactive px-3.5 py-1 rounded-full text-[11px] font-bold transition-all duration-150 cursor-pointer ${
                 viewMode === id
                   ? id === 'design'
-                    ? 'bg-gradient-to-r from-[#6366F1] to-[#2563EB] text-white shadow-md'
-                    : 'bg-white text-[#0F172A] shadow-md border border-[#E2E8F0]/80'
+                    ? 'liquid-glass-active bg-gradient-to-r from-[#6366F1] to-[#2563EB] text-white shadow-md'
+                    : 'liquid-glass-active text-[#0F172A]'
                   : 'text-[#64748B] hover:text-[#0F172A]'
               }`}
             >
-              <Icon size={13} />
-              {label}
+              <span className="liquid-glass-specular" aria-hidden="true" />
+              <span className="liquid-glass-refraction" aria-hidden="true" />
+              <span className="relative z-10 flex items-center gap-1.5 liquid-glass-content">
+                <Icon size={13} />
+                {label}
+              </span>
             </button>
           ))}
         </div>
 
         {/* Right: Saved Status + Profile Dropdown Menu */}
         <div className="flex items-center gap-3 shrink-0">
-          <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 font-semibold text-[11px] border border-emerald-200/80 shadow-xs">
+          <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50/80 backdrop-blur-sm text-emerald-700 font-semibold text-[11px] border border-emerald-200/80 shadow-xs">
             <Check size={12} className="text-emerald-600" /> Saved
           </span>
 
@@ -754,18 +760,22 @@ export default function BuilderPage() {
               className="flex items-center gap-1.5 cursor-pointer group select-none"
               title="User Profile & Account Menu"
             >
-              <div className="h-8 w-8 rounded-full bg-[#EEF2FF] text-[#6366F1] font-bold text-[10px] flex items-center justify-center shadow-inner border border-[#E0E7FF] group-hover:border-[#6366F1] transition-colors overflow-hidden">
-                {profile?.profile_image ? (
-                  <img src={profile.profile_image} alt={profile?.full_name || 'User'} className="w-full h-full object-cover" />
-                ) : (
-                  profile?.full_name ? profile.full_name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase() : (user?.email ? user.email[0].toUpperCase() : 'U')
-                )}
+              <div className="liquid-glass-interactive liquid-glass-circle h-8 w-8 text-[#6366F1] font-bold text-[10px] flex items-center justify-center shadow-inner group-hover:border-[#6366F1] transition-colors overflow-hidden">
+                <span className="liquid-glass-specular" aria-hidden="true" />
+                <span className="liquid-glass-refraction" aria-hidden="true" />
+                <span className="relative z-10 liquid-glass-content flex items-center justify-center w-full h-full">
+                  {profile?.profile_image ? (
+                    <img src={profile.profile_image} alt={profile?.full_name || 'User'} className="w-full h-full object-cover" />
+                  ) : (
+                    profile?.full_name ? profile.full_name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase() : (user?.email ? user.email[0].toUpperCase() : 'U')
+                  )}
+                </span>
               </div>
               <ChevronDown size={14} className="text-[#64748B] group-hover:text-[#0F172A] transition-colors" />
             </div>
 
             {profileMenuOpen && (
-              <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl border border-[#E2E8F0] shadow-[0_10px_30px_rgba(0,0,0,0.12)] py-2 z-50 animate-in fade-in slide-in-from-top-2">
+              <div className="absolute right-0 mt-2 w-56 bg-white/95 backdrop-blur-xl rounded-2xl border border-white/80 shadow-[0_12px_32px_rgba(0,0,0,0.12)] py-2 z-50 animate-in fade-in slide-in-from-top-2">
                 <div className="px-4 py-2.5 border-b border-[#F1F5F9]">
                   <p className="text-xs font-bold text-[#0F172A] truncate">{profile?.full_name || user?.user_metadata?.full_name || 'User'}</p>
                   <p className="text-[11px] text-[#64748B] truncate mt-0.5">{user?.email}</p>
@@ -810,77 +820,97 @@ export default function BuilderPage() {
       </header>
 
       {/* ── RIGHT FLOATING ACTION PANEL (3 Vertical Stacked Cards) ───── */}
-      <aside className="fixed right-4 top-[68px] z-30 hidden xl:flex flex-col gap-2.5 p-2 rounded-2xl bg-white/90 backdrop-blur-md border border-[#E2E8F0] shadow-[0_10px_35px_rgba(0,0,0,0.06)] items-center transition-all">
+      <aside className="fixed right-4 top-[68px] z-30 hidden xl:flex flex-col gap-2.5 p-2 rounded-2xl liquid-glass-toolbar items-center transition-all">
         {/* Card 1: ATS Analysis */}
         <button
           onClick={() => {
             setAtsModalOpen(true);
             if (!atsResults) runAtsAnalysis();
           }}
-          className="w-[60px] h-[68px] rounded-xl bg-emerald-50/90 hover:bg-emerald-100/90 border border-emerald-200 flex flex-col items-center justify-center p-2 text-center gap-0.5 transition-all cursor-pointer shadow-xs group"
+          className="liquid-glass-interactive liquid-glass-square w-[62px] h-[70px] flex flex-col items-center justify-center p-2 text-center gap-0.5 transition-all cursor-pointer shadow-xs group"
           title="Run Real-Time ATS Analysis"
         >
-          <Shield size={16} className="text-emerald-600 group-hover:scale-110 transition-transform" />
-          <span className="font-bold text-[10px] text-emerald-800 leading-tight">ATS</span>
-          <span className="px-1.5 py-px rounded-full bg-emerald-600 text-white font-extrabold text-[9px] shadow-xs">
-            {selectedTemplate?.ats_score || 98}%
+          <span className="liquid-glass-specular" aria-hidden="true" />
+          <span className="liquid-glass-refraction" aria-hidden="true" />
+          <span className="relative z-10 flex flex-col items-center gap-0.5 liquid-glass-content">
+            <Shield size={16} className="text-emerald-600 group-hover:scale-110 transition-transform" />
+            <span className="font-bold text-[10px] text-emerald-800 leading-tight">ATS</span>
+            <span className="px-1.5 py-px rounded-full bg-emerald-600 text-white font-extrabold text-[9px] shadow-xs">
+              {selectedTemplate?.ats_score || 98}%
+            </span>
           </span>
         </button>
 
         {/* Card 2: Change Template */}
         <button
           onClick={() => router.push(resumeId ? `/dashboard?tab=templates&source=builder&resumeId=${resumeId}` : '/dashboard?tab=templates')}
-          className="w-[60px] h-[68px] rounded-xl bg-purple-50/90 hover:bg-purple-100/90 border border-purple-200 flex flex-col items-center justify-center p-2 text-center gap-1 transition-all cursor-pointer shadow-xs group"
+          className="liquid-glass-interactive liquid-glass-square w-[62px] h-[70px] flex flex-col items-center justify-center p-2 text-center gap-1 transition-all cursor-pointer shadow-xs group"
           title="Switch template"
         >
-          <LayoutTemplate size={16} className="text-purple-600 group-hover:scale-110 transition-transform" />
-          <span className="font-bold text-[10px] text-purple-800 leading-tight">Template</span>
+          <span className="liquid-glass-specular" aria-hidden="true" />
+          <span className="liquid-glass-refraction" aria-hidden="true" />
+          <span className="relative z-10 flex flex-col items-center gap-1 liquid-glass-content">
+            <LayoutTemplate size={16} className="text-purple-600 group-hover:scale-110 transition-transform" />
+            <span className="font-bold text-[10px] text-purple-800 leading-tight">Template</span>
+          </span>
         </button>
 
         {/* Card 3: Export PDF */}
         <button
           onClick={handleExportPdf}
           disabled={pdfExporting}
-          className="w-[60px] h-[68px] rounded-xl bg-white hover:bg-slate-50 border border-slate-200 flex flex-col items-center justify-center p-2 text-center gap-1 transition-all cursor-pointer shadow-sm group disabled:opacity-50"
+          className="liquid-glass-interactive liquid-glass-square w-[62px] h-[70px] flex flex-col items-center justify-center p-2 text-center gap-1 transition-all cursor-pointer shadow-sm group disabled:opacity-50"
           title="Download PDF Resume"
         >
-          {pdfExporting ? <Loader2 size={16} className="animate-spin text-slate-800" /> : <Download size={16} className="text-slate-800 group-hover:scale-110 transition-transform" />}
-          <span className="font-bold text-[10px] text-slate-800 leading-tight">Export</span>
+          <span className="liquid-glass-specular" aria-hidden="true" />
+          <span className="liquid-glass-refraction" aria-hidden="true" />
+          <span className="relative z-10 flex flex-col items-center gap-1 liquid-glass-content">
+            {pdfExporting ? <Loader2 size={16} className="animate-spin text-slate-800" /> : <Download size={16} className="text-slate-800 group-hover:scale-110 transition-transform" />}
+            <span className="font-bold text-[10px] text-slate-800 leading-tight">Export</span>
+          </span>
         </button>
       </aside>
 
       {/* ── BOTTOM FLOATING ACTION TOOLBAR ─────────────────────────── */}
-      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 bg-white/95 backdrop-blur-md border border-[#E2E8F0] shadow-[0_16px_45px_rgba(0,0,0,0.12)] rounded-full px-3.5 py-1.5">
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 liquid-glass-toolbar px-4 py-2">
         {/* Undo / Redo */}
-        <div className="flex items-center gap-0.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-full p-0.5 shadow-inner">
+        <div className="flex items-center gap-1 liquid-glass-pill p-1 shadow-inner">
           <button
             onClick={handleUndo}
             disabled={historyIndex <= 0}
-            className="h-7 px-2.5 rounded-full flex items-center gap-1 text-[11px] font-bold text-[#475569] hover:bg-white hover:text-[#0F172A] disabled:opacity-30 disabled:pointer-events-none transition cursor-pointer"
+            className="liquid-glass-interactive h-7 px-2.5 rounded-full flex items-center gap-1 text-[11px] font-bold text-[#475569] hover:text-[#0F172A] disabled:opacity-30 disabled:pointer-events-none transition cursor-pointer"
             title="Undo (Ctrl+Z)"
           >
-            <RotateCcw size={12} /> Undo
+            <span className="liquid-glass-specular" aria-hidden="true" />
+            <span className="liquid-glass-refraction" aria-hidden="true" />
+            <span className="relative z-10 flex items-center gap-1 liquid-glass-content">
+              <RotateCcw size={12} /> Undo
+            </span>
           </button>
           <button
             onClick={handleRedo}
             disabled={historyIndex >= history.length - 1}
-            className="h-7 px-2.5 rounded-full flex items-center gap-1 text-[11px] font-bold text-[#475569] hover:bg-white hover:text-[#0F172A] disabled:opacity-30 disabled:pointer-events-none transition cursor-pointer"
+            className="liquid-glass-interactive h-7 px-2.5 rounded-full flex items-center gap-1 text-[11px] font-bold text-[#475569] hover:text-[#0F172A] disabled:opacity-30 disabled:pointer-events-none transition cursor-pointer"
             title="Redo (Ctrl+Y)"
           >
-            <RotateCw size={12} /> Redo
+            <span className="liquid-glass-specular" aria-hidden="true" />
+            <span className="liquid-glass-refraction" aria-hidden="true" />
+            <span className="relative z-10 flex items-center gap-1 liquid-glass-content">
+              <RotateCw size={12} /> Redo
+            </span>
           </button>
         </div>
 
         {/* Zoom Controls */}
-        <div className="flex items-center gap-1.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-full px-2.5 py-1 text-[11px] font-bold text-[#0F172A] shadow-inner">
-          <button onClick={() => setZoom(p => Math.max(p - 10, 30))} className="h-5 w-5 rounded-full hover:bg-white flex items-center justify-center text-[#64748B] transition-colors cursor-pointer" title="Zoom out">
+        <div className="flex items-center gap-1.5 liquid-glass-pill px-3 py-1 text-[11px] font-bold text-[#0F172A]">
+          <button onClick={() => setZoom(p => Math.max(p - 10, 30))} className="h-5 w-5 rounded-full hover:bg-white/60 flex items-center justify-center text-[#64748B] hover:text-[#0F172A] transition-colors cursor-pointer" title="Zoom out">
             <Minus size={12} />
           </button>
-          <span className="min-w-[34px] text-center select-none">{zoom}%</span>
-          <button onClick={() => setZoom(p => Math.min(p + 10, 150))} className="h-5 w-5 rounded-full hover:bg-white flex items-center justify-center text-[#64748B] transition-colors cursor-pointer" title="Zoom in">
+          <span className="min-w-[34px] text-center select-none font-mono text-xs">{zoom}%</span>
+          <button onClick={() => setZoom(p => Math.min(p + 10, 150))} className="h-5 w-5 rounded-full hover:bg-white/60 flex items-center justify-center text-[#64748B] hover:text-[#0F172A] transition-colors cursor-pointer" title="Zoom in">
             <Plus size={12} />
           </button>
-          <button onClick={() => setZoom(65)} className="h-5 w-5 rounded-full hover:bg-white flex items-center justify-center text-[#64748B] transition-colors cursor-pointer" title="Reset zoom">
+          <button onClick={() => setZoom(65)} className="h-5 w-5 rounded-full hover:bg-white/60 flex items-center justify-center text-[#64748B] hover:text-[#0F172A] transition-colors cursor-pointer" title="Reset zoom">
             <Maximize2 size={11} />
           </button>
         </div>
@@ -888,27 +918,43 @@ export default function BuilderPage() {
         {/* Action buttons */}
         <button
           onClick={() => router.push(resumeId ? `/dashboard?tab=templates&source=builder&resumeId=${resumeId}` : '/dashboard?tab=templates')}
-          className="h-8 px-3 rounded-full bg-purple-50 hover:bg-purple-100/90 text-[11px] font-bold text-purple-700 border border-purple-200/80 shadow-sm flex items-center gap-1.5 transition-colors cursor-pointer"
+          className="liquid-glass-interactive liquid-glass-pill h-8 px-3.5 text-[11px] font-bold text-purple-700 shadow-sm flex items-center gap-1.5 cursor-pointer"
           title="Change template layout"
         >
-          <LayoutTemplate size={13} className="text-purple-600" />
-          <span>Template</span>
+          <span className="liquid-glass-specular" aria-hidden="true" />
+          <span className="liquid-glass-refraction" aria-hidden="true" />
+          <span className="relative z-10 flex items-center gap-1.5 liquid-glass-content">
+            <LayoutTemplate size={13} className="text-purple-600" />
+            <span>Template</span>
+          </span>
         </button>
 
         <button
           onClick={() => setIsPreviewingPdf(true)}
-          className="h-8 px-3 rounded-full bg-white hover:bg-slate-50 text-[11px] font-bold text-[#0F172A] border border-[#E2E8F0] shadow-sm flex items-center gap-1.5 transition-colors cursor-pointer"
+          className="liquid-glass-interactive liquid-glass-pill h-8 px-3.5 text-[11px] font-bold text-[#0F172A] shadow-sm flex items-center gap-1.5 cursor-pointer"
         >
-          <Eye size={13} /> Preview
+          <span className="liquid-glass-specular" aria-hidden="true" />
+          <span className="liquid-glass-refraction" aria-hidden="true" />
+          <span className="relative z-10 flex items-center gap-1.5 liquid-glass-content">
+            <Eye size={13} /> Preview
+          </span>
         </button>
 
         <button
           onClick={handleExportPdf}
           disabled={pdfExporting}
-          className="h-8 px-3 rounded-full bg-[#0F172A] hover:bg-[#1E2937] text-white text-[11px] font-bold flex items-center gap-1.5 transition-colors shadow-md disabled:opacity-50 cursor-pointer"
+          className="liquid-glass-interactive liquid-glass-pill h-8 px-4 text-white text-[11px] font-bold flex items-center gap-1.5 shadow-md disabled:opacity-50 cursor-pointer"
+          style={{
+            background: 'linear-gradient(145deg, rgba(15, 23, 42, 0.90) 0%, rgba(30, 41, 59, 0.85) 100%)',
+            borderColor: 'rgba(255, 255, 255, 0.40)',
+          }}
         >
-          {pdfExporting ? <Loader2 size={13} className="animate-spin" /> : <Download size={13} />}
-          <span>{pdfExporting ? 'Exporting…' : 'Export PDF'}</span>
+          <span className="liquid-glass-specular" aria-hidden="true" />
+          <span className="liquid-glass-refraction" aria-hidden="true" />
+          <span className="relative z-10 flex items-center gap-1.5 liquid-glass-content">
+            {pdfExporting ? <Loader2 size={13} className="animate-spin" /> : <Download size={13} />}
+            <span>{pdfExporting ? 'Exporting…' : 'Export PDF'}</span>
+          </span>
         </button>
       </div>
 

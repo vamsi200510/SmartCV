@@ -359,3 +359,170 @@ button:disabled, [role="button"][aria-disabled="true"] {
 .resume-canvas-shadow {
   box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 8px 40px rgba(0,0,0,0.12);
 }
+
+/* ============================================================
+   APPLE LIQUID GLASS SYSTEM
+   Refractive, chromatic edge dispersion, internal light, 3D rim
+   ============================================================ */
+
+.liquid-glass-interactive {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: pointer;
+  user-select: none;
+  outline: none;
+  font-family: inherit;
+  transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 160ms ease,
+              border-color 160ms ease,
+              background 160ms ease,
+              color 160ms ease;
+}
+
+.liquid-glass-circle {
+  border-radius: 9999px;
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.55), transparent 42%),
+    radial-gradient(circle at 15% 20%, rgba(56, 189, 248, 0.20), transparent 30%),
+    radial-gradient(circle at 85% 80%, rgba(244, 114, 182, 0.16), transparent 32%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0.14) 100%);
+  backdrop-filter: blur(16px) saturate(190%) contrast(104%);
+  -webkit-backdrop-filter: blur(16px) saturate(190%) contrast(104%);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow:
+    inset 0 1.5px 2.5px rgba(255, 255, 255, 0.95),
+    inset 0 -1.5px 3px rgba(0, 0, 0, 0.05),
+    inset 0 0 0 0.5px rgba(255, 255, 255, 0.35),
+    0 8px 24px -4px rgba(15, 23, 42, 0.10),
+    0 2px 6px -1px rgba(15, 23, 42, 0.04);
+}
+
+.liquid-glass-pill {
+  border-radius: 9999px;
+  background:
+    radial-gradient(ellipse at 25% 20%, rgba(255, 255, 255, 0.52), transparent 45%),
+    radial-gradient(circle at 10% 20%, rgba(56, 189, 248, 0.18), transparent 28%),
+    radial-gradient(circle at 90% 80%, rgba(244, 114, 182, 0.14), transparent 30%),
+    linear-gradient(140deg, rgba(255, 255, 255, 0.40) 0%, rgba(255, 255, 255, 0.14) 100%);
+  backdrop-filter: blur(16px) saturate(190%) contrast(104%);
+  -webkit-backdrop-filter: blur(16px) saturate(190%) contrast(104%);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow:
+    inset 0 1.5px 2.5px rgba(255, 255, 255, 0.95),
+    inset 0 -1.5px 3px rgba(0, 0, 0, 0.05),
+    inset 0 0 0 0.5px rgba(255, 255, 255, 0.35),
+    0 8px 24px -4px rgba(15, 23, 42, 0.10),
+    0 2px 6px -1px rgba(15, 23, 42, 0.04);
+}
+
+.liquid-glass-square {
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 28% 22%, rgba(255, 255, 255, 0.50), transparent 40%),
+    radial-gradient(circle at 12% 18%, rgba(56, 189, 248, 0.18), transparent 28%),
+    radial-gradient(circle at 88% 82%, rgba(244, 114, 182, 0.14), transparent 30%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.40) 0%, rgba(255, 255, 255, 0.14) 100%);
+  backdrop-filter: blur(16px) saturate(190%) contrast(104%);
+  -webkit-backdrop-filter: blur(16px) saturate(190%) contrast(104%);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow:
+    inset 0 1.5px 2.5px rgba(255, 255, 255, 0.95),
+    inset 0 -1.5px 3px rgba(0, 0, 0, 0.05),
+    inset 0 0 0 0.5px rgba(255, 255, 255, 0.35),
+    0 8px 24px -4px rgba(15, 23, 42, 0.10),
+    0 2px 6px -1px rgba(15, 23, 42, 0.04);
+}
+
+.liquid-glass-toolbar {
+  border-radius: 9999px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.60) 0%, rgba(255, 255, 255, 0.25) 100%);
+  backdrop-filter: blur(20px) saturate(200%) contrast(105%);
+  -webkit-backdrop-filter: blur(20px) saturate(200%) contrast(105%);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow:
+    inset 0 1.5px 3px rgba(255, 255, 255, 0.98),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.05),
+    0 16px 45px -8px rgba(15, 23, 42, 0.12),
+    0 4px 12px rgba(15, 23, 42, 0.04);
+}
+
+/* Glass Specular Gloss Overlay */
+.liquid-glass-specular {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: radial-gradient(circle at 25% 15%, rgba(255, 255, 255, 0.70) 0%, transparent 35%);
+  opacity: 0.85;
+  mix-blend-mode: overlay;
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+/* Chromatic Edge Refraction Overlay */
+.liquid-glass-refraction {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 8% 12%, rgba(56, 189, 248, 0.25) 0%, transparent 30%),
+    radial-gradient(circle at 92% 88%, rgba(244, 114, 182, 0.20) 0%, transparent 32%),
+    radial-gradient(circle at 85% 12%, rgba(167, 139, 250, 0.18) 0%, transparent 28%);
+  opacity: 0.80;
+  mix-blend-mode: soft-light;
+  transition: opacity 160ms ease;
+}
+
+/* Embedded Icon / Content Treatment */
+.liquid-glass-content {
+  filter: drop-shadow(0 1px 2px rgba(15, 23, 42, 0.12));
+}
+
+.liquid-glass-icon-wrapper svg {
+  filter: drop-shadow(0 1px 2px rgba(15, 23, 42, 0.14));
+}
+
+/* Hover Physics */
+.liquid-glass-interactive:hover {
+  border-color: rgba(255, 255, 255, 0.90);
+  box-shadow:
+    inset 0 2px 3.5px rgba(255, 255, 255, 1),
+    inset 0 -1.5px 3px rgba(0, 0, 0, 0.04),
+    0 12px 28px -4px rgba(15, 23, 42, 0.14),
+    0 4px 8px -1px rgba(15, 23, 42, 0.06);
+}
+
+.liquid-glass-interactive:hover .liquid-glass-specular {
+  opacity: 1;
+  transform: scale(1.03);
+}
+
+.liquid-glass-interactive:hover .liquid-glass-refraction {
+  opacity: 1;
+}
+
+/* Active / Click Physics */
+.liquid-glass-interactive:active {
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, 0.80),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.08),
+    0 4px 12px -2px rgba(15, 23, 42, 0.08);
+}
+
+/* Active Selected Tab / State */
+.liquid-glass-active {
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.80), transparent 45%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.45) 100%) !important;
+  border-color: rgba(255, 255, 255, 0.95) !important;
+  box-shadow:
+    inset 0 2px 3px rgba(255, 255, 255, 1),
+    inset 0 -1.5px 3px rgba(0, 0, 0, 0.05),
+    0 6px 18px -2px rgba(37, 99, 235, 0.15),
+    0 2px 6px rgba(0, 0, 0, 0.04) !important;
+}
+

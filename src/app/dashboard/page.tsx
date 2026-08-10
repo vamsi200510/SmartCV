@@ -573,8 +573,8 @@ export default function DashboardPage() {
             <span className="font-bold text-[15px] text-[#111827] tracking-tight">SmartCV</span>
           </div>
 
-          {/* Center Nav Pills — like reference screenshot 3 */}
-          <div className="hidden md:flex items-center bg-[#F7F8FC] rounded-2xl p-1 gap-0.5">
+          {/* Center Nav Pills — Liquid Glass pill container */}
+          <div className="hidden md:flex items-center liquid-glass-toolbar p-1 rounded-full gap-1">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -582,38 +582,47 @@ export default function DashboardPage() {
                 <button
                   key={item.id}
                   onClick={() => { setActiveTab(item.id as any); setStep('dashboard'); }}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[13px] font-medium transition-all duration-150 cursor-pointer ${isActive
-                      ? 'bg-white text-[#2563EB] shadow-[0_1px_3px_rgba(0,0,0,0.06)]'
+                  className={`liquid-glass-interactive flex items-center gap-2 px-4 py-2 rounded-full text-[13px] font-semibold transition-all duration-150 cursor-pointer ${
+                    isActive
+                      ? 'liquid-glass-active text-[#2563EB]'
                       : 'text-[#6B7280] hover:text-[#111827]'
-                    }`}
+                  }`}
                 >
-                  <Icon size={15} />
-                  <span>{item.label}</span>
+                  <span className="liquid-glass-specular" aria-hidden="true" />
+                  <span className="liquid-glass-refraction" aria-hidden="true" />
+                  <span className="relative z-10 flex items-center gap-2 liquid-glass-content">
+                    <Icon size={15} />
+                    <span>{item.label}</span>
+                  </span>
                 </button>
               );
             })}
           </div>
 
           {/* Right: Search, Bell, Avatar */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <button
               onClick={() => setSearchOpen(true)}
-              className="h-9 w-9 rounded-xl bg-[#F7F8FC] border border-[#ECEDF3] flex items-center justify-center text-[#9CA3AF] hover:text-[#6B7280] hover:border-[#DDDEE8] transition cursor-pointer"
+              className="liquid-glass-interactive liquid-glass-square h-9 w-9 text-[#64748B] hover:text-[#0F172A] transition cursor-pointer shadow-xs"
               title="Search resumes and templates"
             >
-              <Search size={15} />
+              <span className="liquid-glass-specular" aria-hidden="true" />
+              <span className="liquid-glass-refraction" aria-hidden="true" />
+              <Search size={15} className="relative z-10 liquid-glass-content" />
             </button>
             <div className="relative">
               <button
                 onClick={() => { setNotifOpen(o => !o); setProfileMenuOpen(false); }}
-                className="h-9 w-9 rounded-xl bg-[#F7F8FC] border border-[#ECEDF3] flex items-center justify-center text-[#9CA3AF] hover:text-[#6B7280] hover:border-[#DDDEE8] transition cursor-pointer relative"
+                className="liquid-glass-interactive liquid-glass-square h-9 w-9 text-[#64748B] hover:text-[#0F172A] transition cursor-pointer relative shadow-xs"
                 title="Notifications"
               >
-                <Bell size={15} />
-                <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-[#2563EB]" />
+                <span className="liquid-glass-specular" aria-hidden="true" />
+                <span className="liquid-glass-refraction" aria-hidden="true" />
+                <Bell size={15} className="relative z-10 liquid-glass-content" />
+                <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-[#2563EB] shadow-xs border border-white z-20" />
               </button>
               {notifOpen && (
-                <div className="absolute right-0 mt-2 w-72 bg-white rounded-2xl border border-[#ECEDF3] shadow-[0_8px_24px_rgba(0,0,0,0.1)] py-2 z-50 animate-fade-in-down">
+                <div className="absolute right-0 mt-2 w-72 bg-white/95 backdrop-blur-xl rounded-2xl border border-white/80 shadow-[0_12px_32px_rgba(0,0,0,0.12)] py-2 z-50 animate-fade-in-down">
                   <div className="px-4 py-2.5 border-b border-[#F0F1F8] flex items-center justify-between">
                     <h4 className="text-sm font-semibold text-[#111827]">Notifications</h4>
                     <button onClick={() => setNotifOpen(false)} className="text-[#9CA3AF] hover:text-[#6B7280]"><X size={13} /></button>
@@ -641,16 +650,20 @@ export default function DashboardPage() {
             <div className="relative" ref={profileMenuRef}>
               <button
                 onClick={() => { setProfileMenuOpen(o => !o); setNotifOpen(false); }}
-                className="h-9 w-9 rounded-full bg-[#2563EB] flex items-center justify-center text-white text-xs font-bold cursor-pointer border-2 border-white shadow-sm hover:bg-[#1D4ED8] transition overflow-hidden"
+                className="liquid-glass-interactive liquid-glass-circle h-9 w-9 text-white text-xs font-bold cursor-pointer shadow-sm overflow-hidden"
               >
-                {profile?.profile_image ? (
-                  <img src={profile.profile_image} alt={profile?.full_name || 'User'} className="h-full w-full object-cover" />
-                ) : (
-                  firstName ? firstName[0].toUpperCase() : 'U'
-                )}
+                <span className="liquid-glass-specular" aria-hidden="true" />
+                <span className="liquid-glass-refraction" aria-hidden="true" />
+                <span className="relative z-10 flex items-center justify-center w-full h-full liquid-glass-content bg-[#2563EB]/90">
+                  {profile?.profile_image ? (
+                    <img src={profile.profile_image} alt={profile?.full_name || 'User'} className="h-full w-full object-cover" />
+                  ) : (
+                    firstName ? firstName[0].toUpperCase() : 'U'
+                  )}
+                </span>
               </button>
               {profileMenuOpen && (
-                <div className="absolute right-0 mt-2 w-52 bg-white rounded-2xl border border-[#ECEDF3] shadow-[0_8px_24px_rgba(0,0,0,0.1)] py-2 z-50 animate-fade-in-down">
+                <div className="absolute right-0 mt-2 w-52 bg-white/95 backdrop-blur-xl rounded-2xl border border-white/80 shadow-[0_12px_32px_rgba(0,0,0,0.12)] py-2 z-50 animate-fade-in-down">
                   <div className="px-4 py-2.5 border-b border-[#F0F1F8]">
                     <p className="text-sm font-semibold text-[#111827] truncate">{profile?.full_name || 'User'}</p>
                     <p className="text-[11px] text-[#9CA3AF] truncate">{user?.email}</p>

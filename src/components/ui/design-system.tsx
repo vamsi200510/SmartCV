@@ -45,11 +45,11 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     const variants: Record<ButtonVariant, string> = {
-      primary: "bg-[#2563EB] text-white hover:bg-[#1D4ED8] focus:ring-blue-500/30",
+      primary: "bg-[#2563EB] text-white hover:bg-[#1D4ED8] focus:ring-blue-500/30 shadow-xs",
       secondary: "bg-white text-[#374151] border border-[#ECEDF3] hover:border-[#DDDEE8] hover:bg-[#FAFBFE] focus:ring-gray-200",
       outline: "border border-[#2563EB] text-[#2563EB] bg-transparent hover:bg-blue-50 focus:ring-blue-500/30",
-      glass: "bg-white text-[#374151] border border-[#ECEDF3] hover:bg-[#F7F8FC] focus:ring-gray-200",
-      gradient: "bg-[#2563EB] text-white hover:bg-[#1D4ED8] focus:ring-blue-500/30",
+      glass: "liquid-glass-interactive liquid-glass-pill text-[#1E293B] hover:text-[#0F172A]",
+      gradient: "bg-[#2563EB] text-white hover:bg-[#1D4ED8] focus:ring-blue-500/30 shadow-xs",
       ghost: "text-[#6B7280] hover:text-[#111827] hover:bg-[#F0F1F8] focus:ring-gray-200",
       danger: "bg-[#EF4444] text-white hover:bg-[#DC2626] focus:ring-red-500/30",
       success: "bg-[#22C55E] text-white hover:bg-[#16A34A] focus:ring-green-500 shadow-sm",
@@ -762,3 +762,6 @@ export function MorphingButton({ state, idleText, successText, onClick, classNam
     </motion.button>
   );
 }
+
+export { LiquidGlassButton } from './LiquidGlassButton';
+export type { LiquidGlassButtonProps, LiquidGlassVariant, LiquidGlassSize, LiquidGlassTheme } from './LiquidGlassButton';
