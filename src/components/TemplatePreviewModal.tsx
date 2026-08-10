@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   X, ZoomIn, ZoomOut, Maximize2, ChevronLeft, 
-  ChevronRight, CheckCircle2, Check 
+  ChevronRight, Check 
 } from 'lucide-react';
 import TemplateRenderer from './TemplateRenderer';
 import { ResumeTemplate } from '@/types/database.types';
@@ -16,8 +16,8 @@ interface TemplatePreviewModalProps {
   onPrev: () => void;
   onUse: () => void;
   isLoading?: boolean;
-  isDarkMode?: boolean;
   data?: any;
+  title?: string;
 }
 
 export default function TemplatePreviewModal({
@@ -28,8 +28,8 @@ export default function TemplatePreviewModal({
   onPrev,
   onUse,
   isLoading = false,
-  isDarkMode = false,
-  data
+  data,
+  title
 }: TemplatePreviewModalProps) {
   const [zoom, setZoom] = useState<number>(90); // default zoom
 
@@ -66,51 +66,54 @@ export default function TemplatePreviewModal({
 
   return (
     <div className={`fixed inset-0 z-50 flex flex-col transition-colors duration-300 ${
-      isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-800'
+      'bg-slate-50 text-slate-800'
     }`}>
       
       {/* Top Navbar Toolbar */}
       <header className={`h-16 border-b px-6 flex items-center justify-between shrink-0 transition-colors duration-300 ${
-        isDarkMode ? 'border-slate-900 bg-slate-950' : 'border-slate-200 bg-white'
+        'border-slate-200 bg-white'
       }`}>
         
         {/* Left side: Template Info */}
         <div className="flex items-center gap-3">
           <button
             onClick={onClose}
+            title="Close Preview"
             className={`h-9 w-9 rounded-lg border flex items-center justify-center transition duration-200 cursor-pointer ${
-              isDarkMode 
-                ? 'border-slate-800 hover:border-slate-700 bg-slate-900 text-slate-400 hover:text-white' 
-                : 'border-slate-250 bg-white hover:bg-slate-100 text-slate-500 hover:text-slate-800 shadow-sm'
+              'border-slate-250 bg-white hover:bg-slate-100 text-slate-500 hover:text-slate-800 shadow-sm'
             }`}
           >
             <X size={16} />
           </button>
           <div className="hidden sm:block">
-            <h3 className={`text-sm font-black leading-none ${isDarkMode ? 'text-white' : 'text-slate-950'}`}>{template.name}</h3>
-            <span className={`text-[9px] font-bold tracking-wider uppercase mt-1 block ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-              {template.layout_type} • {template.page_length}
+            <h3 className={`text-sm font-black leading-none text-slate-950`}>
+              {title || template.name}
+            </h3>
+            <span className={`text-[9px] font-bold tracking-wider uppercase mt-1 block text-slate-400`}>
+              {title ? `${template.name} · ${template.layout_type}` : `${template.layout_type} · ${template.page_length}`}
             </span>
           </div>
         </div>
 
         {/* Center: Zoom & Navigation Controls */}
         <div className={`flex items-center gap-2 sm:gap-4 p-1.5 rounded-xl border transition-colors duration-300 ${
-          isDarkMode ? 'bg-slate-900/50 border-slate-900' : 'bg-slate-100 border-slate-200 shadow-sm'
+          'bg-slate-100 border-slate-200 shadow-sm'
         }`}>
           {/* Prev template */}
-          <button
-            onClick={onPrev}
-            className={`h-8 w-8 rounded-lg flex items-center justify-center transition duration-150 cursor-pointer ${
-              isDarkMode ? 'hover:bg-slate-800 text-slate-400 hover:text-white' : 'hover:bg-slate-200 text-slate-600 hover:text-slate-900'
-            }`}
-            title="Previous Template (←)"
-          >
-            <ChevronLeft size={16} />
-          </button>
-
-          {/* Divider */}
-          <div className={`h-4 w-[1px] ${isDarkMode ? 'bg-slate-850' : 'bg-slate-250'}`} />
+          {!data && (
+            <>
+              <button
+                onClick={onPrev}
+                className={`h-8 w-8 rounded-lg flex items-center justify-center transition duration-150 cursor-pointer ${
+                  'hover:bg-slate-200 text-slate-600 hover:text-slate-900'
+                }`}
+                title="Previous Template (←)"
+              >
+                <ChevronLeft size={16} />
+              </button>
+              <div className={`h-4 w-[1px] bg-slate-250`} />
+            </>
+          )}
 
           {/* Zoom controls */}
           <div className="flex items-center gap-1.5">
@@ -118,16 +121,14 @@ export default function TemplatePreviewModal({
               onClick={handleZoomOut}
               disabled={zoom <= 50}
               className={`h-8 w-8 rounded-lg flex items-center justify-center transition duration-150 cursor-pointer ${
-                isDarkMode 
-                  ? 'hover:bg-slate-800 disabled:opacity-30 disabled:hover:bg-transparent text-slate-400 hover:text-white' 
-                  : 'hover:bg-slate-200 disabled:opacity-30 disabled:hover:bg-transparent text-slate-600 hover:text-slate-900'
+                'hover:bg-slate-200 disabled:opacity-30 disabled:hover:bg-transparent text-slate-655 hover:text-slate-900'
               }`}
               title="Zoom Out"
             >
               <ZoomOut size={15} />
             </button>
             
-            <span className={`text-xs font-mono font-bold min-w-10 text-center ${isDarkMode ? 'text-slate-350' : 'text-slate-700'}`}>
+            <span className={`text-xs font-mono font-bold min-w-10 text-center text-slate-700`}>
               {zoom}%
             </span>
 
@@ -135,9 +136,7 @@ export default function TemplatePreviewModal({
               onClick={handleZoomIn}
               disabled={zoom >= 150}
               className={`h-8 w-8 rounded-lg flex items-center justify-center transition duration-150 cursor-pointer ${
-                isDarkMode 
-                  ? 'hover:bg-slate-800 disabled:opacity-30 disabled:hover:bg-transparent text-slate-400 hover:text-white' 
-                  : 'hover:bg-slate-200 disabled:opacity-30 disabled:hover:bg-transparent text-slate-600 hover:text-slate-900'
+                'hover:bg-slate-200 disabled:opacity-30 disabled:hover:bg-transparent text-slate-655 hover:text-slate-900'
               }`}
               title="Zoom In"
             >
@@ -147,7 +146,7 @@ export default function TemplatePreviewModal({
             <button
               onClick={handleFitToScreen}
               className={`h-8 w-8 rounded-lg flex items-center justify-center transition duration-150 cursor-pointer ${
-                isDarkMode ? 'hover:bg-slate-800 text-slate-400 hover:text-white' : 'hover:bg-slate-200 text-slate-600 hover:text-slate-900'
+                'hover:bg-slate-200 text-slate-655 hover:text-slate-900'
               }`}
               title="Fit to Screen"
             >
@@ -155,19 +154,21 @@ export default function TemplatePreviewModal({
             </button>
           </div>
 
-          {/* Divider */}
-          <div className={`h-4 w-[1px] ${isDarkMode ? 'bg-slate-850' : 'bg-slate-250'}`} />
-
           {/* Next template */}
-          <button
-            onClick={onNext}
-            className={`h-8 w-8 rounded-lg flex items-center justify-center transition duration-150 cursor-pointer ${
-              isDarkMode ? 'hover:bg-slate-800 text-slate-400 hover:text-white' : 'hover:bg-slate-200 text-slate-600 hover:text-slate-900'
-            }`}
-            title="Next Template (→)"
-          >
-            <ChevronRight size={16} />
-          </button>
+          {!data && (
+            <>
+              <div className={`h-4 w-[1px] bg-slate-250`} />
+              <button
+                onClick={onNext}
+                className={`h-8 w-8 rounded-lg flex items-center justify-center transition duration-150 cursor-pointer ${
+                  'hover:bg-slate-200 text-slate-600 hover:text-slate-900'
+                }`}
+                title="Next Template (→)"
+              >
+                <ChevronRight size={16} />
+              </button>
+            </>
+          )}
         </div>
 
         {/* Right: Action buttons */}
@@ -182,7 +183,7 @@ export default function TemplatePreviewModal({
             ) : (
               <>
                 <Check size={14} className="stroke-[3]" />
-                <span>Use Template</span>
+                <span>{data ? 'Edit Resume' : 'Use Template'}</span>
               </>
             )}
           </button>
@@ -191,7 +192,7 @@ export default function TemplatePreviewModal({
 
       {/* Main Preview Workarea */}
       <div className={`flex-1 overflow-auto flex justify-center items-start p-8 md:p-12 transition-colors duration-300 ${
-        isDarkMode ? 'bg-slate-950' : 'bg-slate-200/50'
+        'bg-slate-200/50'
       }`}>
         <div 
           className="transition-all duration-150 ease-out flex justify-center shadow-2xl border border-slate-200/30"
@@ -206,3 +207,6 @@ export default function TemplatePreviewModal({
     </div>
   );
 }
+
+
+

@@ -8,6 +8,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'URL is required' }, { status: 400 });
     }
 
+    if (url.includes('placeholder-url') || url.includes('placeholder-key')) {
+      return NextResponse.json({
+        enabled: false,
+        error: 'Google Login is not configured in this environment. Please log in with email.'
+      });
+    }
+
     // Call the authorize endpoint and check the response metadata without fully following redirects
     const res = await fetch(url, {
       method: 'GET',
@@ -29,7 +36,7 @@ export async function POST(request: NextRequest) {
           const parsedUrl = new URL(location);
           const errorParam = parsedUrl.searchParams.get('error_description') || 'Google Provider is not configured.';
           return NextResponse.json({ enabled: false, error: errorParam });
-        } catch (e) {
+        } catch (_e) {
           return NextResponse.json({ enabled: false, error: 'Google OAuth Redirect Error.' });
         }
       }
@@ -45,7 +52,7 @@ export async function POST(request: NextRequest) {
           error: json.error_description || json.error || 'Provider not configured.'
         });
       }
-    } catch (e) {
+    } catch (_e) {
       // Body is not JSON
     }
 
@@ -61,7 +68,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ enabled: true });
   } catch (err: any) {
     console.error('Error verifying Google OAuth provider state:', err);
-    // Safe fallback: allow redirect to let Supabase natively resolve if check fails due to timeout
-    return NextResponse.json({ enabled: true });
+    return NextResponse.json({
+      enabled: false,
+      error: 'Google Login pre-flight network check failed. Please use email login.'
+    });
   }
 }

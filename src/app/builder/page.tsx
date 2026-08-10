@@ -1,16 +1,23 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { 
-  ArrowLeft, Sparkles, ZoomIn, ZoomOut, Maximize2, Loader2, Check, AlertCircle, Sun, Moon
+import { supabase } from '@/lib/supabase';
+import {
+  ArrowLeft, Maximize2, Loader2, Check, AlertCircle,
+  Download, Eye, Columns, FileText as FileTextIcon, Palette,
+  LayoutTemplate, Shield, CheckCircle2, Lightbulb, X,
+  Pencil, ChevronDown, RotateCcw, RotateCw, Minus, Plus, User as UserIcon, Settings, Home, LogOut
 } from 'lucide-react';
 import TemplateRenderer, { defaultSampleData } from '@/components/TemplateRenderer';
 import ResumeBuilderForm from '@/components/ResumeBuilderForm';
+import DesignWorkspace from '@/components/DesignWorkspace';
+import AIChatPanel, { AIPanelMode } from '@/components/AIChatPanel';
+import FloatingAIAssistant from '@/components/FloatingAIAssistant';
 import { ResumeTemplate } from '@/types/database.types';
+import { AIService, ChatMessage } from '@/lib/ai/aiService';
 
-// The 12 premium templates definitions (for looking up selected template info)
 const TEMPLATE_METADATA: ResumeTemplate[] = [
   { id: 'ats-professional', name: 'ATS Professional', ats_score: 98, recommended_role: 'Software Engineer', best_for: ['ATS Friendly', 'Fresher', 'Internship'], layout_type: 'Single Column', page_length: 'One Page', recruiter_rating: 5 },
   { id: 'tech-minimal', name: 'Tech Minimal', ats_score: 97, recommended_role: 'AI / ML Engineer', best_for: ['ATS Friendly', 'Software Engineer'], layout_type: 'Two Column', page_length: 'One Page', recruiter_rating: 5 },
@@ -23,24 +30,182 @@ const TEMPLATE_METADATA: ResumeTemplate[] = [
   { id: 'faang-elite', name: 'FAANG Elite', ats_score: 99, recommended_role: 'Systems Engineer', best_for: ['ATS Friendly', 'Software Engineer'], layout_type: 'Single Column', page_length: 'One Page', recruiter_rating: 5 },
   { id: 'one-page-compact', name: 'One Page Compact', ats_score: 96, recommended_role: 'Frontend Developer', best_for: ['Fresher', 'Internship'], layout_type: 'Two Column', page_length: 'One Page', recruiter_rating: 4 },
   { id: 'modern-two-column', name: 'Modern Two Column', ats_score: 95, recommended_role: 'Solutions Architect', best_for: ['Experienced', 'Software Engineer'], layout_type: 'Two Column', page_length: 'Flexible', recruiter_rating: 4 },
-  { id: 'product-manager-pro', name: 'Product Manager Pro', ats_score: 97, recommended_role: 'Product Manager', best_for: ['Product Manager', 'Executive'], layout_type: 'Single Column', page_length: 'Two Page', recruiter_rating: 5 }
+  { id: 'product-manager-pro', name: 'Product Manager Pro', ats_score: 97, recommended_role: 'Product Manager', best_for: ['Product Manager', 'Executive'], layout_type: 'Single Column', page_length: 'Two Page', recruiter_rating: 5 },
 ];
 
+type ViewMode = 'form' | 'design' | 'split' | 'preview';
+
 export default function BuilderPage() {
-  const { user, profile } = useAuth();
+  const { user, profile, logout } = useAuth();
   const router = useRouter();
 
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const [resumeId, setResumeId] = useState<string | null>(null);
   const [resumeDetails, setResumeDetails] = useState<any | null>(null);
   const [activeResumeData, setActiveResumeData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedTemplate, setSelectedTemplate] = useState<ResumeTemplate | null>(null);
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved');
-  const [zoom, setZoom] = useState(70);
+  const [zoom, setZoom] = useState(65);
+  const [viewMode, setViewMode] = useState<ViewMode>('split');
   const [isPreviewingPdf, setIsPreviewingPdf] = useState(false);
+  const [pdfExporting, setPdfExporting] = useState(false);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editedTitle, setEditedTitle] = useState('');
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
 
-  // Sync client parameters safely
+  const [aiPanelOpen, setAiPanelOpen] = useState(false);
+  const [aiMode, setAiMode] = useState<AIPanelMode>('edit');
+  const [aiLoading, setAiLoading] = useState(false);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [history, setHistory] = useState<any[]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+
+  // Split pane resizer state & persistence
+  const [editorWidthPercent, setEditorWidthPercent] = useState<number>(38);
+  const [isDragging, setIsDragging] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Restore panel width from localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('smartcv-builder-panel-width');
+      if (saved) {
+        const parsed = parseFloat(saved);
+        if (!isNaN(parsed) && parsed >= 20 && parsed <= 65) {
+          setEditorWidthPercent(parsed);
+        }
+      }
+    }
+  }, []);
+
+  // Dragging event handlers for real-time split pane resizing
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'col-resize';
+  }, []);
+
+  useEffect(() => {
+    if (!isDragging) return;
+
+    let animationFrameId: number | null = null;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (animationFrameId !== null) return;
+
+      animationFrameId = requestAnimationFrame(() => {
+        animationFrameId = null;
+        if (!containerRef.current) return;
+        const rect = containerRef.current.getBoundingClientRect();
+        const containerWidth = rect.width;
+        if (containerWidth <= 0) return;
+
+        const mouseX = e.clientX - rect.left;
+        const minEditorWidthPx = 340;
+        const minPreviewWidthPx = 500;
+        const maxEditorWidthPx = Math.min(containerWidth * 0.65, containerWidth - minPreviewWidthPx);
+
+        const clampedX = Math.max(minEditorWidthPx, Math.min(mouseX, maxEditorWidthPx));
+        const newPercent = (clampedX / containerWidth) * 100;
+
+        setEditorWidthPercent(newPercent);
+      });
+    };
+
+    const handleMouseUp = () => {
+      if (animationFrameId !== null) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+      }
+      setIsDragging(false);
+      document.body.style.userSelect = '';
+      document.body.style.cursor = '';
+      setEditorWidthPercent((prev) => {
+        localStorage.setItem('smartcv-builder-panel-width', prev.toFixed(2));
+        return prev;
+      });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    window.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      if (animationFrameId !== null) {
+        cancelAnimationFrame(animationFrameId);
+      }
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging]);
+
+  // Click outside listener for profile menu
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target as Node)) {
+        setProfileMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleSaveTitle = async () => {
+    setIsEditingTitle(false);
+    const newTitle = editedTitle.trim() || resumeDetails?.title || 'My Resume';
+    if (newTitle === resumeDetails?.title) return;
+    setResumeDetails((prev: any) => ({ ...prev, title: newTitle }));
+    setSaveStatus('saving');
+    try {
+      const res = await fetch('/api/resumes', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: resumeId,
+          title: newTitle,
+          resume_data: activeResumeData,
+          template_id: selectedTemplate?.id,
+        }),
+      });
+      if (!res.ok) throw new Error('Failed to update title');
+      setSaveStatus('saved');
+    } catch (err) {
+      console.error('Failed to update title', err);
+      setSaveStatus('error');
+    }
+  };
+
+  const [atsModalOpen, setAtsModalOpen] = useState(false);
+  const [atsJobDescription, setAtsJobDescription] = useState('');
+  const [atsJobRole, setAtsJobRole] = useState('');
+  const [atsAnalyzing, setAtsAnalyzing] = useState(false);
+  const [atsResults, setAtsResults] = useState<any>(null);
+
+  const runAtsAnalysis = async () => {
+    if (!activeResumeData) return;
+    setAtsAnalyzing(true);
+    setAtsResults(null);
+    try {
+      const res = await fetch('/api/resumes/ats-analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          resumeData: activeResumeData,
+          jobRole: atsJobRole || resumeDetails?.role || activeResumeData.personalInfo?.title || '',
+          jobDescription: atsJobDescription
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'ATS Analysis failed');
+      setAtsResults(data.analysis);
+    } catch (err: any) {
+      alert(err.message || 'ATS Analysis failed');
+    } finally {
+      setAtsAnalyzing(false);
+    }
+  };
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
@@ -48,91 +213,372 @@ export default function BuilderPage() {
     }
   }, []);
 
-  // Fetch resume data
   useEffect(() => {
     if (!resumeId) return;
-
-    const fetchResume = async () => {
+    const fetch_ = async () => {
       setLoading(true);
+      console.time('[Builder] Resume data load');
       try {
-        const response = await fetch(`/api/resumes?id=${resumeId}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch resume details');
+        const headers: Record<string, string> = {};
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) {
+          headers['Authorization'] = `Bearer ${session.access_token}`;
         }
-        const data = await response.json();
+        const res = await fetch(`/api/resumes?id=${resumeId}`, { headers });
+        const data = await res.json();
+        if (!res.ok) {
+          console.warn(`[Builder] Resume fetch returned status ${res.status}:`, data.error);
+          if (res.status === 404) {
+            console.warn('[Builder] Resume draft not found, returning to dashboard.');
+            router.push('/dashboard');
+            return;
+          }
+          throw new Error(data.error || 'Failed to fetch resume');
+        }
         setResumeDetails(data);
-        setActiveResumeData(data.resume_data || {});
-
-        // Find selected template meta
+        const initialData = data.resume_data || {};
+        setActiveResumeData(initialData);
+        setHistory([initialData]);
+        setHistoryIndex(0);
         if (data.template_id) {
-          const tmpl = TEMPLATE_METADATA.find(t => t.id === data.template_id);
-          setSelectedTemplate(tmpl || null);
+          setSelectedTemplate(TEMPLATE_METADATA.find(t => t.id === data.template_id) || null);
         } else {
-          // Default template fallback if none selected
-          const fallbackTmpl = TEMPLATE_METADATA.find(t => t.id === 'ats-professional');
-          setSelectedTemplate(fallbackTmpl || null);
+          setSelectedTemplate(TEMPLATE_METADATA[0]);
         }
       } catch (err: any) {
-        console.error('Failed to load resume:', err);
+        console.error('Failed to load resume:', err.message || err);
       } finally {
+        console.timeEnd('[Builder] Resume data load');
         setLoading(false);
       }
     };
+    fetch_();
+  }, [resumeId, router]);
 
-    fetchResume();
-  }, [resumeId]);
+  // Guard AI welcome message with ref to only run once
+  const aiMessageInitialized = useRef(false);
+  useEffect(() => {
+    if (profile && !aiMessageInitialized.current) {
+      aiMessageInitialized.current = true;
+      setMessages([
+        {
+          role: 'assistant',
+          content: `Hi ${profile.full_name || 'there'}! I am your SmartCV AI Career Assistant. Ask me to rewrite your summary, optimize for an ATS keyword, or adjust resume layout parameters in real-time!`
+        }
+      ]);
+    }
+  }, [profile]);
 
-  // Pre-fill name and email once profile/user is available
+  // Pre-fill name/email from profile on first load
   useEffect(() => {
     if (!loading && activeResumeData) {
       let updated = false;
       const copy = { ...activeResumeData };
-      if (!copy.personalInfo) {
-        copy.personalInfo = {};
-        updated = true;
-      }
-      if (!copy.personalInfo.fullName && profile?.full_name) {
-        copy.personalInfo.fullName = profile.full_name;
-        updated = true;
-      }
-      if (!copy.personalInfo.email && user?.email) {
-        copy.personalInfo.email = user.email;
-        updated = true;
-      }
-      if (updated) {
-        setActiveResumeData(copy);
-      }
+      if (!copy.personalInfo) { copy.personalInfo = {}; updated = true; }
+      if (!copy.personalInfo.fullName && profile?.full_name) { copy.personalInfo.fullName = profile.full_name; updated = true; }
+      if (!copy.personalInfo.email && user?.email) { copy.personalInfo.email = user.email; updated = true; }
+      if (!copy.personalInfo.profileImage && profile?.profile_image) { copy.personalInfo.profileImage = profile.profile_image; updated = true; }
+      if (updated) setActiveResumeData(copy);
     }
-  }, [profile, user, loading, activeResumeData]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile, user, loading]);
 
-  if (!user) return null;
+  // ── Keyboard shortcuts (Ctrl+Z, Ctrl+Y, Ctrl+K) ────────────────
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      const isInput = target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA' || target?.isContentEditable;
 
-  // Check if the user has entered any custom data beyond pre-filled fields
-  const hasUserEnteredData = () => {
-    if (!activeResumeData) return false;
-    const pi = activeResumeData.personalInfo || {};
-    // If user edited personal info fields (other than pre-filled name & email)
-    if (pi.phone?.trim() || pi.location?.trim() || pi.summary?.trim() || pi.title?.trim() || pi.website?.trim() || pi.github?.trim() || pi.linkedin?.trim()) {
-      return true;
-    }
-    // Or if they added entries to list sections
-    if (activeResumeData.education?.length > 0) return true;
-    if (activeResumeData.experience?.length > 0) return true;
-    if (activeResumeData.projects?.length > 0) return true;
-    if (activeResumeData.skills?.length > 0) return true;
-    if (activeResumeData.certifications?.length > 0) return true;
-    if (activeResumeData.achievements?.length > 0) return true;
-    return false;
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && !e.shiftKey && !isInput) {
+        e.preventDefault();
+        handleUndo();
+      }
+      if (((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y' && !isInput) ||
+          ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'z' && !isInput)) {
+        e.preventDefault();
+        handleRedo();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setAiPanelOpen(prev => !prev);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [historyIndex, history]);
+
+  const historyTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const isUndoRedoRef = useRef(false);
+
+  // ── Centralized Page-Level Autosave ─────────────────────────────
+  useEffect(() => {
+    if (!resumeId || !activeResumeData || loading) return;
+    if (saveStatus !== 'saving') return;
+
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch('/api/resumes', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: resumeId,
+            resume_data: activeResumeData,
+            template_id: selectedTemplate?.id,
+          }),
+        });
+        if (!res.ok) throw new Error('Autosave failed');
+        setSaveStatus('saved');
+      } catch (err) {
+        console.error('[Page Autosave Error]', err);
+        setSaveStatus('error');
+      }
+    }, 1000);
+
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+  }, [activeResumeData, saveStatus, resumeId, selectedTemplate, loading]);
+
+  // ── Customization helpers (memoized) ─────────────────────────────
+  const customization = useMemo(() =>
+    activeResumeData?.customization || {
+      fontFamily: 'Inter',
+      fontSize: 'medium',
+      density: 'balanced',
+      primaryColor: '#0f172a',
+      visibleSections: ['summary', 'experience', 'projects', 'skills', 'education', 'certifications', 'achievements', 'additionalInfo'],
+      sectionOrder: ['summary', 'experience', 'projects', 'skills', 'education', 'certifications', 'achievements', 'additionalInfo'],
+      sectionTypography: {},
+    }, [activeResumeData?.customization]);
+
+  const getCustomization = () => customization;
+
+  const handleDesignChange = (updatedCustomization: any) => {
+    handleFormChange({ ...activeResumeData, customization: updatedCustomization });
   };
 
-  // Render current display data, merging empty blocks with defaultSampleData to avoid empty skeletons
-  const getPreviewData = () => {
+  const pushToHistory = (newData: any) => {
+    if (isUndoRedoRef.current) {
+      isUndoRedoRef.current = false;
+      return;
+    }
+    if (JSON.stringify(newData) === JSON.stringify(activeResumeData)) return;
+    const newHistory = history.slice(0, historyIndex + 1);
+    setHistory([...newHistory, newData]);
+    setHistoryIndex(newHistory.length);
+  };
+
+  const handleFormChange = (data: any) => {
+    setActiveResumeData(data);
+    setSaveStatus('saving');
+    
+    if (historyTimerRef.current) clearTimeout(historyTimerRef.current);
+    historyTimerRef.current = setTimeout(() => {
+      pushToHistory(data);
+    }, 1000);
+  };
+
+  const handleUndo = () => {
+    if (historyIndex > 0) {
+      const prevIndex = historyIndex - 1;
+      isUndoRedoRef.current = true;
+      setHistoryIndex(prevIndex);
+      setActiveResumeData(history[prevIndex]);
+      setSaveStatus('saving');
+    }
+  };
+
+  const handleRedo = () => {
+    if (historyIndex < history.length - 1) {
+      const nextIndex = historyIndex + 1;
+      isUndoRedoRef.current = true;
+      setHistoryIndex(nextIndex);
+      setActiveResumeData(history[nextIndex]);
+      setSaveStatus('saving');
+    }
+  };
+
+  // Global Undo / Redo keyboard shortcuts (Ctrl+Z, Ctrl+Shift+Z, Ctrl+Y)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const targetTag = (e.target as HTMLElement)?.tagName;
+      if (['INPUT', 'TEXTAREA'].includes(targetTag)) return;
+
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+        if (e.shiftKey) {
+          e.preventDefault();
+          handleRedo();
+        } else {
+          e.preventDefault();
+          handleUndo();
+        }
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+        e.preventDefault();
+        handleRedo();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [historyIndex, history]);
+
+  const handleSendMessage = async (promptText: string) => {
+    if (!promptText.trim() || aiLoading) return;
+    
+    const userMsg: ChatMessage = { role: 'user', content: promptText };
+    setMessages(prev => [...prev, userMsg]);
+    setAiLoading(true);
+
+    try {
+      const response = await AIService.sendCommand({
+        prompt: promptText,
+        currentResumeData: activeResumeData,
+        selectedTemplate,
+        chatHistory: messages,
+        userProfile: profile,
+        mode: aiMode,
+      });
+
+      const assistantMsg: ChatMessage = {
+        role: 'assistant',
+        content: response.explanation,
+        changes: response.changes,
+        suggestedPrompts: response.suggestedPrompts,
+        pendingApproval: !!(response.changes && Object.keys(response.changes).length > 0)
+      };
+
+      setMessages(prev => [...prev, assistantMsg]);
+    } catch (err: any) {
+      console.error(err);
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: `Sorry, I encountered an error: ${err.message || 'Failed to get AI response'}.`
+      }]);
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const handleApplyChanges = (msgIndex: number, changes: any) => {
+    if (!changes || typeof changes !== 'object') return;
+    const copy = JSON.parse(JSON.stringify(activeResumeData || {}));
+
+    if (!copy.personalInfo) copy.personalInfo = {};
+
+    // 1. Nested personalInfo patch
+    if (changes.personalInfo && typeof changes.personalInfo === 'object') {
+      copy.personalInfo = { ...copy.personalInfo, ...changes.personalInfo };
+    }
+
+    // 2. Direct top-level personalInfo fields if AI returns flat structure
+    const personalKeys = ['fullName', 'title', 'email', 'phone', 'location', 'website', 'github', 'linkedin', 'summary', 'profileImage'];
+    for (const key of personalKeys) {
+      if (changes[key] !== undefined) {
+        copy.personalInfo[key] = changes[key];
+      }
+    }
+
+    // 3. Section data
+    if (Array.isArray(changes.experience)) copy.experience = changes.experience;
+    if (Array.isArray(changes.education)) copy.education = changes.education;
+    if (Array.isArray(changes.projects)) copy.projects = changes.projects;
+    if (Array.isArray(changes.skills)) copy.skills = changes.skills;
+    if (Array.isArray(changes.certifications)) copy.certifications = changes.certifications;
+    if (Array.isArray(changes.achievements)) copy.achievements = changes.achievements;
+
+    if (changes.additionalInfo && typeof changes.additionalInfo === 'object') {
+      copy.additionalInfo = { ...(copy.additionalInfo || {}), ...changes.additionalInfo };
+    }
+    if (changes.customization && typeof changes.customization === 'object') {
+      const existingCustomization = copy.customization || {};
+      const incomingCustomization = changes.customization;
+
+      // Deep-merge sectionTypography: merge per-section overrides without wiping existing sections
+      const existingSectionTypography = existingCustomization.sectionTypography || {};
+      const incomingSectionTypography = incomingCustomization.sectionTypography || {};
+      const mergedSectionTypography = Object.keys(incomingSectionTypography).length > 0
+        ? {
+            ...existingSectionTypography,
+            ...Object.fromEntries(
+              Object.entries(incomingSectionTypography).map(([sectionId, styles]) => [
+                sectionId,
+                { ...(existingSectionTypography[sectionId] || {}), ...(styles as object) }
+              ])
+            )
+          }
+        : existingSectionTypography;
+
+      copy.customization = {
+        ...existingCustomization,
+        ...incomingCustomization,
+        // Preserve deep-merged sectionTypography
+        sectionTypography: Object.keys(mergedSectionTypography).length > 0 ? mergedSectionTypography : undefined,
+      };
+    }
+
+    pushToHistory(copy);
+    setActiveResumeData(copy);
+    setSaveStatus('saving');
+
+    setMessages(prev => prev.map((msg, idx) => idx === msgIndex ? { ...msg, pendingApproval: false } : msg));
+  };
+
+  const handleDiscardChanges = (msgIndex: number) => {
+    setMessages(prev => prev.map((msg, idx) => idx === msgIndex ? { ...msg, pendingApproval: false } : msg));
+  };
+
+
+
+  const handleExportPdf = async () => {
+    if (!resumeId || pdfExporting) return;
+    setPdfExporting(true);
+    try {
+      // Save current activeResumeData to DB first so export PDF endpoint reads latest data
+      await fetch('/api/resumes', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: resumeId,
+          resume_data: activeResumeData,
+          template_id: selectedTemplate?.id,
+        }),
+      });
+      setSaveStatus('saved');
+
+      const res = await fetch(`/api/resumes/export-pdf?id=${resumeId}`);
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Export failed' }));
+        throw new Error(err.error || 'Failed to export PDF');
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const customSlug = (resumeDetails?.title || activeResumeData?.personalInfo?.fullName || 'Resume').replace(/[^a-zA-Z0-9_-]/g, '_');
+      a.download = `${customSlug}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err: any) {
+      console.error('[PDF Export Error]', err);
+      alert(err.message || 'PDF export failed. Please try again.');
+    } finally {
+      setPdfExporting(false);
+    }
+  };
+
+  const previewData = useMemo(() => {
     if (!activeResumeData) return defaultSampleData;
-    
     const pi = activeResumeData.personalInfo || {};
-    
-    if (hasUserEnteredData()) {
-      // User started typing, render only user data and do not fall back to Vamsi Krishna Tadisetti mock fields
+    const userHasData = !!(pi.phone?.trim() || pi.location?.trim() || pi.summary?.trim() || pi.title?.trim() ||
+      activeResumeData.education?.length > 0 || activeResumeData.experience?.length > 0 ||
+      activeResumeData.projects?.length > 0 || activeResumeData.skills?.length > 0);
+    if (userHasData) {
       return {
         personalInfo: {
           fullName: pi.fullName?.trim() || '',
@@ -144,6 +590,7 @@ export default function BuilderPage() {
           github: pi.github?.trim() || '',
           linkedin: pi.linkedin?.trim() || '',
           summary: pi.summary?.trim() || '',
+          profileImage: pi.profileImage?.trim() || profile?.profile_image || ''
         },
         experience: activeResumeData.experience || [],
         education: activeResumeData.education || [],
@@ -152,11 +599,9 @@ export default function BuilderPage() {
         certifications: activeResumeData.certifications || [],
         achievements: activeResumeData.achievements || [],
         additionalInfo: activeResumeData.additionalInfo || [],
-        customization: activeResumeData.customization
+        customization: activeResumeData.customization,
       };
     }
-    
-    // Otherwise fallback to sample data for visual guidance when empty
     return {
       personalInfo: {
         fullName: pi.fullName?.trim() || defaultSampleData.personalInfo.fullName,
@@ -168,300 +613,559 @@ export default function BuilderPage() {
         github: pi.github?.trim() || '',
         linkedin: pi.linkedin?.trim() || '',
         summary: pi.summary?.trim() || defaultSampleData.personalInfo.summary,
+        profileImage: pi.profileImage?.trim() || profile?.profile_image || ''
       },
-      experience: activeResumeData.experience && activeResumeData.experience.length > 0 
-        ? activeResumeData.experience 
-        : defaultSampleData.experience,
-      education: activeResumeData.education && activeResumeData.education.length > 0 
-        ? activeResumeData.education 
-        : defaultSampleData.education,
-      projects: activeResumeData.projects && activeResumeData.projects.length > 0 
-        ? activeResumeData.projects 
-        : defaultSampleData.projects,
-      skills: activeResumeData.skills && activeResumeData.skills.length > 0 
-        ? activeResumeData.skills 
-        : defaultSampleData.skills,
-      certifications: activeResumeData.certifications && activeResumeData.certifications.length > 0 
-        ? activeResumeData.certifications 
-        : defaultSampleData.certifications,
-      achievements: activeResumeData.achievements && activeResumeData.achievements.length > 0 
-        ? activeResumeData.achievements 
-        : defaultSampleData.achievements,
+      experience: activeResumeData.experience?.length > 0 ? activeResumeData.experience : defaultSampleData.experience,
+      education: activeResumeData.education?.length > 0 ? activeResumeData.education : defaultSampleData.education,
+      projects: activeResumeData.projects?.length > 0 ? activeResumeData.projects : defaultSampleData.projects,
+      skills: activeResumeData.skills?.length > 0 ? activeResumeData.skills : defaultSampleData.skills,
+      certifications: activeResumeData.certifications?.length > 0 ? activeResumeData.certifications : defaultSampleData.certifications,
+      achievements: activeResumeData.achievements?.length > 0 ? activeResumeData.achievements : defaultSampleData.achievements,
       additionalInfo: activeResumeData.additionalInfo || defaultSampleData.additionalInfo,
-      customization: activeResumeData.customization
+      customization: activeResumeData.customization,
     };
-  };
+  }, [activeResumeData, profile?.profile_image]);
+
+  if (!user) return null;
+
+  const viewModes: { id: ViewMode; label: string; icon: any }[] = [
+    { id: 'form', label: 'Form', icon: FileTextIcon },
+    { id: 'design', label: 'Design', icon: Palette },
+    { id: 'split', label: 'Split', icon: Columns },
+    { id: 'preview', label: 'Preview', icon: Eye },
+  ];
+
+  const PreviewPane = () => (
+    <section className={`flex flex-col relative rounded-2xl bg-[#E8EAF0]/50 border border-[#ECEDF3] h-full min-h-0 overflow-hidden ${viewMode === 'preview' ? 'flex-1' : 'w-full lg:flex-1'}`}>
+      {/* Right Preview container is fixed; inside, it has its own independent scrollbar */}
+      <div className="flex-1 overflow-y-auto p-4 pb-24 flex justify-center items-start custom-scrollbar min-h-0">
+        {selectedTemplate ? (
+          <div
+            className="origin-top transition-all duration-200 bg-white resume-canvas-shadow shrink-0"
+            style={{
+              width: '794px',
+              transform: `scale(${zoom / 100})`,
+              transformOrigin: 'center top',
+              marginBottom: `${-(100 - zoom) * 7.94}px`,
+              minHeight: '1123px',
+            }}
+          >
+            <TemplateRenderer templateId={selectedTemplate.id} data={previewData} zoom={100} />
+          </div>
+        ) : (
+          <div className="h-full flex flex-col items-center justify-center text-[#9CA3AF] gap-3">
+            <Loader2 size={24} className="animate-spin text-[#D1D5DB]" />
+            <span className="text-xs font-medium">Preparing canvas…</span>
+          </div>
+        )}
+      </div>
+    </section>
+  );
 
   return (
-    <div className={`min-h-screen flex flex-col justify-between transition-colors duration-500 font-sans relative overflow-x-hidden ${isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
-      
-      {/* Background Neon glows */}
-      {isDarkMode && (
-        <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-          <div className="absolute top-0 right-1/4 w-[400px] h-[400px] bg-teal-500/5 rounded-full blur-[120px]" />
-          <div className="absolute bottom-10 left-10 w-[500px] h-[500px] bg-indigo-50/5 rounded-full blur-[140px]" />
-        </div>
-      )}
+    <div className="h-screen max-h-screen overflow-hidden flex flex-col font-[Inter,sans-serif] bg-[#F7F8FC] text-[#111827]">
+      {/* Subtle dot grid */}
+      <div className="fixed inset-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #C7C9D3 0.8px, transparent 0.8px)', backgroundSize: '22px 22px', opacity: 0.25 }} />
 
-      {/* Header */}
-      <header className={`border-b backdrop-blur-md px-6 py-4 sticky top-0 z-40 flex items-center justify-between transition-colors duration-500 ${isDarkMode ? 'border-slate-900 bg-slate-950/70' : 'border-slate-200 bg-white/70'}`}>
-        <div className="flex items-center space-x-3">
+      {/* ── TOP BAR (Header matching reference screenshot) ─────────────── */}
+      <header className="h-[52px] border-b border-[#ECEDF3] bg-white px-5 flex items-center justify-between sticky top-0 z-40 shrink-0 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+        {/* Left: Back button + Title & ATS Sub-metadata */}
+        <div className="flex items-center gap-3 min-w-0">
           <button
-            onClick={() => {
-              router.push('/dashboard');
-            }}
-            className={`h-8 w-8 rounded-lg border flex items-center justify-center transition duration-150 cursor-pointer ${
-              isDarkMode ? 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 shadow-sm'
-            }`}
+            onClick={() => router.replace('/dashboard')}
+            className="h-8 w-8 rounded-lg border border-[#E2E8F0] bg-white text-[#64748B] hover:bg-[#F8FAFC] hover:text-[#0F172A] flex items-center justify-center transition-all cursor-pointer shadow-xs"
             title="Back to Dashboard"
           >
-            <ArrowLeft size={14} />
+            <ArrowLeft size={15} />
           </button>
-          
-          <div className="h-7 w-7 rounded-lg bg-gradient-to-tr from-teal-500 to-indigo-650 flex items-center justify-center font-bold text-white shadow-md">
-            S
-          </div>
-          <div>
-            <span className="font-extrabold text-sm tracking-tight bg-gradient-to-r from-teal-400 to-indigo-500 bg-clip-text text-transparent">
-              SmartCV
-            </span>
-            <span className={`text-[8px] block font-bold tracking-widest uppercase -mt-0.5 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-              Builder Canvas
-            </span>
-          </div>
-        </div>
 
-        {/* Selected target info & Save Indicator */}
-        <div className="flex items-center space-x-3">
-          {/* Save Status Badge */}
-          <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10px] font-bold transition duration-200 ${
-            saveStatus === 'saving'
-              ? 'border-indigo-500/30 bg-indigo-500/10 text-indigo-400'
-              : saveStatus === 'error'
-              ? 'border-rose-500/30 bg-rose-500/10 text-rose-400 animate-pulse'
-              : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
-          }`}>
-            {saveStatus === 'saving' ? (
-              <>
-                <Loader2 size={11} className="animate-spin" />
-                <span>Saving draft...</span>
-              </>
-            ) : saveStatus === 'error' ? (
-              <>
-                <AlertCircle size={11} />
-                <span>Autosave failed</span>
-              </>
-            ) : (
-              <>
-                <Check size={11} />
-                <span>All changes saved</span>
-              </>
-            )}
-          </div>
-
-          {resumeDetails && (
-            <div className="hidden sm:flex items-center space-x-2">
-              <div className={`flex items-center px-3 py-1 rounded-full border text-[10px] font-bold ${
-                isDarkMode ? 'border-slate-850 bg-slate-900/50 text-slate-300' : 'border-slate-200 bg-white text-slate-755 shadow-sm'
-              }`}>
-                <span>Draft: {resumeDetails.title}</span>
-              </div>
-              {resumeDetails.template_id ? (
-                <div className={`flex items-center px-3 py-1 rounded-full border text-[10px] font-bold ${
-                  isDarkMode ? 'border-teal-500/35 bg-teal-500/10 text-teal-400' : 'border-teal-200 bg-teal-50 text-teal-700 shadow-sm'
-                }`}>
-                  <span>Template: {selectedTemplate?.name}</span>
-                </div>
+          <div className="flex flex-col leading-tight min-w-0">
+            <div className="flex items-center gap-1.5">
+              {isEditingTitle ? (
+                <input
+                  type="text"
+                  value={editedTitle}
+                  onChange={(e) => setEditedTitle(e.target.value)}
+                  onBlur={handleSaveTitle}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleSaveTitle();
+                    if (e.key === 'Escape') setIsEditingTitle(false);
+                  }}
+                  autoFocus
+                  className="h-6 px-1.5 py-0.5 rounded-md border border-[#2563EB] bg-white text-[13px] font-extrabold text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 max-w-[240px]"
+                />
               ) : (
-                <div className="flex items-center px-3 py-1 rounded-full border text-[10px] font-bold border-amber-500/30 bg-amber-500/10 text-amber-500 animate-pulse">
-                  <span>Template Required ⚠</span>
+                <div
+                  className="flex items-center gap-1.5 cursor-pointer group"
+                  onClick={() => {
+                    setIsEditingTitle(true);
+                    setEditedTitle(resumeDetails?.title || 'My Resume');
+                  }}
+                  title="Click to edit resume title"
+                >
+                  <span className="text-[13px] font-extrabold text-[#0F172A] truncate max-w-[220px]">
+                    {resumeDetails?.title || 'My Resume'}
+                  </span>
+                  <span title="Edit Resume Title"><Pencil size={12} className="text-[#94A3B8] group-hover:text-[#0F172A] transition-colors" /></span>
                 </div>
               )}
             </div>
-          )}
+            <div className="flex items-center gap-2 text-[11px] font-medium mt-0.5">
+              <span className="text-emerald-600 font-semibold flex items-center gap-1">
+                <Check size={11} /> Saved just now
+              </span>
+              <span className="text-slate-300">·</span>
+              <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold text-[10px] border border-emerald-200/80 leading-none">
+                ATS Score {selectedTemplate?.ats_score || 98}%
+              </span>
+            </div>
+          </div>
+        </div>
 
-          {/* Theme Toggle */}
-          <button
-            onClick={() => setIsDarkMode(!isDarkMode)}
-            className={`h-8 w-8 rounded-lg border flex items-center justify-center transition cursor-pointer ${
-              isDarkMode ? 'bg-slate-900 border-slate-800 text-yellow-450 hover:text-yellow-400' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50 shadow-sm'
-            }`}
-          >
-            {isDarkMode ? <Sun size={13} /> : <Moon size={13} />}
-          </button>
+        {/* Center: Floating Pill Tabs (Form | Design | Split | Preview) */}
+        <div className="hidden lg:flex items-center bg-[#F1F5F9]/80 p-1 rounded-full border border-[#E2E8F0] gap-0.5 shadow-inner">
+          {viewModes.map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              onClick={() => setViewMode(id)}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold transition-all duration-150 cursor-pointer ${
+                viewMode === id
+                  ? id === 'design'
+                    ? 'bg-gradient-to-r from-[#6366F1] to-[#2563EB] text-white shadow-md'
+                    : 'bg-white text-[#0F172A] shadow-md border border-[#E2E8F0]/80'
+                  : 'text-[#64748B] hover:text-[#0F172A]'
+              }`}
+            >
+              <Icon size={13} />
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {/* Right: Saved Status + Profile Dropdown Menu */}
+        <div className="flex items-center gap-3 shrink-0">
+          <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 font-semibold text-[11px] border border-emerald-200/80 shadow-xs">
+            <Check size={12} className="text-emerald-600" /> Saved
+          </span>
+
+          <div className="relative" ref={profileMenuRef}>
+            <div
+              onClick={() => setProfileMenuOpen(o => !o)}
+              className="flex items-center gap-1.5 cursor-pointer group select-none"
+              title="User Profile & Account Menu"
+            >
+              <div className="h-8 w-8 rounded-full bg-[#EEF2FF] text-[#6366F1] font-bold text-[10px] flex items-center justify-center shadow-inner border border-[#E0E7FF] group-hover:border-[#6366F1] transition-colors overflow-hidden">
+                {profile?.profile_image ? (
+                  <img src={profile.profile_image} alt={profile?.full_name || 'User'} className="w-full h-full object-cover" />
+                ) : (
+                  profile?.full_name ? profile.full_name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase() : (user?.email ? user.email[0].toUpperCase() : 'U')
+                )}
+              </div>
+              <ChevronDown size={14} className="text-[#64748B] group-hover:text-[#0F172A] transition-colors" />
+            </div>
+
+            {profileMenuOpen && (
+              <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl border border-[#E2E8F0] shadow-[0_10px_30px_rgba(0,0,0,0.12)] py-2 z-50 animate-in fade-in slide-in-from-top-2">
+                <div className="px-4 py-2.5 border-b border-[#F1F5F9]">
+                  <p className="text-xs font-bold text-[#0F172A] truncate">{profile?.full_name || user?.user_metadata?.full_name || 'User'}</p>
+                  <p className="text-[11px] text-[#64748B] truncate mt-0.5">{user?.email}</p>
+                </div>
+
+                <button
+                  onClick={() => { router.push('/profile'); setProfileMenuOpen(false); }}
+                  className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-[#334155] hover:bg-[#F8FAFC] hover:text-[#0F172A] cursor-pointer transition-colors"
+                >
+                  <UserIcon size={14} className="text-[#64748B]" /> Profile
+                </button>
+
+                <button
+                  onClick={() => { router.push('/dashboard?tab=settings'); setProfileMenuOpen(false); }}
+                  className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-[#334155] hover:bg-[#F8FAFC] hover:text-[#0F172A] cursor-pointer transition-colors"
+                >
+                  <Settings size={14} className="text-[#64748B]" /> Settings
+                </button>
+
+                <button
+                  onClick={() => { router.replace('/dashboard'); setProfileMenuOpen(false); }}
+                  className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-[#334155] hover:bg-[#F8FAFC] hover:text-[#0F172A] cursor-pointer transition-colors"
+                >
+                  <Home size={14} className="text-[#64748B]" /> Dashboard
+                </button>
+
+                <div className="my-1 border-t border-[#F1F5F9]" />
+
+                <button
+                  onClick={async () => {
+                    setProfileMenuOpen(false);
+                    await logout();
+                  }}
+                  className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 cursor-pointer transition-colors"
+                >
+                  <LogOut size={14} /> Log Out
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
-      {/* Main Panel Content split into Form and Preview */}
-      <main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 relative z-10 flex flex-col lg:flex-row gap-6 items-stretch h-[calc(100vh-73px)] overflow-hidden">
-        
-        {/* Left Side: Form Workspace */}
-        <section className={`w-full lg:w-[48%] flex flex-col border rounded-[24px] p-5 backdrop-blur-md overflow-hidden ${
-          isDarkMode 
-            ? 'bg-slate-900/15 border-slate-900/60 shadow-slate-950/20' 
-            : 'bg-white border-slate-200/50 shadow-slate-200/20'
-        }`}>
-          {loading ? (
-            <div className="flex-grow flex flex-col items-center justify-center text-slate-500">
-              <Loader2 className="h-8 w-8 animate-spin mb-3 text-indigo-500" />
-              <span className="text-xs font-bold uppercase tracking-wider">Loading Resume Config...</span>
-            </div>
-          ) : (
-            <ResumeBuilderForm
-              resumeId={resumeId!}
-              initialData={activeResumeData}
-              onChange={setActiveResumeData}
-              onSaveStatusChange={setSaveStatus}
-              isDarkMode={isDarkMode}
-              templateId={resumeDetails?.template_id}
-              onPreviewPdf={() => setIsPreviewingPdf(true)}
-            />
-          )}
-        </section>
+      {/* ── RIGHT FLOATING ACTION PANEL (3 Vertical Stacked Cards) ───── */}
+      <aside className="fixed right-4 top-[68px] z-30 hidden xl:flex flex-col gap-2.5 p-2 rounded-2xl bg-white/90 backdrop-blur-md border border-[#E2E8F0] shadow-[0_10px_35px_rgba(0,0,0,0.06)] items-center transition-all">
+        {/* Card 1: ATS Analysis */}
+        <button
+          onClick={() => {
+            setAtsModalOpen(true);
+            if (!atsResults) runAtsAnalysis();
+          }}
+          className="w-[60px] h-[68px] rounded-xl bg-emerald-50/90 hover:bg-emerald-100/90 border border-emerald-200 flex flex-col items-center justify-center p-2 text-center gap-0.5 transition-all cursor-pointer shadow-xs group"
+          title="Run Real-Time ATS Analysis"
+        >
+          <Shield size={16} className="text-emerald-600 group-hover:scale-110 transition-transform" />
+          <span className="font-bold text-[10px] text-emerald-800 leading-tight">ATS</span>
+          <span className="px-1.5 py-px rounded-full bg-emerald-600 text-white font-extrabold text-[9px] shadow-xs">
+            {selectedTemplate?.ats_score || 98}%
+          </span>
+        </button>
 
-        {/* Right Side: Live Scaled Preview Window */}
-        <section className={`w-full lg:w-[52%] flex flex-col border border-dashed rounded-[24px] overflow-hidden backdrop-blur-sm relative transition-colors duration-300 ${
-          isDarkMode ? 'border-slate-900 bg-slate-950/20' : 'border-slate-200 bg-slate-100/30 shadow-sm'
-        }`}>
-          
-          {/* Scaled Preview Controls Toolbar */}
-          <div className={`flex items-center justify-between p-3 border-b shrink-0 transition-colors duration-300 ${
-            isDarkMode ? 'border-slate-900 bg-slate-950/40' : 'border-slate-200 bg-slate-50'
-          }`}>
-            <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 ml-2">Document Canvas</span>
-            
-            <div className="flex items-center space-x-2">
-              {/* Zoom controls */}
-              <button
-                onClick={() => setZoom(prev => Math.max(prev - 10, 40))}
-                className={`h-7 w-7 rounded-md flex items-center justify-center transition border cursor-pointer ${
-                  isDarkMode 
-                    ? 'bg-slate-900 border-slate-850 hover:bg-slate-850 text-slate-400 hover:text-white' 
-                    : 'bg-white border-slate-250 hover:bg-slate-50 text-slate-500 hover:text-slate-800 shadow-sm'
-                }`}
-                title="Zoom Out"
-              >
-                <ZoomOut size={12} />
-              </button>
-              
-              <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-md min-w-[42px] text-center border ${
-                isDarkMode 
-                  ? 'text-slate-400 bg-slate-900 border-slate-850' 
-                  : 'text-slate-700 bg-white border-slate-200'
-              }`}>
-                {zoom}%
-              </span>
+        {/* Card 2: Change Template */}
+        <button
+          onClick={() => router.push(resumeId ? `/dashboard?tab=templates&source=builder&resumeId=${resumeId}` : '/dashboard?tab=templates')}
+          className="w-[60px] h-[68px] rounded-xl bg-purple-50/90 hover:bg-purple-100/90 border border-purple-200 flex flex-col items-center justify-center p-2 text-center gap-1 transition-all cursor-pointer shadow-xs group"
+          title="Switch template"
+        >
+          <LayoutTemplate size={16} className="text-purple-600 group-hover:scale-110 transition-transform" />
+          <span className="font-bold text-[10px] text-purple-800 leading-tight">Template</span>
+        </button>
 
-              <button
-                onClick={() => setZoom(prev => Math.min(prev + 10, 150))}
-                className={`h-7 w-7 rounded-md flex items-center justify-center transition border cursor-pointer ${
-                  isDarkMode 
-                    ? 'bg-slate-900 border-slate-850 hover:bg-slate-850 text-slate-400 hover:text-white' 
-                    : 'bg-white border-slate-250 hover:bg-slate-50 text-slate-500 hover:text-slate-800 shadow-sm'
-                }`}
-                title="Zoom In"
-              >
-                <ZoomIn size={12} />
-              </button>
+        {/* Card 3: Export PDF */}
+        <button
+          onClick={handleExportPdf}
+          disabled={pdfExporting}
+          className="w-[60px] h-[68px] rounded-xl bg-white hover:bg-slate-50 border border-slate-200 flex flex-col items-center justify-center p-2 text-center gap-1 transition-all cursor-pointer shadow-sm group disabled:opacity-50"
+          title="Download PDF Resume"
+        >
+          {pdfExporting ? <Loader2 size={16} className="animate-spin text-slate-800" /> : <Download size={16} className="text-slate-800 group-hover:scale-110 transition-transform" />}
+          <span className="font-bold text-[10px] text-slate-800 leading-tight">Export</span>
+        </button>
+      </aside>
 
-              <button
-                onClick={() => setZoom(70)}
-                className={`h-7 w-7 rounded-md flex items-center justify-center transition border cursor-pointer ${
-                  isDarkMode 
-                    ? 'bg-slate-900 border-slate-850 hover:bg-slate-850 text-slate-400 hover:text-white' 
-                    : 'bg-white border-slate-250 hover:bg-slate-50 text-slate-500 hover:text-slate-800 shadow-sm'
-                }`}
-                title="Fit to Screen"
-              >
-                <Maximize2 size={12} />
-              </button>
-            </div>
+      {/* ── BOTTOM FLOATING ACTION TOOLBAR ─────────────────────────── */}
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 bg-white/95 backdrop-blur-md border border-[#E2E8F0] shadow-[0_16px_45px_rgba(0,0,0,0.12)] rounded-full px-3.5 py-1.5">
+        {/* Undo / Redo */}
+        <div className="flex items-center gap-0.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-full p-0.5 shadow-inner">
+          <button
+            onClick={handleUndo}
+            disabled={historyIndex <= 0}
+            className="h-7 px-2.5 rounded-full flex items-center gap-1 text-[11px] font-bold text-[#475569] hover:bg-white hover:text-[#0F172A] disabled:opacity-30 disabled:pointer-events-none transition cursor-pointer"
+            title="Undo (Ctrl+Z)"
+          >
+            <RotateCcw size={12} /> Undo
+          </button>
+          <button
+            onClick={handleRedo}
+            disabled={historyIndex >= history.length - 1}
+            className="h-7 px-2.5 rounded-full flex items-center gap-1 text-[11px] font-bold text-[#475569] hover:bg-white hover:text-[#0F172A] disabled:opacity-30 disabled:pointer-events-none transition cursor-pointer"
+            title="Redo (Ctrl+Y)"
+          >
+            <RotateCw size={12} /> Redo
+          </button>
+        </div>
 
-            {selectedTemplate && (
-              <span className={`text-[9px] font-bold uppercase tracking-widest border px-2.5 py-0.5 rounded-full mr-2 ${
-                isDarkMode 
-                  ? 'bg-teal-500/5 border-teal-500/10 text-teal-400' 
-                  : 'bg-teal-50 border-teal-100 text-teal-655 shadow-sm'
-              }`}>
-                ATS: {selectedTemplate.ats_score}%
-              </span>
-            )}
+        {/* Zoom Controls */}
+        <div className="flex items-center gap-1.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-full px-2.5 py-1 text-[11px] font-bold text-[#0F172A] shadow-inner">
+          <button onClick={() => setZoom(p => Math.max(p - 10, 30))} className="h-5 w-5 rounded-full hover:bg-white flex items-center justify-center text-[#64748B] transition-colors cursor-pointer" title="Zoom out">
+            <Minus size={12} />
+          </button>
+          <span className="min-w-[34px] text-center select-none">{zoom}%</span>
+          <button onClick={() => setZoom(p => Math.min(p + 10, 150))} className="h-5 w-5 rounded-full hover:bg-white flex items-center justify-center text-[#64748B] transition-colors cursor-pointer" title="Zoom in">
+            <Plus size={12} />
+          </button>
+          <button onClick={() => setZoom(65)} className="h-5 w-5 rounded-full hover:bg-white flex items-center justify-center text-[#64748B] transition-colors cursor-pointer" title="Reset zoom">
+            <Maximize2 size={11} />
+          </button>
+        </div>
+
+        {/* Action buttons */}
+        <button
+          onClick={() => router.push(resumeId ? `/dashboard?tab=templates&source=builder&resumeId=${resumeId}` : '/dashboard?tab=templates')}
+          className="h-8 px-3 rounded-full bg-purple-50 hover:bg-purple-100/90 text-[11px] font-bold text-purple-700 border border-purple-200/80 shadow-sm flex items-center gap-1.5 transition-colors cursor-pointer"
+          title="Change template layout"
+        >
+          <LayoutTemplate size={13} className="text-purple-600" />
+          <span>Template</span>
+        </button>
+
+        <button
+          onClick={() => setIsPreviewingPdf(true)}
+          className="h-8 px-3 rounded-full bg-white hover:bg-slate-50 text-[11px] font-bold text-[#0F172A] border border-[#E2E8F0] shadow-sm flex items-center gap-1.5 transition-colors cursor-pointer"
+        >
+          <Eye size={13} /> Preview
+        </button>
+
+        <button
+          onClick={handleExportPdf}
+          disabled={pdfExporting}
+          className="h-8 px-3 rounded-full bg-[#0F172A] hover:bg-[#1E2937] text-white text-[11px] font-bold flex items-center gap-1.5 transition-colors shadow-md disabled:opacity-50 cursor-pointer"
+        >
+          {pdfExporting ? <Loader2 size={13} className="animate-spin" /> : <Download size={13} />}
+          <span>{pdfExporting ? 'Exporting…' : 'Export PDF'}</span>
+        </button>
+      </div>
+
+      {/* ── Main Workspace ───────────────────────────────────── */}
+      <main className="flex-1 flex flex-col overflow-hidden" style={{ height: 'calc(100vh - 52px)' }}>
+        {loading ? (
+          <div className="flex-1 flex flex-col items-center justify-center gap-3 text-[#6B7280]">
+            <Loader2 size={28} className="animate-spin text-[#2563EB]" />
+            <span className="text-sm font-medium">Loading resume…</span>
           </div>
-          
-          {/* Scrollable canvas wrapper */}
-          <div className={`flex-grow overflow-auto p-4 flex justify-center items-start transition-colors duration-300 ${
-            isDarkMode ? 'bg-slate-900/50' : 'bg-slate-200/50'
-          }`}>
-            {selectedTemplate ? (
-              <div className="my-4 origin-top transition-all duration-200" id={isPreviewingPdf ? undefined : 'resume-preview-document'}>
-                <TemplateRenderer 
-                  templateId={selectedTemplate.id} 
-                  data={getPreviewData()} 
-                  zoom={zoom} 
+        ) : (
+          <div
+            ref={containerRef}
+            className={`flex-1 flex p-4 overflow-hidden h-full min-h-0 ${
+              viewMode === 'preview' ? 'flex-col gap-4' : 'flex-row gap-2'
+            }`}
+          >
+
+            {/* Form panel — shown in 'form' and 'split' modes */}
+            {(viewMode === 'form' || viewMode === 'split') && (
+              <section
+                className={`flex flex-col overflow-hidden h-full min-h-0 shrink-0 ${
+                  viewMode === 'form' ? 'flex-1' : 'w-full'
+                }`}
+                style={
+                  viewMode === 'split'
+                    ? { width: `${editorWidthPercent}%` }
+                    : undefined
+                }
+              >
+                <ResumeBuilderForm
+                  resumeId={resumeId!}
+                  initialData={activeResumeData}
+                  onChange={handleFormChange}
+                  onSaveStatusChange={setSaveStatus}
+                  saveStatus={saveStatus}
+                  templateId={resumeDetails?.template_id}
+                  onPreviewPdf={() => setIsPreviewingPdf(true)}
+                />
+              </section>
+            )}
+
+            {/* Design Workspace — shown in 'design' mode */}
+            {viewMode === 'design' && (
+              <section
+                className="w-full flex flex-col overflow-hidden h-full min-h-0 shrink-0"
+                style={{ width: `${editorWidthPercent}%` }}
+              >
+                <DesignWorkspace
+                  customization={getCustomization()}
+                  onChange={handleDesignChange}
+                  onChangeTemplate={() => router.push(resumeId ? `/dashboard?tab=templates&source=builder&resumeId=${resumeId}` : '/dashboard?tab=templates')}
+                  resumeId={resumeId || undefined}
+                />
+              </section>
+            )}
+
+            {/* Draggable Divider Handle (shown in split/design modes on desktop) */}
+            {(viewMode === 'split' || viewMode === 'design') && (
+              <div
+                onMouseDown={handleMouseDown}
+                className="hidden lg:flex w-2.5 relative items-center justify-center shrink-0 cursor-col-resize group select-none py-2"
+                title="Drag to resize workspace panels"
+              >
+                {/* 1px clean vertical line: light gray by default (#E2E8F0), darkens on hover/drag (#94A3B8 / #475569) */}
+                <div
+                  className={`w-px h-full transition-colors duration-150 ${
+                    isDragging ? 'bg-[#475569]' : 'bg-[#E2E8F0] group-hover:bg-[#94A3B8]'
+                  }`}
                 />
               </div>
-            ) : (
-              <div className="h-full w-full flex flex-col items-center justify-center text-slate-500 py-16">
-                <Loader2 className="h-8 w-8 animate-spin mb-3 text-teal-400" />
-                <span className="text-xs font-bold uppercase tracking-wider">Loading Document Viewport...</span>
-              </div>
             )}
-          </div>
-        </section>
 
+            {/* Preview panel — shown in 'split', 'design', and 'preview' modes */}
+            {(viewMode === 'split' || viewMode === 'design' || viewMode === 'preview') && <PreviewPane />}
+
+          </div>
+        )}
       </main>
 
-      {/* Footer */}
-      <footer className={`border-t py-4 px-6 text-center text-xs transition-colors duration-500 shrink-0 ${
-        isDarkMode ? 'border-slate-900 text-slate-600 bg-slate-950' : 'border-slate-200 text-slate-500 bg-white'
-      }`}>
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between">
-          <span className="font-semibold text-[10px]">SmartCV Canvas Workstation v2.0.0</span>
-          <span className="mt-2 sm:mt-0 font-bold uppercase tracking-widest text-[8px] text-indigo-500 flex items-center gap-1.5">
-            <Sparkles size={10} />
-            <span>Real-Time Vector Rendering</span>
-          </span>
-        </div>
-      </footer>
-
-      {/* PDF Print Preview Overlay Modal */}
+      {/* ── PDF Preview Overlay ──────────────────────────────── */}
       {isPreviewingPdf && (
-        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex flex-col items-center justify-start overflow-y-auto p-6 animate-fade-in-up">
-          {/* Header toolbar */}
-          <div className="w-full max-w-[840px] flex items-center justify-between bg-slate-900 text-white px-6 py-4 rounded-t-2xl shadow-xl">
+        <div className="fixed inset-0 bg-slate-900/85 backdrop-blur-sm z-50 flex flex-col items-center overflow-y-auto" onClick={(e) => e.target === e.currentTarget && setIsPreviewingPdf(false)}>
+          {/* Toolbar */}
+          <div className="w-full max-w-[860px] flex items-center justify-between bg-[#111827] text-white px-6 py-3.5 rounded-t-2xl mt-6 shadow-2xl shrink-0">
             <div>
-              <h3 className="text-sm font-extrabold uppercase tracking-wider">PDF Print Preview</h3>
-              <p className="text-[10px] text-slate-400">Review layout margins and alignment before exporting.</p>
+              <h3 className="text-sm font-bold">PDF Preview</h3>
+              <p className="text-[11px] text-slate-400 mt-0.5">This is how your resume will look when exported.</p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5">
               <button
-                onClick={() => window.print()}
-                className="h-9 px-4 bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-sm shadow-teal-500/10 cursor-pointer"
+                onClick={handleExportPdf}
+                disabled={pdfExporting}
+                className="h-9 px-4 rounded-xl bg-white text-[#111827] text-xs font-semibold hover:bg-slate-100 transition-colors flex items-center gap-1.5 disabled:opacity-50"
               >
-                <span>Print / Save PDF</span>
+                {pdfExporting ? <Loader2 size={13} className="animate-spin" /> : <Download size={13} />}
+                {pdfExporting ? 'Downloading…' : 'Download PDF'}
               </button>
               <button
                 onClick={() => setIsPreviewingPdf(false)}
-                className="h-9 px-4 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl text-xs flex items-center justify-center cursor-pointer border border-slate-700"
+                className="h-9 px-4 rounded-xl border border-slate-700 bg-slate-800 text-white text-xs font-medium hover:bg-slate-700 transition-colors"
               >
-                Close Preview
+                Close
               </button>
             </div>
           </div>
-          
-          {/* Document Preview Pane */}
-          <div className="w-full max-w-[840px] bg-slate-950/40 border-x border-b border-slate-800 rounded-b-2xl p-8 flex justify-center items-start shadow-xl">
-            <div id="resume-preview-document" className="bg-white text-slate-800 shadow-2xl rounded-sm">
-              <TemplateRenderer 
-                templateId={selectedTemplate?.id || 'ats-professional'} 
-                data={getPreviewData()} 
-                zoom={100} 
+
+          {/* Document */}
+          <div className="w-full max-w-[860px] bg-[#1A1B1E] border-x border-b border-slate-800 rounded-b-2xl p-8 flex justify-center mb-6 shadow-2xl">
+            <div
+              id="resume-preview-document"
+              className="bg-white shadow-[0_0_0_1px_rgba(0,0,0,0.06),0_8px_40px_rgba(0,0,0,0.2)]"
+              style={{ width: '794px', minHeight: '1123px' }}
+            >
+              <TemplateRenderer
+                templateId={selectedTemplate?.id || 'ats-professional'}
+                data={previewData}
+                zoom={100}
               />
             </div>
           </div>
         </div>
       )}
 
+      {/* ── Floating AI Assistant ──────────────────────────── */}
+      <FloatingAIAssistant
+        isOpen={aiPanelOpen}
+        onOpen={() => setAiPanelOpen(true)}
+      />
+
+      {/* ── AI Chat Panel (slide-over) ──────────────────────── */}
+      <AIChatPanel
+        isOpen={aiPanelOpen}
+        onClose={() => setAiPanelOpen(false)}
+        messages={messages}
+        onSendMessage={handleSendMessage}
+        onApplyChanges={handleApplyChanges}
+        onDiscardChanges={handleDiscardChanges}
+        isLoading={aiLoading}
+        profileName={profile?.full_name}
+        mode={aiMode}
+        onModeChange={setAiMode}
+      />
+
+      {/* Real-Time ATS Analysis Modal */}
+      {atsModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={() => setAtsModalOpen(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl border border-[#ECEDF3] w-full max-w-xl max-h-[85vh] flex flex-col overflow-hidden animate-scale-in" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#ECEDF3] bg-[#F7F8FC]">
+              <div className="flex items-center gap-2.5">
+                <div className="h-8 w-8 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600">
+                  <Shield size={16} />
+                </div>
+                <div>
+                  <h3 className="text-base font-semibold text-[#111827]">Real-Time ATS Analysis</h3>
+                  <p className="text-xs text-[#6B7280]">Live analysis based on active resume content & target role</p>
+                </div>
+              </div>
+              <button onClick={() => setAtsModalOpen(false)} className="text-[#9CA3AF] hover:text-[#6B7280] p-1 rounded-lg hover:bg-white transition cursor-pointer">
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto space-y-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-[#64748B] mb-1 uppercase tracking-wide">Target Role</label>
+                  <input
+                    type="text"
+                    value={atsJobRole}
+                    onChange={e => setAtsJobRole(e.target.value)}
+                    placeholder={resumeDetails?.role || activeResumeData?.personalInfo?.title || 'e.g. Software Engineer'}
+                    className="w-full h-10 px-3 rounded-xl border border-[#E2E8F0] text-xs text-[#0F172A] bg-white focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-50 transition"
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-semibold text-[#64748B] mb-1 uppercase tracking-wide">Target Job Description (Optional)</label>
+                  <textarea
+                    rows={3}
+                    value={atsJobDescription}
+                    onChange={e => setAtsJobDescription(e.target.value)}
+                    placeholder="Paste job description keywords, requirements, or tech stack..."
+                    className="w-full p-3 rounded-xl border border-[#E2E8F0] text-xs text-[#0F172A] bg-white focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-50 transition resize-none"
+                  />
+                </div>
+              </div>
+
+              <button
+                onClick={runAtsAnalysis}
+                disabled={atsAnalyzing}
+                className="w-full h-10 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-semibold flex items-center justify-center gap-2 transition cursor-pointer disabled:opacity-50"
+              >
+                {atsAnalyzing ? <><Loader2 size={14} className="animate-spin" /> Analyzing Real-Time Content...</> : <><Shield size={14} /> Re-run Real-Time ATS Analysis</>}
+              </button>
+
+              {atsResults && (
+                <div className="space-y-5 pt-2">
+                  <div className="flex items-center gap-5 p-4 rounded-xl bg-[#F7F8FC] border border-[#ECEDF3]">
+                    <div className="relative shrink-0">
+                      <svg width="70" height="70" viewBox="0 0 80 80">
+                        <circle cx="40" cy="40" r="36" fill="none" stroke="#ECEDF3" strokeWidth="4" />
+                        <circle cx="40" cy="40" r="36" fill="none" stroke={atsResults.score >= 75 ? '#22C55E' : atsResults.score >= 50 ? '#F59E0B' : '#EF4444'}
+                          strokeWidth="4" strokeDasharray={`${atsResults.score * 2.26} ${226 - atsResults.score * 2.26}`} strokeDashoffset="56.5" strokeLinecap="round" />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className={`text-base font-bold ${atsResults.score >= 75 ? 'text-emerald-600' : atsResults.score >= 50 ? 'text-amber-600' : 'text-red-500'}`}>{atsResults.score}%</span>
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-[#111827]">{atsResults.jobRoleMatch || 'ATS Role Match'}</h4>
+                      <p className="text-xs text-[#6B7280] mt-0.5">Role: <span className="font-semibold text-[#111827]">{atsResults.evaluatedRole}</span></p>
+                      <div className="flex flex-wrap gap-2 mt-2 text-[10px] font-semibold text-[#4B5563]">
+                        <span className="px-2 py-0.5 rounded bg-white border border-[#E2E8F0]">Keywords: {atsResults.keywordMatchScore}%</span>
+                        <span className="px-2 py-0.5 rounded bg-white border border-[#E2E8F0]">Format: {atsResults.formattingScore}%</span>
+                        <span className="px-2 py-0.5 rounded bg-white border border-[#E2E8F0]">Impact: {atsResults.impactScore}%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {Array.isArray(atsResults.matchedKeywords) && atsResults.matchedKeywords.length > 0 && (
+                    <div>
+                      <h4 className="text-xs font-bold text-[#111827] mb-2 flex items-center gap-1.5"><CheckCircle2 size={13} className="text-emerald-500" /> Present Keywords ({atsResults.matchedKeywords.length})</h4>
+                      <div className="flex flex-wrap gap-1.5">
+                        {atsResults.matchedKeywords.map((kw: string) => (
+                          <span key={kw} className="px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-[10px] font-semibold text-emerald-700">{kw}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {Array.isArray(atsResults.missingKeywords) && atsResults.missingKeywords.length > 0 && (
+                    <div>
+                      <h4 className="text-xs font-bold text-[#111827] mb-2 flex items-center gap-1.5"><AlertCircle size={13} className="text-amber-500" /> Missing Required Keywords ({atsResults.missingKeywords.length})</h4>
+                      <div className="flex flex-wrap gap-1.5">
+                        {atsResults.missingKeywords.map((kw: string) => (
+                          <span key={kw} className="px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-200 text-[10px] font-semibold text-amber-700">{kw}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {Array.isArray(atsResults.actionableSuggestions) && atsResults.actionableSuggestions.length > 0 && (
+                    <div className="bg-[#EFF6FF] rounded-xl p-4 border border-blue-100">
+                      <h4 className="text-xs font-bold text-[#1E40AF] mb-2 flex items-center gap-1.5"><Lightbulb size={13} className="text-blue-600" /> Actionable Recommendations</h4>
+                      <ul className="space-y-1.5 text-xs text-[#1E3A8A]">
+                        {atsResults.actionableSuggestions.map((tip: string, idx: number) => (
+                          <li key={idx}>• {tip}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

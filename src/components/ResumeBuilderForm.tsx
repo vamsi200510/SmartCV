@@ -1,36 +1,22 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  User, FileText, GraduationCap, Code2, FolderGit2, Briefcase, 
-  Award, Trophy, HelpCircle, Plus, Trash2, ArrowLeft, ArrowRight, Save, Check,
-  ArrowUp, ArrowDown
+import {
+  User, FileText, GraduationCap, Code2, FolderGit2, Briefcase,
+  Award, Trophy, HelpCircle, Plus, Trash2, ArrowUp, ArrowDown,
+  Check, AlertCircle, ChevronRight, Loader2, Camera, X
 } from 'lucide-react';
 
+// ── Types ─────────────────────────────────────────────────────────
 interface ResumeBuilderFormProps {
   resumeId: string;
   initialData: any;
   onChange: (data: any) => void;
   onSaveStatusChange: (status: 'saved' | 'saving' | 'error') => void;
-  isDarkMode?: boolean;
+  saveStatus?: 'saved' | 'saving' | 'error';
   templateId?: string | null;
   onPreviewPdf?: () => void;
 }
-
-const TEMPLATE_NAMES: Record<string, string> = {
-  'ats-professional': 'ATS Professional',
-  'tech-minimal': 'Tech Minimal',
-  'silicon-valley': 'Silicon Valley',
-  'modern-gradient': 'Modern Gradient',
-  'executive-pro': 'Executive Pro',
-  'creative-portfolio': 'Creative Portfolio',
-  'clean-academic': 'Clean Academic',
-  'impact-startup': 'Impact Startup',
-  'faang-elite': 'FAANG Elite',
-  'one-page-compact': 'One Page Compact',
-  'modern-two-column': 'Modern Two Column',
-  'product-manager-pro': 'Product Manager Pro'
-};
 
 const STEPS = [
   { id: 1, label: 'Personal Info', icon: User },
@@ -41,1833 +27,751 @@ const STEPS = [
   { id: 6, label: 'Experience', icon: Briefcase },
   { id: 7, label: 'Certifications', icon: Award },
   { id: 8, label: 'Achievements', icon: Trophy },
-  { id: 9, label: 'Additional Info', icon: HelpCircle }
+  { id: 9, label: 'Additional Info', icon: HelpCircle },
 ];
 
+// ── Shared field style helpers ─────────────────────────────────────
+const inputClass = `w-full h-9 px-3 rounded-[10px] border text-[13px] font-medium focus:outline-none transition-all duration-150 border-[#E2E8F0] bg-white text-[#0F172A] placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 hover:border-slate-300`;
+const textareaClass = `w-full px-3 py-2.5 rounded-[10px] border text-[13px] font-medium focus:outline-none transition-all duration-150 resize-none leading-relaxed border-[#E2E8F0] bg-white text-[#0F172A] placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 hover:border-slate-300`;
+const labelClass = `text-[10px] font-semibold uppercase tracking-wide text-[#64748B] mb-1 block`;
+
+// ── Item card wrapper ──────────────────────────────────────────────
+function ItemCard({
+  children,
+  onMoveUp,
+  onMoveDown,
+  onDelete,
+  canMoveUp,
+  canMoveDown,
+}: {
+  children: React.ReactNode;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
+  onDelete: () => void;
+  canMoveUp: boolean;
+  canMoveDown: boolean;
+}) {
+  return (
+    <div className="border border-[#E2E8F0] rounded-xl p-4 space-y-3 relative group bg-white shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:border-slate-300 transition-all duration-200">
+      <div className="absolute top-2.5 right-2.5 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+        <button type="button" onClick={onMoveUp} disabled={!canMoveUp} className="p-1.5 rounded-lg text-[#94A3B8] hover:text-[#2563EB] hover:bg-[#EFF6FF] disabled:opacity-25 transition-colors cursor-pointer" title="Move Up"><ArrowUp size={13} /></button>
+        <button type="button" onClick={onMoveDown} disabled={!canMoveDown} className="p-1.5 rounded-lg text-[#94A3B8] hover:text-[#2563EB] hover:bg-[#EFF6FF] disabled:opacity-25 transition-colors cursor-pointer" title="Move Down"><ArrowDown size={13} /></button>
+        <button type="button" onClick={onDelete} className="p-1.5 rounded-lg text-[#94A3B8] hover:text-[#EF4444] hover:bg-[#FEF2F2] transition-colors cursor-pointer" title="Delete"><Trash2 size={13} /></button>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+// ── Main Component ─────────────────────────────────────────────────
 export default function ResumeBuilderForm({
   resumeId,
   initialData,
   onChange,
-  onSaveStatusChange,
-  isDarkMode = false,
+  onSaveStatusChange: _onSaveStatusChange,
+  saveStatus: _saveStatus = 'saved',
   templateId = null,
-  onPreviewPdf
+  onPreviewPdf: _onPreviewPdf,
 }: ResumeBuilderFormProps) {
-
-  const [activePanel, setActivePanel] = useState<'content' | 'design'>('content');
-  const [exiting, setExiting] = useState(false);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
-  const [isExportingPdf, setIsExportingPdf] = useState(false);
-
-  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 4000);
-  };
-
-  // Customization state helpers
-  const getCustomization = () => {
-    return formData?.customization || {
-      fontFamily: 'Inter',
-      fontSize: 'medium',
-      density: 'balanced',
-      primaryColor: '#0f172a',
-      visibleSections: ['summary', 'experience', 'projects', 'skills', 'education', 'certifications', 'achievements', 'additionalInfo'],
-      sectionOrder: ['summary', 'experience', 'projects', 'skills', 'education', 'certifications', 'achievements', 'additionalInfo']
-    };
-  };
-
-  const updateCustomization = (field: string, value: any) => {
-    updateFormState((prev: any) => {
-      const updated = {
-        ...prev,
-        customization: {
-          ...getCustomization(),
-          [field]: value
-        }
-      };
-      return updated;
-    });
-  };
-
-  const toggleSectionVisibility = (sectionId: string) => {
-    const currentVisible = [...getCustomization().visibleSections];
-    let updatedVisible;
-    if (currentVisible.includes(sectionId)) {
-      updatedVisible = currentVisible.filter(id => id !== sectionId);
-    } else {
-      updatedVisible = [...currentVisible, sectionId];
-    }
-    updateCustomization('visibleSections', updatedVisible);
-  };
-
-  const moveSection = (index: number, direction: 'up' | 'down') => {
-    const currentOrder = [...getCustomization().sectionOrder];
-    const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    if (targetIndex < 0 || targetIndex >= currentOrder.length) return;
-    
-    const temp = currentOrder[index];
-    currentOrder[index] = currentOrder[targetIndex];
-    currentOrder[targetIndex] = temp;
-    updateCustomization('sectionOrder', currentOrder);
-  };
-
-  const saveResumeData = async (): Promise<boolean> => {
-    onSaveStatusChange('saving');
-    try {
-      const response = await fetch('/api/resumes', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: resumeId,
-          resume_data: formData,
-          template_id: templateId
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Save operation failed');
-      }
-
-      onSaveStatusChange('saved');
-      setIsDirty(false);
-      return true;
-    } catch (err: any) {
-      console.error(err);
-      onSaveStatusChange('error');
-      return false;
-    }
-  };
-
-  const handleSaveAndExit = async () => {
-    setExiting(true);
-    const success = await saveResumeData();
-    setExiting(false);
-    if (success) {
-      window.location.href = '/dashboard';
-    } else {
-      alert('Failed to save changes. Please try again.');
-    }
-  };
-
-  const handleExportPdf = async () => {
-    if (isExportingPdf) return;
-    setIsExportingPdf(true);
-
-    const saveSuccess = await saveResumeData();
-    if (!saveSuccess) {
-      alert('Failed to save the latest changes before exporting. Export aborted.');
-      setIsExportingPdf(false);
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/resumes/export-pdf?id=${resumeId}`);
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to export PDF.');
-      }
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-
-      // Filename format: Resume_{ResumeTitle}.pdf (safe string)
-      const resumeTitle = formData?.personalInfo?.fullName || 'Resume';
-      const cleanTitle = resumeTitle
-        .trim()
-        .replace(/\s+/g, '_')
-        .replace(/[^a-zA-Z0-9_-]/g, '');
-
-      a.download = `Resume_${cleanTitle}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-
-      showToast('PDF downloaded successfully.', 'success');
-    } catch (err: any) {
-      console.error('[EXPORT-PDF] Client error:', err);
-      alert('Export PDF failed: ' + err.message);
-    } finally {
-      setIsExportingPdf(false);
-    }
-  };
-  
-  const inputClass = `w-full h-11 px-3.5 rounded-xl border text-xs focus:outline-none transition duration-150 ${
-    isDarkMode 
-      ? 'border-slate-800 bg-slate-950 text-slate-100 focus:border-indigo-500' 
-      : 'border-slate-200 bg-white text-slate-800 focus:border-indigo-650 focus:ring-1 focus:ring-indigo-650/15 shadow-sm'
-  }`;
-  const textareaClass = `w-full p-3.5 rounded-xl border text-xs focus:outline-none transition resize-none leading-relaxed duration-150 ${
-    isDarkMode 
-      ? 'border-slate-800 bg-slate-950 text-slate-100 focus:border-indigo-500' 
-      : 'border-slate-200 bg-white text-slate-800 focus:border-indigo-650 focus:ring-1 focus:ring-indigo-650/15 shadow-sm'
-  }`;
-
-  const getFieldInputClass = (fieldName: string) => {
-    const isAmber = formData?.importMetadata?.lowConfidenceFields?.includes(fieldName);
-    if (isAmber) {
-      return `w-full h-11 px-3.5 rounded-xl border text-xs focus:outline-none transition duration-150 border-amber-500 focus:border-amber-500 focus:ring-1 focus:ring-amber-500/15 bg-amber-500/5 ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`;
-    }
-    return inputClass;
-  };
-
-  const renderLowConfidenceWarning = (fieldName: string) => {
-    if (formData?.importMetadata?.lowConfidenceFields?.includes(fieldName)) {
-      return (
-        <span className="text-[10px] text-amber-600 dark:text-amber-400 font-bold block mt-1">
-          Review Required: Auto-extraction confidence is low for this field.
-        </span>
-      );
-    }
-    return null;
-  };
-
-  const isLowConfidence = (fieldName: string) => {
-    return !!formData?.importMetadata?.lowConfidenceFields?.includes(fieldName);
-  };
-
   const [activeStep, setActiveStep] = useState(1);
   const [formData, setFormData] = useState<any>(null);
-  const [isDirty, setIsDirty] = useState(false);
-  const firstLoad = useRef(true);
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const photoInputRef = useRef<HTMLInputElement>(null);
+  const _firstLoad = useRef(true);
   const isUserEditing = useRef(false);
+  // Keep latest onChange in a ref so effects don't need it as a dependency.
+  const onChangeRef = useRef(onChange);
+  useEffect(() => { onChangeRef.current = onChange; }, [onChange]);
 
+  // ── State management ───────────────────────────────────────────
   const updateFormState = (updater: (prev: any) => any) => {
     isUserEditing.current = true;
     setFormData(updater);
   };
 
-  // Notify parent component on state changes
   useEffect(() => {
     if (formData && isUserEditing.current) {
-      onChange(formData);
-      setIsDirty(true);
+      onChangeRef.current(formData);
       isUserEditing.current = false;
     }
-  }, [formData, onChange]);
+  // formData is the only real trigger — onChangeRef is a stable ref, not a dep.
+  }, [formData]);
 
-  // Sync initial data from parent
+  const lastInitialDataRef = useRef<string | null>(null);
   useEffect(() => {
-    if (initialData && firstLoad.current) {
+    if (!initialData) return;
+    const str = JSON.stringify(initialData);
+    if (lastInitialDataRef.current !== str) {
+      lastInitialDataRef.current = str;
+      isUserEditing.current = false;
       setFormData(initialData);
-      firstLoad.current = false;
     }
   }, [initialData]);
 
-  // Debounced Autosave Trigger
-  useEffect(() => {
-    if (!formData || !isDirty) return;
 
-    onSaveStatusChange('saving');
-    const delayDebounce = setTimeout(async () => {
-      try {
-        const response = await fetch('/api/resumes', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            id: resumeId,
-            resume_data: formData
-          })
-        });
 
-        if (!response.ok) {
-          throw new Error('Database write operation failed');
-        }
+  // ── Export PDF ────────────────────────────────────────────────
+  const _handleExportPdf = async () => {
+    if (isExportingPdf) return;
+    setIsExportingPdf(true);
+    try {
+      await fetch('/api/resumes', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: resumeId, resume_data: formData, template_id: templateId }),
+      });
+      const res = await fetch(`/api/resumes/export-pdf?id=${resumeId}`);
+      if (!res.ok) throw new Error('Export failed');
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Resume_${(formData?.personalInfo?.fullName || 'Resume').replace(/\s+/g, '_')}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (err: any) {
+      console.error('PDF export failed:', err);
+    } finally {
+      setIsExportingPdf(false);
+    }
+  };
 
-        onSaveStatusChange('saved');
-        setIsDirty(false);
-      } catch (err: any) {
-        console.error('Autosave error:', err);
-        onSaveStatusChange('error');
-      }
-    }, 1000); // 1000ms debounce save
+  // ── Low-confidence helpers ────────────────────────────────────
+  const clearLowConfidenceField = (prev: any, field: string) => {
+    if (!prev.importMetadata?.lowConfidenceFields) return prev;
+    return { ...prev, importMetadata: { ...prev.importMetadata, lowConfidenceFields: prev.importMetadata.lowConfidenceFields.filter((f: string) => f !== field) } };
+  };
+  const isLowConf = (field: string) => !!formData?.importMetadata?.lowConfidenceFields?.includes(field);
+  const getFieldClass = (field: string) => isLowConf(field)
+    ? `w-full h-9 px-3 rounded-[10px] border text-[13px] focus:outline-none transition-all duration-150 border-amber-400 focus:ring-2 focus:ring-amber-400/20 bg-amber-50 text-[#111827]`
+    : inputClass;
 
-    return () => clearTimeout(delayDebounce);
-  }, [formData, isDirty, resumeId, onSaveStatusChange]);
+  // ── Field updaters ────────────────────────────────────────────
+  const updatePersonalInfo = (field: string, value: string) =>
+    updateFormState((prev: any) => clearLowConfidenceField({ ...prev, personalInfo: { ...prev.personalInfo, [field]: value } }, field));
+
+  // Education
+  const addEducation = () => updateFormState((p: any) => ({ ...p, education: [...(p.education || []), { degree: '', school: '', duration: '', details: '' }] }));
+  const removeEducation = (i: number) => updateFormState((p: any) => ({ ...p, education: p.education.filter((_: any, idx: number) => idx !== i) }));
+  const updateEducation = (i: number, field: string, val: string) => updateFormState((p: any) => {
+    const list = [...(p.education || [])]; list[i] = { ...list[i], [field]: val };
+    return clearLowConfidenceField({ ...p, education: list }, 'education');
+  });
+
+  // Skills
+  const addSkill = () => updateFormState((p: any) => ({ ...p, skills: [...(p.skills || []), { category: '', items: [] }] }));
+  const removeSkill = (i: number) => updateFormState((p: any) => ({ ...p, skills: p.skills.filter((_: any, idx: number) => idx !== i) }));
+  const updateSkillCategory = (i: number, v: string) => updateFormState((p: any) => { const list = [...(p.skills || [])]; list[i] = { ...list[i], category: v }; return clearLowConfidenceField({ ...p, skills: list }, 'skills'); });
+  const updateSkillItems = (i: number, csv: string) => updateFormState((p: any) => { const list = [...(p.skills || [])]; list[i] = { ...list[i], items: csv.split(',').map((s: string) => s.trim()).filter(Boolean) }; return clearLowConfidenceField({ ...p, skills: list }, 'skills'); });
+
+  // Projects
+  const addProject = () => updateFormState((p: any) => ({ ...p, projects: [...(p.projects || []), { name: '', technologies: [], description: '' }] }));
+  const removeProject = (i: number) => updateFormState((p: any) => ({ ...p, projects: p.projects.filter((_: any, idx: number) => idx !== i) }));
+  const updateProject = (i: number, field: string, val: any) => updateFormState((p: any) => {
+    const list = [...(p.projects || [])];
+    list[i] = field === 'technologies' ? { ...list[i], technologies: val.split(',').map((s: string) => s.trim()).filter(Boolean) } : { ...list[i], [field]: val };
+    return { ...p, projects: list };
+  });
+
+  // Experience
+  const addExperience = () => updateFormState((p: any) => ({ ...p, experience: [...(p.experience || []), { role: '', company: '', duration: '', location: '', bullets: [] }] }));
+  const removeExperience = (i: number) => updateFormState((p: any) => ({ ...p, experience: p.experience.filter((_: any, idx: number) => idx !== i) }));
+  const updateExperience = (i: number, field: string, val: any) => updateFormState((p: any) => {
+    const list = [...(p.experience || [])];
+    list[i] = field === 'bullets' ? { ...list[i], bullets: val.split('\n').map((s: string) => s.trim()).filter(Boolean) } : { ...list[i], [field]: val };
+    return clearLowConfidenceField({ ...p, experience: list }, 'experience');
+  });
+
+  // Certifications
+  const addCert = () => updateFormState((p: any) => ({ ...p, certifications: [...(p.certifications || []), { name: '', issuer: '', date: '' }] }));
+  const removeCert = (i: number) => updateFormState((p: any) => ({ ...p, certifications: (p.certifications || []).filter((_: any, idx: number) => idx !== i) }));
+  const updateCert = (i: number, field: string, val: string) => updateFormState((p: any) => { const list = [...(p.certifications || [])]; list[i] = { ...list[i], [field]: val }; return { ...p, certifications: list }; });
+
+  // Achievements
+  const addAchievement = () => updateFormState((p: any) => ({ ...p, achievements: [...(p.achievements || []), { title: '', description: '' }] }));
+  const removeAchievement = (i: number) => updateFormState((p: any) => ({ ...p, achievements: (p.achievements || []).filter((_: any, idx: number) => idx !== i) }));
+  const updateAchievement = (i: number, field: string, val: string) => updateFormState((p: any) => { const list = [...(p.achievements || [])]; list[i] = { ...list[i], [field]: val }; return { ...p, achievements: list }; });
+
+  // Additional info
+  const updateAdditionalInfo = (field: string, val: string) => updateFormState((p: any) => ({ ...p, additionalInfo: { ...(p.additionalInfo || {}), [field]: val } }));
+
+  // Reorder
+  const moveItem = (section: string, i: number, dir: 'up' | 'down') => updateFormState((prev: any) => {
+    const list = [...(prev[section] || [])];
+    const target = dir === 'up' ? i - 1 : i + 1;
+    if (target < 0 || target >= list.length) return prev;
+    [list[i], list[target]] = [list[target], list[i]];
+    return { ...prev, [section]: list };
+  });
+
+  // ── Completion states ─────────────────────────────────────────
+  const isPersonalInfoComplete = !!(formData?.personalInfo?.fullName?.trim() && formData?.personalInfo?.email?.trim() && formData?.personalInfo?.phone?.trim() && formData?.personalInfo?.location?.trim());
+  const isSummaryComplete = !!formData?.personalInfo?.summary?.trim();
+  const isEducationComplete = !!(formData?.education?.length > 0);
+  const isSkillsComplete = !!(formData?.skills?.length > 0 && formData.skills.some((s: any) => s.items?.length > 0));
+  const isProjectsComplete = !!(formData?.projects?.length > 0);
+  const isExperienceComplete = !!(formData?.experience?.length > 0);
+  const isCertsComplete = !!(formData?.certifications?.length > 0);
+  const isAchievementsComplete = !!(formData?.achievements?.length > 0);
+  const isAdditionalComplete = !!(formData?.additionalInfo?.languages?.trim() || formData?.additionalInfo?.interests?.trim());
+  const _isChecklistComplete = isPersonalInfoComplete && isEducationComplete && isSkillsComplete && isProjectsComplete;
+
+  const progressPercent = Math.round(
+    [isPersonalInfoComplete, isSummaryComplete, isEducationComplete, isSkillsComplete, isProjectsComplete, isExperienceComplete, isCertsComplete, isAchievementsComplete, isAdditionalComplete].filter(Boolean).length / 9 * 100
+  );
+
+  const stepCompletion: Record<number, boolean> = {
+    1: isPersonalInfoComplete, 2: isSummaryComplete, 3: isEducationComplete,
+    4: isSkillsComplete, 5: isProjectsComplete, 6: isExperienceComplete,
+    7: isCertsComplete, 8: isAchievementsComplete, 9: isAdditionalComplete,
+  };
 
   if (!formData) {
     return (
-      <div className="h-full w-full flex items-center justify-center text-slate-500 py-12">
-        <span className="h-6 w-6 rounded-full border-2 border-slate-800 border-t-teal-400 animate-spin mr-3" />
-        <span className="text-xs">Initializing Editor Fields...</span>
+      <div className="h-full w-full flex items-center justify-center gap-3 text-[#6B7280]">
+        <Loader2 size={20} className="animate-spin text-[#2563EB]" />
+        <span className="text-sm font-medium">Loading editor…</span>
       </div>
     );
   }
 
-  // Update specific values in form data structure
-  const clearLowConfidenceField = (prev: any, field: string) => {
-    if (!prev.importMetadata?.lowConfidenceFields) return prev;
-    return {
-      ...prev,
-      importMetadata: {
-        ...prev.importMetadata,
-        lowConfidenceFields: prev.importMetadata.lowConfidenceFields.filter((f: string) => f !== field)
-      }
-    };
-  };
-
-  const updatePersonalInfo = (field: string, value: string) => {
-    updateFormState((prev: any) => {
-      let updated = {
-        ...prev,
-        personalInfo: {
-          ...prev.personalInfo,
-          [field]: value
-        }
-      };
-      updated = clearLowConfidenceField(updated, field);
-      return updated;
-    });
-  };
-
-  const updateSummary = (value: string) => {
-    updateFormState((prev: any) => {
-      const updated = {
-        ...prev,
-        personalInfo: {
-          ...prev.personalInfo,
-          summary: value
-        }
-      };
-      return updated;
-    });
-  };
-
-  // Education Helpers
-  const addEducation = () => {
-    updateFormState((prev: any) => {
-      const list = prev.education || [];
-      const updatedList = [
-        ...list,
-        { degree: '', school: '', duration: '', details: '' }
-      ];
-      let updated = {
-        ...prev,
-        education: updatedList
-      };
-      updated = clearLowConfidenceField(updated, 'education');
-      return updated;
-    });
-  };
-
-  const removeEducation = (index: number) => {
-    updateFormState((prev: any) => {
-      const updated = {
-        ...prev,
-        education: prev.education.filter((_: any, i: number) => i !== index)
-      };
-      return updated;
-    });
-  };
-
-  const updateEducation = (index: number, field: string, value: string) => {
-    updateFormState((prev: any) => {
-      const list = [...(prev.education || [])];
-      list[index] = { ...list[index], [field]: value };
-      let updated = { ...prev, education: list };
-      updated = clearLowConfidenceField(updated, 'education');
-      return updated;
-    });
-  };
-
-  // Skills Helpers
-  const addSkillCategory = () => {
-    updateFormState((prev: any) => {
-      let updated = {
-        ...prev,
-        skills: [
-          ...(prev.skills || []),
-          { category: '', items: [] }
-        ]
-      };
-      updated = clearLowConfidenceField(updated, 'skills');
-      return updated;
-    });
-  };
-
-  const removeSkillCategory = (index: number) => {
-    updateFormState((prev: any) => {
-      const updated = {
-        ...prev,
-        skills: prev.skills.filter((_: any, i: number) => i !== index)
-      };
-      return updated;
-    });
-  };
-
-  const updateSkillCategory = (index: number, categoryName: string) => {
-    updateFormState((prev: any) => {
-      const list = [...(prev.skills || [])];
-      list[index] = { ...list[index], category: categoryName };
-      let updated = { ...prev, skills: list };
-      updated = clearLowConfidenceField(updated, 'skills');
-      return updated;
-    });
-  };
-
-  const updateSkillItems = (index: number, itemsCsv: string) => {
-    const arr = itemsCsv.split(',').map(s => s.trim()).filter(Boolean);
-    updateFormState((prev: any) => {
-      const list = [...(prev.skills || [])];
-      list[index] = { ...list[index], items: arr };
-      let updated = { ...prev, skills: list };
-      updated = clearLowConfidenceField(updated, 'skills');
-      return updated;
-    });
-  };
-
-  // Projects Helpers
-  const addProject = () => {
-    updateFormState((prev: any) => {
-      const updated = {
-        ...prev,
-        projects: [
-          ...(prev.projects || []),
-          { name: '', technologies: [], description: '' }
-        ]
-      };
-      return updated;
-    });
-  };
-
-  const removeProject = (index: number) => {
-    updateFormState((prev: any) => {
-      const updated = {
-        ...prev,
-        projects: prev.projects.filter((_: any, i: number) => i !== index)
-      };
-      return updated;
-    });
-  };
-
-  const updateProject = (index: number, field: string, value: any) => {
-    updateFormState((prev: any) => {
-      const list = [...(prev.projects || [])];
-      if (field === 'technologies') {
-        list[index] = { 
-          ...list[index], 
-          technologies: value.split(',').map((s: string) => s.trim()).filter(Boolean) 
-        };
-      } else {
-        list[index] = { ...list[index], [field]: value };
-      }
-      const updated = { ...prev, projects: list };
-      return updated;
-    });
-  };
-
-  // Experience Helpers
-  const addExperience = () => {
-    updateFormState((prev: any) => {
-      let updated = {
-        ...prev,
-        experience: [
-          ...(prev.experience || []),
-          { role: '', company: '', duration: '', location: '', bullets: [] }
-        ]
-      };
-      updated = clearLowConfidenceField(updated, 'experience');
-      return updated;
-    });
-  };
-
-  const removeExperience = (index: number) => {
-    updateFormState((prev: any) => {
-      const updated = {
-        ...prev,
-        experience: prev.experience.filter((_: any, i: number) => i !== index)
-      };
-      return updated;
-    });
-  };
-
-  const updateExperience = (index: number, field: string, value: any) => {
-    updateFormState((prev: any) => {
-      const list = [...(prev.experience || [])];
-      if (field === 'bullets') {
-        // split bullet textarea by line breaks
-        list[index] = { 
-          ...list[index], 
-          bullets: value.split('\n').map((s: string) => s.trim()).filter(Boolean) 
-        };
-      } else {
-        list[index] = { ...list[index], [field]: value };
-      }
-      let updated = { ...prev, experience: list };
-      updated = clearLowConfidenceField(updated, 'experience');
-      return updated;
-    });
-  };
-
-  // Certifications Helpers
-  const addCertification = () => {
-    updateFormState((prev: any) => {
-      const updated = {
-        ...prev,
-        certifications: [
-          ...(prev.certifications || []),
-          { name: '', issuer: '', date: '' }
-        ]
-      };
-      return updated;
-    });
-  };
-
-  const removeCertification = (index: number) => {
-    updateFormState((prev: any) => {
-      const updated = {
-        ...prev,
-        certifications: (prev.certifications || []).filter((_: any, i: number) => i !== index)
-      };
-      return updated;
-    });
-  };
-
-  const updateCertification = (index: number, field: string, value: string) => {
-    updateFormState((prev: any) => {
-      const list = [...(prev.certifications || [])];
-      list[index] = { ...list[index], [field]: value };
-      const updated = { ...prev, certifications: list };
-      return updated;
-    });
-  };
-
-  // Achievements Helpers
-  const addAchievement = () => {
-    updateFormState((prev: any) => {
-      const updated = {
-        ...prev,
-        achievements: [
-          ...(prev.achievements || []),
-          { title: '', description: '' }
-        ]
-      };
-      return updated;
-    });
-  };
-
-  const removeAchievement = (index: number) => {
-    updateFormState((prev: any) => {
-      const updated = {
-        ...prev,
-        achievements: (prev.achievements || []).filter((_: any, i: number) => i !== index)
-      };
-      return updated;
-    });
-  };
-
-  const updateAchievement = (index: number, field: string, value: string) => {
-    updateFormState((prev: any) => {
-      const list = [...(prev.achievements || [])];
-      list[index] = { ...list[index], [field]: value };
-      const updated = { ...prev, achievements: list };
-      return updated;
-    });
-  };
-
-  // Additional Info Helpers
-  const updateAdditionalInfo = (field: string, value: string) => {
-    updateFormState((prev: any) => {
-      const updated = {
-        ...prev,
-        additionalInfo: {
-          ...(prev.additionalInfo || {}),
-          [field]: value
-        }
-      };
-      return updated;
-    });
-  };
-
-  // Item Reordering Helper
-  const moveItem = (section: 'education' | 'skills' | 'projects' | 'experience' | 'certifications' | 'achievements', index: number, direction: 'up' | 'down') => {
-    updateFormState((prev: any) => {
-      const list = [...(prev[section] || [])];
-      const targetIndex = direction === 'up' ? index - 1 : index + 1;
-      
-      if (targetIndex < 0 || targetIndex >= list.length) return prev;
-      
-      // Swap elements
-      const temp = list[index];
-      list[index] = list[targetIndex];
-      list[targetIndex] = temp;
-      
-      const updated = { ...prev, [section]: list };
-      return updated;
-    });
-  };
-
-  // Validation Checklist checks
-  const isPersonalInfoComplete = !!(
-    formData?.personalInfo?.fullName?.trim() &&
-    formData?.personalInfo?.email?.trim() &&
-    formData?.personalInfo?.phone?.trim() &&
-    formData?.personalInfo?.location?.trim()
-  );
-  
-  const isSummaryComplete = !!formData?.personalInfo?.summary?.trim();
-  const isEducationComplete = !!(formData?.education && formData.education.length > 0);
-  const isSkillsComplete = !!(formData?.skills && formData.skills.length > 0 && formData.skills.some((s: any) => s.items && s.items.length > 0));
-  const isProjectsComplete = !!(formData?.projects && formData.projects.length > 0);
-  const isExperienceComplete = !!(formData?.experience && formData.experience.length > 0);
-  const isCertificationsComplete = !!(formData?.certifications && formData.certifications.length > 0);
-  const isAchievementsComplete = !!(formData?.achievements && formData.achievements.length > 0);
-  const isAdditionalInfoComplete = !!(formData?.additionalInfo?.languages?.trim() || formData?.additionalInfo?.interests?.trim());
-  
-  const isChecklistComplete = isPersonalInfoComplete && isEducationComplete && isSkillsComplete && isProjectsComplete;
-
-  // Progress Calculation - calculated dynamically based on whether each of the 9 sections has data
-  const progressPercent = (() => {
-    const sections = [
-      isPersonalInfoComplete,
-      isSummaryComplete,
-      isEducationComplete,
-      isSkillsComplete,
-      isProjectsComplete,
-      isExperienceComplete,
-      isCertificationsComplete,
-      isAchievementsComplete,
-      isAdditionalInfoComplete
-    ];
-    const completedCount = sections.filter(Boolean).length;
-    return Math.round((completedCount / sections.length) * 100);
-  })();
-
+  // ── Render ────────────────────────────────────────────────────
   return (
-    <div className={`h-full flex flex-col justify-between transition-colors duration-250 ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>
-      
-      {/* Panel Switcher (only shown after template selected) */}
-      {templateId && (
-        <div className={`flex border-b shrink-0 mb-4 transition-colors duration-200 ${isDarkMode ? 'border-slate-800' : 'border-slate-150'}`}>
-          <button
-            type="button"
-            onClick={() => setActivePanel('content')}
-            className={`flex-1 py-2.5 text-center text-xs font-black uppercase tracking-wider transition cursor-pointer border-b-2 ${
-              activePanel === 'content'
-                ? isDarkMode ? 'text-teal-400 border-teal-400 font-bold' : 'text-indigo-650 border-indigo-650 font-bold'
-                : 'text-slate-400 hover:text-slate-655 border-transparent'
-            }`}
-          >
-            Resume Form
-          </button>
-          <button
-            type="button"
-            onClick={() => setActivePanel('design')}
-            className={`flex-1 py-2.5 text-center text-xs font-black uppercase tracking-wider transition cursor-pointer border-b-2 ${
-              activePanel === 'design'
-                ? isDarkMode ? 'text-teal-400 border-teal-400 font-bold' : 'text-indigo-650 border-indigo-650 font-bold'
-                : 'text-slate-400 hover:text-slate-655 border-transparent'
-            }`}
-          >
-            Template Customization
-          </button>
-        </div>
-      )}
+    <div className="h-full flex bg-white rounded-2xl shadow-[0_4px_25px_rgba(0,0,0,0.04)] border border-[#E2E8F0] overflow-hidden text-[#111827]">
 
-      {activePanel === 'content' ? (
-        <>
-          {/* Horizontal Step Tabs Selection */}
-          <div className={`border-b pb-4 shrink-0 overflow-x-auto scrollbar-none flex items-center gap-1.5 px-1 transition-colors duration-200 ${isDarkMode ? 'border-slate-800' : 'border-slate-150'}`}>
-        {STEPS.map((step) => {
-          const StepIcon = step.icon;
-          return (
-            <button
-              key={step.id}
-              onClick={() => setActiveStep(step.id)}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-[10.5px] font-bold transition whitespace-nowrap cursor-pointer ${activeStep === step.id ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/10' : isDarkMode ? 'bg-slate-900/40 hover:bg-slate-900 border border-slate-850 text-slate-400 hover:text-slate-200' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800 shadow-sm'}`}
-            >
-              <StepIcon size={12} />
-              <span>{step.label}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Progress Indicator */}
-      <div className={`py-3 px-1 flex items-center justify-between text-[10px] font-bold text-slate-500 border-b shrink-0 transition-colors duration-200 ${isDarkMode ? 'border-slate-900' : 'border-slate-150'}`}>
-        <span>Completion: {progressPercent}%</span>
-        <div className={`w-40 h-1.5 rounded-full overflow-hidden transition-colors duration-200 ${isDarkMode ? 'bg-slate-950' : 'bg-slate-100 border border-slate-150 shadow-inner'}`}>
-          <div 
-            className="h-full bg-indigo-500 transition-all duration-300"
-            style={{ width: `${progressPercent}%` }}
-          />
-        </div>
-      </div>
-
-      {/* Step Forms Content Area */}
-      <div className="flex-grow overflow-y-auto py-5 space-y-4 px-1">
-        
-        {/* STEP 1: PERSONAL INFORMATION */}
-        {activeStep === 1 && (
-          <div className="space-y-4 animate-fade-in-up">
-            <h3 className={`text-xs font-black uppercase tracking-wider ${isDarkMode ? 'text-indigo-400' : 'text-indigo-650'}`}>// Personal Information</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className={`text-[9.5px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-600'} block`}>Full Name</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Vamsi Krishna Tadisetti"
-                  value={formData.personalInfo?.fullName || ''}
-                  onChange={(e) => updatePersonalInfo('fullName', e.target.value)}
-                  className={getFieldInputClass('fullName')}
-                />
-                {renderLowConfidenceWarning('fullName')}
-              </div>
-
-              <div className="space-y-1.5">
-                <label className={`text-[9.5px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-600'} block`}>Job Title / Headline</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Lead Full Stack Developer"
-                  value={formData.personalInfo?.title || ''}
-                  onChange={(e) => updatePersonalInfo('title', e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className={`text-[9.5px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-600'} block`}>Email Address</label>
-                <input
-                  type="email"
-                  placeholder="e.g. name@example.com"
-                  value={formData.personalInfo?.email || ''}
-                  onChange={(e) => updatePersonalInfo('email', e.target.value)}
-                  className={getFieldInputClass('email')}
-                />
-                {renderLowConfidenceWarning('email')}
-              </div>
-
-              <div className="space-y-1.5">
-                <label className={`text-[9.5px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-600'} block`}>Phone Number</label>
-                <input
-                  type="text"
-                  placeholder="e.g. +91 99999 99999"
-                  value={formData.personalInfo?.phone || ''}
-                  onChange={(e) => updatePersonalInfo('phone', e.target.value)}
-                  className={getFieldInputClass('phone')}
-                />
-                {renderLowConfidenceWarning('phone')}
-              </div>
-
-              <div className="space-y-1.5">
-                <label className={`text-[9.5px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-600'} block`}>Location / City</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Hyderabad, India"
-                  value={formData.personalInfo?.location || ''}
-                  onChange={(e) => updatePersonalInfo('location', e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className={`text-[9.5px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-600'} block`}>Personal Website</label>
-                <input
-                  type="text"
-                  placeholder="e.g. domain.dev"
-                  value={formData.personalInfo?.website || ''}
-                  onChange={(e) => updatePersonalInfo('website', e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className={`text-[9.5px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-600'} block`}>GitHub Profile</label>
-                <input
-                  type="text"
-                  placeholder="e.g. github.com/username"
-                  value={formData.personalInfo?.github || ''}
-                  onChange={(e) => updatePersonalInfo('github', e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className={`text-[9.5px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-600'} block`}>LinkedIn Profile</label>
-                <input
-                  type="text"
-                  placeholder="e.g. linkedin.com/in/username"
-                  value={formData.personalInfo?.linkedin || ''}
-                  onChange={(e) => updatePersonalInfo('linkedin', e.target.value)}
-                  className={inputClass}
-                />
-              </div>
+      {/* ── Sidebar Navigation ──────────────────────────────────── */}
+      <aside className="w-[175px] shrink-0 border-r border-[#ECEDF3] bg-[#F8FAFC]/90 p-2.5 flex flex-col justify-between hidden sm:flex">
+        <div className="space-y-2">
+          {/* Progress Bar */}
+          <div className="px-2.5 py-1.5 border-b border-[#ECEDF3] shrink-0 pb-2">
+            <div className="flex items-center justify-between text-[10px] font-bold text-[#64748B] mb-1">
+              <span>Progress</span>
+              <span className={progressPercent === 100 ? 'text-emerald-600' : 'text-[#4F46E5]'}>{progressPercent}%</span>
             </div>
-          </div>
-        )}
-
-        {/* STEP 2: PROFESSIONAL SUMMARY */}
-        {activeStep === 2 && (
-          <div className="space-y-4 animate-fade-in-up">
-            <h3 className={`text-xs font-black uppercase tracking-wider ${isDarkMode ? 'text-indigo-400' : 'text-indigo-650'}`}>// Professional Summary</h3>
-            <div className="space-y-1.5">
-              <label className={`text-[9.5px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-600'} block`}>Summary / Professional Bio</label>
-              <textarea
-                placeholder="Write a concise overview of your expertise, achievements, and capabilities..."
-                value={formData.personalInfo?.summary || ''}
-                onChange={(e) => updateSummary(e.target.value)}
-                className={textareaClass}
+            <div className="h-1 w-full bg-[#E2E8F0] rounded-full overflow-hidden">
+              <div
+                className={`h-full transition-all duration-500 rounded-full ${progressPercent === 100 ? 'bg-emerald-500' : 'bg-gradient-to-r from-[#6366F1] to-[#2563EB]'}`}
+                style={{ width: `${progressPercent}%` }}
               />
-              <span className="text-[9px] text-slate-600 block text-right">
-                {formData.personalInfo?.summary?.length || 0} characters typed. Recommended: ~300-500 chars.
-              </span>
             </div>
           </div>
-        )}
 
-        {/* STEP 3: EDUCATION */}
-        {activeStep === 3 && (
-          <div className="space-y-4 animate-fade-in-up">
-            {isLowConfidence('education') && (
-              <div className="border border-amber-500 bg-amber-500/5 p-3.5 rounded-xl text-[10.5px] text-amber-600 dark:text-amber-400 font-bold">
-                Review Required: Auto-extraction confidence is low for education. Please check or add educational entries.
-              </div>
-            )}
-            <div className="flex justify-between items-center">
-              <h3 className={`text-xs font-black uppercase tracking-wider ${isDarkMode ? 'text-indigo-400' : 'text-indigo-650'}`}>// Educational Profile</h3>
-              <button
-                onClick={addEducation}
-                className={`px-3 py-1.5 border text-[10px] font-bold rounded-lg flex items-center gap-1.5 transition duration-150 cursor-pointer ${isDarkMode ? 'bg-slate-900 border-slate-800 hover:bg-slate-850 text-indigo-400' : 'bg-white border-slate-200 hover:bg-slate-50 text-indigo-650 shadow-sm'}`}
-              >
-                <Plus size={12} />
-                <span>Add Education</span>
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              {(formData.education || []).map((edu: any, index: number) => (
-                <div 
-                  key={index}
-                  className={`border rounded-2xl p-5 space-y-4 relative group transition-colors duration-200 ${isDarkMode ? 'border-slate-800 bg-slate-900/10 text-slate-200' : 'border-slate-200 bg-slate-50/50 text-slate-800 shadow-sm'}`}
+          {/* Step Items */}
+          <nav className="space-y-0.5 custom-scrollbar overflow-y-auto max-h-[calc(100vh-140px)]">
+            {STEPS.map((step) => {
+              const Icon = step.icon;
+              const isActive = activeStep === step.id;
+              const isDone = stepCompletion[step.id];
+              return (
+                <button
+                  key={step.id}
+                  onClick={() => setActiveStep(step.id)}
+                  className={`w-full flex items-center justify-between px-2.5 py-[7px] rounded-xl text-[11px] font-bold transition-all duration-150 cursor-pointer group ${
+                    isActive
+                      ? 'bg-[#EEF2FF] text-[#4F46E5] shadow-xs border border-[#E0E7FF]'
+                      : 'text-[#64748B] hover:bg-white hover:text-[#0F172A] border border-transparent'
+                  }`}
                 >
-                  <div className="absolute top-4 right-4 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
-                    <button
-                      type="button"
-                      onClick={() => moveItem('education', index, 'up')}
-                      disabled={index === 0}
-                      className={`h-8 w-8 rounded-lg border flex items-center justify-center transition disabled:opacity-30 cursor-pointer ${
-                        isDarkMode 
-                          ? 'border-slate-800 bg-slate-950 text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/5' 
-                          : 'border-slate-200 bg-white text-slate-500 hover:text-indigo-650 hover:bg-slate-50'
-                      }`}
-                      title="Move Up"
-                    >
-                      <ArrowUp size={13} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => moveItem('education', index, 'down')}
-                      disabled={index === (formData.education || []).length - 1}
-                      className={`h-8 w-8 rounded-lg border flex items-center justify-center transition disabled:opacity-30 cursor-pointer ${
-                        isDarkMode 
-                          ? 'border-slate-800 bg-slate-950 text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/5' 
-                          : 'border-slate-200 bg-white text-slate-500 hover:text-indigo-650 hover:bg-slate-50'
-                      }`}
-                      title="Move Down"
-                    >
-                      <ArrowDown size={13} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => removeEducation(index)}
-                      className={`h-8 w-8 rounded-lg border flex items-center justify-center transition cursor-pointer ${
-                        isDarkMode 
-                          ? 'border-slate-800 bg-slate-950 text-slate-400 hover:text-rose-450 hover:bg-rose-500/5' 
-                          : 'border-slate-200 bg-white text-slate-500 hover:text-rose-600 hover:bg-rose-50'
-                      }`}
-                      title="Remove item"
-                    >
-                      <Trash2 size={13} />
-                    </button>
+                  <div className="flex items-center gap-2">
+                    <Icon size={13} className={isActive ? 'text-[#4F46E5]' : isDone ? 'text-emerald-500' : 'text-[#94A3B8] group-hover:text-[#64748B]'} />
+                    <span>{step.label}</span>
                   </div>
+                  {isDone && <Check size={11} className="text-emerald-500 shrink-0" />}
+                </button>
+              );
+            })}
+          </nav>
+        </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <label className={`text-[9.5px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-600'} block`}>Degree / Certification</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. B.Tech in Computer Science"
-                        value={edu.degree || ''}
-                        onChange={(e) => updateEducation(index, 'degree', e.target.value)}
-                        className={inputClass}
-                      />
+
+      </aside>
+
+      {/* ── Main Content ─────────────────────────────────────────── */}
+      <div className="flex-1 flex flex-col min-w-0 relative overflow-hidden bg-[#F8FAFC]/50">
+
+        {/* Content area */}
+        <div className="flex-1 overflow-y-auto p-4 custom-scrollbar pb-20">
+          <div className="max-w-2xl mx-auto space-y-4">
+
+            {/* ── STEP 1: Personal Information ─────────────── */}
+            {activeStep === 1 && (
+              <div className="space-y-3">
+                <div>
+                  <h3 className="text-[13px] font-bold text-[#111827]">Personal Information</h3>
+                  <p className="text-[11px] text-[#6B7280] mt-0.5">Your contact details appear at the top of your resume.</p>
+                </div>
+                {isLowConf('fullName') && (
+                  <div className="flex items-start gap-2 p-2.5 bg-amber-50 border border-amber-200 rounded-[10px] text-[12px] text-amber-700">
+                    <AlertCircle size={13} className="shrink-0 mt-0.5" />
+                    <span>Some fields were auto-extracted with low confidence. Please review highlighted fields.</span>
+                  </div>
+                )}
+
+                {/* ── Resume Profile Photo ──────────────── */}
+                <div className="space-y-1.5">
+                  <label className={labelClass}>Resume Photo <span className="text-[#9CA3AF] font-normal normal-case">(optional — for templates with headshot)</span></label>
+                  <div className="flex items-center gap-3">
+                    {/* Photo preview / placeholder */}
+                    <div className="relative shrink-0">
+                      {formData?.personalInfo?.profileImage ? (
+                        <>
+                          <img
+                            src={formData.personalInfo.profileImage}
+                            alt="Resume photo"
+                            className="h-12 w-12 rounded-full object-cover border-2 border-[#E2E8F0] shadow-sm"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => updatePersonalInfo('profileImage', '')}
+                            className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-rose-500 text-white flex items-center justify-center shadow hover:bg-rose-600 transition-colors"
+                            title="Remove photo"
+                          >
+                            <X size={8} />
+                          </button>
+                        </>
+                      ) : (
+                        <div className="h-12 w-12 rounded-full bg-[#F3F4F6] border-2 border-dashed border-[#D1D5DB] flex items-center justify-center">
+                          <Camera size={16} className="text-[#9CA3AF]" />
+                        </div>
+                      )}
                     </div>
 
-                    <div className="space-y-1.5">
-                      <label className={`text-[9.5px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-600'} block`}>Institution / School</label>
+                    {/* Upload controls */}
+                    <div className="flex flex-col gap-1.5">
                       <input
-                        type="text"
-                        placeholder="e.g. IIT Hyderabad"
-                        value={edu.school || ''}
-                        onChange={(e) => updateEducation(index, 'school', e.target.value)}
-                        className={inputClass}
-                      />
-                    </div>
+                        ref={photoInputRef}
+                        type="file"
+                        accept="image/jpeg,image/jpg,image/png,image/webp"
+                        className="hidden"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
 
-                    <div className="space-y-1.5">
-                      <label className={`text-[9.5px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-600'} block`}>Duration / Date Range</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. 2018 - 2022"
-                        value={edu.duration || ''}
-                        onChange={(e) => updateEducation(index, 'duration', e.target.value)}
-                        className={inputClass}
-                      />
-                    </div>
+                          // Validate type
+                          const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+                          if (!validTypes.includes(file.type)) {
+                            alert('Invalid file type. Only JPG, PNG, and WebP are allowed.');
+                            return;
+                          }
+                          // Validate size (5MB)
+                          if (file.size > 5 * 1024 * 1024) {
+                            alert('File size exceeds 5MB. Please upload a smaller image.');
+                            return;
+                          }
 
-                    <div className="space-y-1.5">
-                      <label className={`text-[9.5px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-600'} block`}>Grades / Core Modules</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. GPA: 9.4/10 or Distinction"
-                        value={edu.details || ''}
-                        onChange={(e) => updateEducation(index, 'details', e.target.value)}
-                        className={inputClass}
+                          setPhotoUploading(true);
+                          try {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              const dataUrl = reader.result as string;
+                              updatePersonalInfo('profileImage', dataUrl);
+                              setPhotoUploading(false);
+                            };
+                            reader.onerror = () => { setPhotoUploading(false); };
+                            reader.readAsDataURL(file);
+                          } catch {
+                            setPhotoUploading(false);
+                          }
+                          // Reset input so same file can be re-selected
+                          e.target.value = '';
+                        }}
                       />
+                      <button
+                        type="button"
+                        onClick={() => photoInputRef.current?.click()}
+                        disabled={photoUploading}
+                        className="flex items-center gap-1.5 h-8 px-3 rounded-[10px] border border-[#E2E8F0] bg-white text-[11px] font-semibold text-[#374151] hover:bg-[#F9FAFB] transition-colors shadow-sm disabled:opacity-50"
+                      >
+                        {photoUploading ? <Loader2 size={11} className="animate-spin" /> : <Camera size={11} />}
+                        {formData?.personalInfo?.profileImage ? 'Replace Photo' : 'Upload Photo'}
+                      </button>
+                      {formData?.personalInfo?.profileImage && (
+                        <button
+                          type="button"
+                          onClick={() => updatePersonalInfo('profileImage', '')}
+                          className="flex items-center gap-1 h-7 px-2.5 rounded-lg text-[11px] font-medium text-rose-500 hover:bg-rose-50 transition-colors"
+                        >
+                          <Trash2 size={10} /> Remove
+                        </button>
+                      )}
+                      <p className="text-[9px] text-[#9CA3AF]">JPG, PNG, WebP · Max 5MB</p>
                     </div>
                   </div>
                 </div>
-              ))}
 
-              {(!formData.education || formData.education.length === 0) && (
-                <div className={`text-center py-8 border border-dashed rounded-2xl text-slate-500 text-xs ${isDarkMode ? 'border-slate-850' : 'border-slate-200'}`}>
-                  No educational entries added yet.
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* STEP 4: SKILLS */}
-        {activeStep === 4 && (
-          <div className="space-y-4 animate-fade-in-up">
-            {isLowConfidence('skills') && (
-              <div className="border border-amber-500 bg-amber-500/5 p-3.5 rounded-xl text-[10.5px] text-amber-600 dark:text-amber-400 font-bold">
-                Review Required: Auto-extraction confidence is low for skills list. Please check or add skills.
-              </div>
-            )}
-            <div className="flex justify-between items-center">
-              <h3 className={`text-xs font-black uppercase tracking-wider ${isDarkMode ? 'text-indigo-400' : 'text-indigo-650'}`}>// Technical Skill Matrix</h3>
-              <button
-                onClick={addSkillCategory}
-                className={`px-3 py-1.5 border text-[10px] font-bold rounded-lg flex items-center gap-1.5 transition duration-150 cursor-pointer ${isDarkMode ? 'bg-slate-900 border-slate-800 hover:bg-slate-850 text-indigo-400' : 'bg-white border-slate-200 hover:bg-slate-50 text-indigo-650 shadow-sm'}`}
-              >
-                <Plus size={12} />
-                <span>Add Category</span>
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              {(formData.skills || []).map((skill: any, index: number) => (
-                <div 
-                  key={index}
-                  className={`border rounded-2xl p-5 space-y-4 relative group transition-colors duration-200 ${isDarkMode ? 'border-slate-800 bg-slate-900/10 text-slate-200' : 'border-slate-200 bg-slate-50/50 text-slate-800 shadow-sm'}`}
-                >
-                  <div className="absolute top-4 right-4 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
-                    <button
-                      type="button"
-                      onClick={() => moveItem('skills', index, 'up')}
-                      disabled={index === 0}
-                      className={`h-8 w-8 rounded-lg border flex items-center justify-center transition disabled:opacity-30 cursor-pointer ${
-                        isDarkMode 
-                          ? 'border-slate-800 bg-slate-950 text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/5' 
-                          : 'border-slate-200 bg-white text-slate-500 hover:text-indigo-650 hover:bg-slate-50'
-                      }`}
-                      title="Move Up"
-                    >
-                      <ArrowUp size={13} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => moveItem('skills', index, 'down')}
-                      disabled={index === (formData.skills || []).length - 1}
-                      className={`h-8 w-8 rounded-lg border flex items-center justify-center transition disabled:opacity-30 cursor-pointer ${
-                        isDarkMode 
-                          ? 'border-slate-800 bg-slate-950 text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/5' 
-                          : 'border-slate-200 bg-white text-slate-500 hover:text-indigo-650 hover:bg-slate-50'
-                      }`}
-                      title="Move Down"
-                    >
-                      <ArrowDown size={13} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => removeSkillCategory(index)}
-                      className={`h-8 w-8 rounded-lg border flex items-center justify-center transition cursor-pointer ${
-                        isDarkMode 
-                          ? 'border-slate-800 bg-slate-950 text-slate-400 hover:text-rose-455 hover:bg-rose-500/5' 
-                          : 'border-slate-200 bg-white text-slate-500 hover:text-rose-600 hover:bg-rose-50'
-                      }`}
-                      title="Remove item"
-                    >
-                      <Trash2 size={13} />
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-4">
-                    <div className="space-y-1.5">
-                      <label className={`text-[9.5px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-600'} block`}>Skill Classification Category</label>
+                <div className="space-y-2.5">
+                  {/* Full-width fields — long text values */}
+                  {[
+                    { id: 'fullName', label: 'Full Name', placeholder: 'e.g. Vamsi Krishna Tadisetti', type: 'text' },
+                    { id: 'title', label: 'Job Title / Headline', placeholder: 'e.g. Lead Full Stack Developer', type: 'text' },
+                    { id: 'email', label: 'Email Address', placeholder: 'e.g. name@example.com', type: 'email' },
+                  ].map(({ id, label, placeholder, type }) => (
+                    <div key={id} className="space-y-1">
+                      <label className={labelClass}>{label}</label>
                       <input
-                        type="text"
-                        placeholder="e.g. Programming Languages or Cloud & Infrastructure"
-                        value={skill.category || ''}
-                        onChange={(e) => updateSkillCategory(index, e.target.value)}
-                        className={inputClass}
+                        type={type}
+                        placeholder={placeholder}
+                        value={formData.personalInfo?.[id] || ''}
+                        onChange={(e) => updatePersonalInfo(id, e.target.value)}
+                        className={getFieldClass(id)}
                       />
                     </div>
-
-                    <div className="space-y-1.5">
-                      <label className={`text-[9.5px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-600'} block`}>Skills list (comma-separated)</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. React, Next.js, Node.js, Go, TypeScript"
-                        value={skill.items?.join(', ') || ''}
-                        onChange={(e) => updateSkillItems(index, e.target.value)}
-                        className={inputClass}
-                      />
-                      <span className="text-[8.5px] text-slate-650 italic">Items will separate dynamically by commas in templates.</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-              {(!formData.skills || formData.skills.length === 0) && (
-                <div className={`text-center py-8 border border-dashed rounded-2xl text-slate-500 text-xs ${isDarkMode ? 'border-slate-850' : 'border-slate-200'}`}>
-                  No skill categories initialized yet.
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* STEP 5: PROJECTS */}
-        {activeStep === 5 && (
-          <div className="space-y-4 animate-fade-in-up">
-            <div className="flex justify-between items-center">
-              <h3 className={`text-xs font-black uppercase tracking-wider ${isDarkMode ? 'text-indigo-400' : 'text-indigo-650'}`}>// Project Highlights</h3>
-              <button
-                onClick={addProject}
-                className={`px-3 py-1.5 border text-[10px] font-bold rounded-lg flex items-center gap-1.5 transition duration-150 cursor-pointer ${isDarkMode ? 'bg-slate-900 border-slate-800 hover:bg-slate-850 text-indigo-400' : 'bg-white border-slate-200 hover:bg-slate-50 text-indigo-650 shadow-sm'}`}
-              >
-                <Plus size={12} />
-                <span>Add Project</span>
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              {(formData.projects || []).map((proj: any, index: number) => (
-                <div 
-                  key={index}
-                  className={`border rounded-2xl p-5 space-y-4 relative group transition-colors duration-200 ${isDarkMode ? 'border-slate-800 bg-slate-900/10 text-slate-200' : 'border-slate-200 bg-slate-50/50 text-slate-800 shadow-sm'}`}
-                >
-                  <div className="absolute top-4 right-4 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
-                    <button
-                      type="button"
-                      onClick={() => moveItem('projects', index, 'up')}
-                      disabled={index === 0}
-                      className={`h-8 w-8 rounded-lg border flex items-center justify-center transition disabled:opacity-30 cursor-pointer ${
-                        isDarkMode 
-                          ? 'border-slate-800 bg-slate-950 text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/5' 
-                          : 'border-slate-200 bg-white text-slate-500 hover:text-indigo-650 hover:bg-slate-50'
-                      }`}
-                      title="Move Up"
-                    >
-                      <ArrowUp size={13} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => moveItem('projects', index, 'down')}
-                      disabled={index === (formData.projects || []).length - 1}
-                      className={`h-8 w-8 rounded-lg border flex items-center justify-center transition disabled:opacity-30 cursor-pointer ${
-                        isDarkMode 
-                          ? 'border-slate-800 bg-slate-950 text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/5' 
-                          : 'border-slate-200 bg-white text-slate-500 hover:text-indigo-650 hover:bg-slate-50'
-                      }`}
-                      title="Move Down"
-                    >
-                      <ArrowDown size={13} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => removeProject(index)}
-                      className={`h-8 w-8 rounded-lg border flex items-center justify-center transition cursor-pointer ${
-                        isDarkMode 
-                          ? 'border-slate-800 bg-slate-950 text-slate-400 hover:text-rose-455 hover:bg-rose-500/5' 
-                          : 'border-slate-200 bg-white text-slate-500 hover:text-rose-600 hover:bg-rose-50'
-                      }`}
-                      title="Remove item"
-                    >
-                      <Trash2 size={13} />
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-1.5">
-                        <label className={`text-[9.5px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-600'} block`}>Project Name</label>
+                  ))}
+                  {/* Half-width fields — short values */}
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { id: 'phone', label: 'Phone Number', placeholder: 'e.g. +91 99999 99999', type: 'text' },
+                      { id: 'location', label: 'Location / City', placeholder: 'e.g. Hyderabad, India', type: 'text' },
+                    ].map(({ id, label, placeholder, type }) => (
+                      <div key={id} className="space-y-1">
+                        <label className={labelClass}>{label}</label>
                         <input
-                          type="text"
-                          placeholder="e.g. SmartCV Builder"
-                          value={proj.name || ''}
-                          onChange={(e) => updateProject(index, 'name', e.target.value)}
-                          className={inputClass}
+                          type={type}
+                          placeholder={placeholder}
+                          value={formData.personalInfo?.[id] || ''}
+                          onChange={(e) => updatePersonalInfo(id, e.target.value)}
+                          className={getFieldClass(id)}
                         />
                       </div>
-
-                      <div className="space-y-1.5">
-                        <label className={`text-[9.5px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-600'} block`}>Technologies Used (comma-separated)</label>
-                        <input
-                          type="text"
-                          placeholder="e.g. Next.js, Supabase, Go"
-                          value={proj.technologies?.join(', ') || ''}
-                          onChange={(e) => updateProject(index, 'technologies', e.target.value)}
-                          className={inputClass}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className={`text-[9.5px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-600'} block`}>Project Description</label>
-                      <textarea
-                        placeholder="Briefly describe the purpose and impact of this project..."
-                        value={proj.description || ''}
-                        onChange={(e) => updateProject(index, 'description', e.target.value)}
-                        className="w-full h-24 p-3 rounded-xl border border-slate-850 bg-slate-950 text-xs focus:border-indigo-500 focus:outline-none transition resize-none leading-relaxed"
+                    ))}
+                  </div>
+                  {/* Full-width fields — URLs */}
+                  {[
+                    { id: 'website', label: 'Personal Website', placeholder: 'e.g. domain.dev', type: 'text' },
+                    { id: 'github', label: 'GitHub Profile', placeholder: 'e.g. github.com/username', type: 'text' },
+                    { id: 'linkedin', label: 'LinkedIn Profile', placeholder: 'e.g. linkedin.com/in/username', type: 'text' },
+                  ].map(({ id, label, placeholder, type }) => (
+                    <div key={id} className="space-y-1">
+                      <label className={labelClass}>{label}</label>
+                      <input
+                        type={type}
+                        placeholder={placeholder}
+                        value={formData.personalInfo?.[id] || ''}
+                        onChange={(e) => updatePersonalInfo(id, e.target.value)}
+                        className={getFieldClass(id)}
                       />
                     </div>
-                  </div>
+                  ))}
                 </div>
-              ))}
-
-              {(!formData.projects || formData.projects.length === 0) && (
-                <div className={`text-center py-8 border border-dashed rounded-2xl text-slate-500 text-xs ${isDarkMode ? 'border-slate-850' : 'border-slate-200'}`}>
-                  No projects added yet.
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* STEP 6: INTERNSHIPS & EXPERIENCE */}
-        {activeStep === 6 && (
-          <div className="space-y-4 animate-fade-in-up">
-            {isLowConfidence('experience') && (
-              <div className="border border-amber-500 bg-amber-500/5 p-3.5 rounded-xl text-[10.5px] text-amber-600 dark:text-amber-400 font-bold">
-                Review Required: Auto-extraction confidence is low for work experience. Please check or add experience.
               </div>
             )}
-            <div className="flex justify-between items-center">
-              <h3 className={`text-xs font-black uppercase tracking-wider ${isDarkMode ? 'text-indigo-400' : 'text-indigo-650'}`}>// Internships & Experience</h3>
-              <button
-                onClick={addExperience}
-                className={`px-3 py-1.5 border text-[10px] font-bold rounded-lg flex items-center gap-1.5 transition duration-150 cursor-pointer ${isDarkMode ? 'bg-slate-900 border-slate-800 hover:bg-slate-850 text-indigo-400' : 'bg-white border-slate-200 hover:bg-slate-50 text-indigo-650 shadow-sm'}`}
-              >
-                <Plus size={12} />
-                <span>Add Experience</span>
-              </button>
-            </div>
 
-            <div className="space-y-4">
-              {(formData.experience || []).map((exp: any, index: number) => (
-                <div 
-                  key={index}
-                  className={`border rounded-2xl p-5 space-y-4 relative group transition-colors duration-200 ${isDarkMode ? 'border-slate-800 bg-slate-900/10 text-slate-200' : 'border-slate-200 bg-slate-50/50 text-slate-800 shadow-sm'}`}
-                >
-                  <div className="absolute top-4 right-4 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
-                    <button
-                      type="button"
-                      onClick={() => moveItem('experience', index, 'up')}
-                      disabled={index === 0}
-                      className={`h-8 w-8 rounded-lg border flex items-center justify-center transition disabled:opacity-30 cursor-pointer ${
-                        isDarkMode 
-                          ? 'border-slate-800 bg-slate-950 text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/5' 
-                          : 'border-slate-200 bg-white text-slate-500 hover:text-indigo-650 hover:bg-slate-50'
-                      }`}
-                      title="Move Up"
-                    >
-                      <ArrowUp size={13} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => moveItem('experience', index, 'down')}
-                      disabled={index === (formData.experience || []).length - 1}
-                      className={`h-8 w-8 rounded-lg border flex items-center justify-center transition disabled:opacity-30 cursor-pointer ${
-                        isDarkMode 
-                          ? 'border-slate-800 bg-slate-950 text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/5' 
-                          : 'border-slate-200 bg-white text-slate-500 hover:text-indigo-650 hover:bg-slate-50'
-                      }`}
-                      title="Move Down"
-                    >
-                      <ArrowDown size={13} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => removeExperience(index)}
-                      className={`h-8 w-8 rounded-lg border flex items-center justify-center transition cursor-pointer ${
-                        isDarkMode 
-                          ? 'border-slate-800 bg-slate-950 text-slate-400 hover:text-rose-455 hover:bg-rose-500/5' 
-                          : 'border-slate-200 bg-white text-slate-500 hover:text-rose-600 hover:bg-rose-50'
-                      }`}
-                      title="Remove item"
-                    >
-                      <Trash2 size={13} />
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <label className={`text-[9.5px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-600'} block`}>Job Role / Title</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. Software Engineer Intern"
-                        value={exp.role || ''}
-                        onChange={(e) => updateExperience(index, 'role', e.target.value)}
-                        className={inputClass}
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className={`text-[9.5px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-600'} block`}>Organization / Company</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. SmartTech Solutions"
-                        value={exp.company || ''}
-                        onChange={(e) => updateExperience(index, 'company', e.target.value)}
-                        className={inputClass}
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className={`text-[9.5px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-600'} block`}>Duration / Date Range</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. 2023 - Present or May 2022 - Aug 2022"
-                        value={exp.duration || ''}
-                        onChange={(e) => updateExperience(index, 'duration', e.target.value)}
-                        className={inputClass}
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className={`text-[9.5px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-600'} block`}>Location (optional)</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. Remote or Hyderabad, India"
-                        value={exp.location || ''}
-                        onChange={(e) => updateExperience(index, 'location', e.target.value)}
-                        className={inputClass}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className={`text-[9.5px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-600'} block`}>Key Responsibilities (One bullet per line)</label>
-                    <textarea
-                      placeholder="e.g. Led design migration to Next.js boosting page load by 45%&#10;Built real-time dashboard analytics capturing 10M daily events"
-                      value={exp.bullets?.join('\n') || ''}
-                      onChange={(e) => updateExperience(index, 'bullets', e.target.value)}
-                      className={textareaClass + " h-32"}
-                    />
-                    <span className="text-[8.5px] text-slate-650 italic">Separate each bullet achievement cleanly using line breaks.</span>
-                  </div>
+            {/* ── STEP 2: Professional Summary ─────────────── */}
+            {activeStep === 2 && (
+              <div className="space-y-3">
+                <div>
+                  <h3 className="text-[13px] font-bold text-[#111827]">Professional Summary</h3>
+                  <p className="text-[11px] text-[#6B7280] mt-0.5">A concise overview of your expertise and key achievements.</p>
                 </div>
-              ))}
-
-              {(!formData.experience || formData.experience.length === 0) && (
-                <div className={`text-center py-8 border border-dashed rounded-2xl text-slate-500 text-xs ${isDarkMode ? 'border-slate-850' : 'border-slate-200'}`}>
-                  No work experience entries added yet.
+                <div className="space-y-1">
+                  <label className={labelClass}>Summary / Professional Bio</label>
+                  <textarea
+                    rows={6}
+                    placeholder="Write a concise overview of your expertise, achievements, and capabilities..."
+                    value={formData.personalInfo?.summary || ''}
+                    onChange={(e) => updateFormState((p: any) => ({ ...p, personalInfo: { ...p.personalInfo, summary: e.target.value } }))}
+                    className={textareaClass}
+                  />
+                  <span className="text-[10px] text-[#9CA3AF] block text-right">
+                    {formData.personalInfo?.summary?.length || 0} characters. Recommended: 300–500.
+                  </span>
                 </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* STEP 7: CERTIFICATIONS */}
-        {activeStep === 7 && (
-          <div className="space-y-4 animate-fade-in-up">
-            <div className="flex justify-between items-center">
-              <h3 className={`text-xs font-black uppercase tracking-wider ${isDarkMode ? 'text-indigo-400' : 'text-indigo-650'}`}>// Credentials & Certifications</h3>
-              <button
-                onClick={addCertification}
-                className={`px-3 py-1.5 border text-[10px] font-bold rounded-lg flex items-center gap-1.5 transition duration-150 cursor-pointer ${isDarkMode ? 'bg-slate-900 border-slate-800 hover:bg-slate-850 text-indigo-400' : 'bg-white border-slate-200 hover:bg-slate-50 text-indigo-650 shadow-sm'}`}
-              >
-                <Plus size={12} />
-                <span>Add Credential</span>
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              {(formData.certifications || []).map((cert: any, index: number) => (
-                <div 
-                  key={index}
-                  className={`border rounded-2xl p-5 space-y-4 relative group transition-colors duration-200 ${isDarkMode ? 'border-slate-800 bg-slate-900/10 text-slate-200' : 'border-slate-200 bg-slate-50/50 text-slate-800 shadow-sm'}`}
-                >
-                  <div className="absolute top-4 right-4 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
-                    <button
-                      type="button"
-                      onClick={() => moveItem('certifications', index, 'up')}
-                      disabled={index === 0}
-                      className={`h-8 w-8 rounded-lg border flex items-center justify-center transition disabled:opacity-30 cursor-pointer ${
-                        isDarkMode 
-                          ? 'border-slate-800 bg-slate-950 text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/5' 
-                          : 'border-slate-200 bg-white text-slate-500 hover:text-indigo-650 hover:bg-slate-50'
-                      }`}
-                      title="Move Up"
-                    >
-                      <ArrowUp size={13} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => moveItem('certifications', index, 'down')}
-                      disabled={index === (formData.certifications || []).length - 1}
-                      className={`h-8 w-8 rounded-lg border flex items-center justify-center transition disabled:opacity-30 cursor-pointer ${
-                        isDarkMode 
-                          ? 'border-slate-800 bg-slate-950 text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/5' 
-                          : 'border-slate-200 bg-white text-slate-500 hover:text-indigo-650 hover:bg-slate-50'
-                      }`}
-                      title="Move Down"
-                    >
-                      <ArrowDown size={13} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => removeCertification(index)}
-                      className={`h-8 w-8 rounded-lg border flex items-center justify-center transition cursor-pointer ${
-                        isDarkMode 
-                          ? 'border-slate-800 bg-slate-950 text-slate-400 hover:text-rose-455 hover:bg-rose-500/5' 
-                          : 'border-slate-200 bg-white text-slate-500 hover:text-rose-600 hover:bg-rose-50'
-                      }`}
-                      title="Remove item"
-                    >
-                      <Trash2 size={13} />
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="space-y-1.5 col-span-2 sm:col-span-1">
-                      <label className={`text-[9.5px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-600'} block`}>Certification Name</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. AWS Certified Solutions Architect"
-                        value={cert.name || ''}
-                        onChange={(e) => updateCertification(index, 'name', e.target.value)}
-                        className={inputClass}
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className={`text-[9.5px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-600'} block`}>Issuing Authority</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. Amazon Web Services (AWS)"
-                        value={cert.issuer || ''}
-                        onChange={(e) => updateCertification(index, 'issuer', e.target.value)}
-                        className={inputClass}
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className={`text-[9.5px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-600'} block`}>Date Earned</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. Jan 2024"
-                        value={cert.date || ''}
-                        onChange={(e) => updateCertification(index, 'date', e.target.value)}
-                        className={inputClass}
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-              {(!formData.certifications || formData.certifications.length === 0) && (
-                <div className={`text-center py-8 border border-dashed rounded-2xl text-slate-500 text-xs ${isDarkMode ? 'border-slate-850' : 'border-slate-200'}`}>
-                  No certifications added yet.
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* STEP 8: ACHIEVEMENTS */}
-        {activeStep === 8 && (
-          <div className="space-y-4 animate-fade-in-up">
-            <div className="flex justify-between items-center">
-              <h3 className={`text-xs font-black uppercase tracking-wider ${isDarkMode ? 'text-indigo-400' : 'text-indigo-650'}`}>// Achievements & Honors</h3>
-              <button
-                onClick={addAchievement}
-                className={`px-3 py-1.5 border text-[10px] font-bold rounded-lg flex items-center gap-1.5 transition duration-150 cursor-pointer ${isDarkMode ? 'bg-slate-900 border-slate-800 hover:bg-slate-850 text-indigo-400' : 'bg-white border-slate-200 hover:bg-slate-50 text-indigo-650 shadow-sm'}`}
-              >
-                <Plus size={12} />
-                <span>Add Achievement</span>
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              {(formData.achievements || []).map((ach: any, index: number) => (
-                <div 
-                  key={index}
-                  className={`border rounded-2xl p-5 space-y-4 relative group transition-colors duration-200 ${isDarkMode ? 'border-slate-800 bg-slate-900/10 text-slate-200' : 'border-slate-200 bg-slate-50/50 text-slate-800 shadow-sm'}`}
-                >
-                  <div className="absolute top-4 right-4 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
-                    <button
-                      type="button"
-                      onClick={() => moveItem('achievements', index, 'up')}
-                      disabled={index === 0}
-                      className={`h-8 w-8 rounded-lg border flex items-center justify-center transition disabled:opacity-30 cursor-pointer ${
-                        isDarkMode 
-                          ? 'border-slate-800 bg-slate-950 text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/5' 
-                          : 'border-slate-200 bg-white text-slate-500 hover:text-indigo-650 hover:bg-slate-50'
-                      }`}
-                      title="Move Up"
-                    >
-                      <ArrowUp size={13} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => moveItem('achievements', index, 'down')}
-                      disabled={index === (formData.achievements || []).length - 1}
-                      className={`h-8 w-8 rounded-lg border flex items-center justify-center transition disabled:opacity-30 cursor-pointer ${
-                        isDarkMode 
-                          ? 'border-slate-800 bg-slate-950 text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/5' 
-                          : 'border-slate-200 bg-white text-slate-500 hover:text-indigo-650 hover:bg-slate-50'
-                      }`}
-                      title="Move Down"
-                    >
-                      <ArrowDown size={13} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => removeAchievement(index)}
-                      className={`h-8 w-8 rounded-lg border flex items-center justify-center transition cursor-pointer ${
-                        isDarkMode 
-                          ? 'border-slate-800 bg-slate-950 text-slate-400 hover:text-rose-455 hover:bg-rose-500/5' 
-                          : 'border-slate-200 bg-white text-slate-500 hover:text-rose-600 hover:bg-rose-50'
-                      }`}
-                      title="Remove item"
-                    >
-                      <Trash2 size={13} />
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-4">
-                    <div className="space-y-1.5">
-                      <label className={`text-[9.5px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-600'} block`}>Achievement Title</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. Winner of Smart India Hackathon 2023"
-                        value={ach.title || ''}
-                        onChange={(e) => updateAchievement(index, 'title', e.target.value)}
-                        className={inputClass}
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className={`text-[9.5px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-600'} block`}>Brief Description</label>
-                      <textarea
-                        placeholder="Describe your achievement, the competition, scale, or metrics..."
-                        value={ach.description || ''}
-                        onChange={(e) => updateAchievement(index, 'description', e.target.value)}
-                        className={textareaClass + " h-20"}
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-              {(!formData.achievements || formData.achievements.length === 0) && (
-                <div className={`text-center py-8 border border-dashed rounded-2xl text-slate-500 text-xs ${isDarkMode ? 'border-slate-850' : 'border-slate-200'}`}>
-                  No achievements listed yet.
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* STEP 9: ADDITIONAL INFORMATION */}
-        {activeStep === 9 && (
-          <div className="space-y-4 animate-fade-in-up">
-            <h3 className={`text-xs font-black uppercase tracking-wider ${isDarkMode ? 'text-indigo-400' : 'text-indigo-650'}`}>// Additional Details</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5 col-span-2">
-                <label className={`text-[9.5px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-600'} block`}>Languages Spoken (comma-separated)</label>
-                <input
-                  type="text"
-                  placeholder="e.g. English, Telugu, Hindi"
-                  value={formData.additionalInfo?.languages || ''}
-                  onChange={(e) => updateAdditionalInfo('languages', e.target.value)}
-                  className={inputClass}
-                />
               </div>
+            )}
 
-              <div className="space-y-1.5 col-span-2">
-                <label className={`text-[9.5px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-600'} block`}>Interests / Hobbies (comma-separated)</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Open Source Contribution, Photography, Chess"
-                  value={formData.additionalInfo?.interests || ''}
-                  onChange={(e) => updateAdditionalInfo('interests', e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-        </>
-      ) : (
-        <div className="flex-grow overflow-y-auto py-2 space-y-5 px-1">
-          <div className="space-y-1">
-            <h3 className={`text-xs font-black uppercase tracking-wider ${isDarkMode ? 'text-indigo-400' : 'text-indigo-655'}`}>// Document Layout Customizer</h3>
-            <p className="text-[10.5px] text-slate-400">Configure visual themes, typography, and density ratios.</p>
-          </div>
-
-          {/* Font Family selector */}
-          <div className="space-y-1.5">
-            <label className={`text-[9.5px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-600'} block`}>Font Family</label>
-            <select
-              value={getCustomization().fontFamily}
-              onChange={(e) => updateCustomization('fontFamily', e.target.value)}
-              className={inputClass}
-            >
-              <option value="Inter">Inter (Clean Sans)</option>
-              <option value="Geist">Geist (Modern Tech)</option>
-              <option value="Poppins">Poppins (Friendly Geometric)</option>
-              <option value="Manrope">Manrope (Grotesque Sans)</option>
-              <option value="Source Sans 3">Source Sans 3 (Adobe Classic)</option>
-              <option value="IBM Plex Sans">IBM Plex Sans (Corporate)</option>
-              <option value="Plus Jakarta Sans">Plus Jakarta Sans (Elegant)</option>
-              <option value="Lato">Lato (Professional)</option>
-            </select>
-          </div>
-
-          {/* Font Size selector */}
-          <div className="space-y-1.5">
-            <label className={`text-[9.5px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-600'} block`}>Font Size</label>
-            <select
-              value={getCustomization().fontSize}
-              onChange={(e) => updateCustomization('fontSize', e.target.value)}
-              className={inputClass}
-            >
-              <option value="small">Small (10.5px)</option>
-              <option value="medium">Medium (11.5px)</option>
-              <option value="large">Large (12.5px)</option>
-              <option value="extraLarge">Extra Large (13.5px)</option>
-            </select>
-          </div>
-
-          {/* Spacing / Density selector */}
-          <div className="space-y-1.5">
-            <label className={`text-[9.5px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-600'} block`}>Resume Density</label>
-            <select
-              value={getCustomization().density}
-              onChange={(e) => updateCustomization('density', e.target.value)}
-              className={inputClass}
-            >
-              <option value="compact">Compact (Tight spacing)</option>
-              <option value="balanced">Balanced (Normal spacing)</option>
-              <option value="spacious">Spacious (Relaxed spacing)</option>
-            </select>
-          </div>
-
-          {/* Primary Theme Color buttons */}
-          <div className="space-y-2">
-            <label className={`text-[9.5px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-600'} block`}>Primary Theme Color</label>
-            <div className="flex items-center gap-3">
-              {[
-                { name: 'Slate', value: '#0f172a' },
-                { name: 'Indigo', value: '#4f46e5' },
-                { name: 'Emerald', value: '#10b981' },
-                { name: 'Blue', value: '#2563eb' },
-                { name: 'Rose', value: '#f43f5e' },
-                { name: 'Amber', value: '#d97706' }
-              ].map((color) => {
-                const isSelected = getCustomization().primaryColor === color.value;
-                return (
-                  <button
-                    key={color.value}
-                    type="button"
-                    onClick={() => updateCustomization('primaryColor', color.value)}
-                    className={`h-7 w-7 rounded-full transition-transform cursor-pointer border flex items-center justify-center ${
-                      isSelected ? 'scale-110 ring-2 ring-indigo-500/20' : 'hover:scale-105'
-                    }`}
-                    style={{ backgroundColor: color.value, borderColor: isSelected ? (isDarkMode ? '#ffffff' : '#000000') : 'transparent' }}
-                    title={color.name}
-                  >
-                    {isSelected && (
-                      <Check className="text-white drop-shadow-md" size={12} />
-                    )}
+            {/* ── STEP 3: Education ────────────────────────── */}
+            {activeStep === 3 && (
+              <div className="space-y-4">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="text-[13px] font-bold text-[#111827]">Education</h3>
+                    <p className="text-[11px] text-[#6B7280] mt-0.5">Academic qualifications and institutions.</p>
+                  </div>
+                  <button onClick={addEducation} className="flex items-center gap-1.5 h-8 px-3 rounded-[10px] border border-[#E2E8F0] bg-white text-[11px] font-semibold text-[#374151] hover:bg-[#F9FAFB] transition-colors shadow-sm shrink-0">
+                    <Plus size={13} />Add Education
                   </button>
-                );
-              })}
-            </div>
-          </div>
+                </div>
+                {(formData.education || []).length === 0 && (
+                  <div className="text-center py-6 border border-dashed border-[#E2E8F0] rounded-xl text-[#9CA3AF] text-[13px]">No educational entries added yet.</div>
+                )}
+                <div className="space-y-3">
+                  {(formData.education || []).map((edu: any, i: number) => (
+                    <ItemCard key={i} onMoveUp={() => moveItem('education', i, 'up')} onMoveDown={() => moveItem('education', i, 'down')} onDelete={() => removeEducation(i)} canMoveUp={i > 0} canMoveDown={i < (formData.education || []).length - 1}>
+                      <div className="space-y-2.5">
+                        <div className="space-y-1">
+                          <label className={labelClass}>Degree / Certification</label>
+                          <input type="text" placeholder="e.g. B.Tech in Computer Science" value={edu.degree || ''} onChange={(e) => updateEducation(i, 'degree', e.target.value)} className={inputClass} />
+                        </div>
+                        <div className="space-y-1">
+                          <label className={labelClass}>Institution / School</label>
+                          <input type="text" placeholder="e.g. IIT Hyderabad" value={edu.school || ''} onChange={(e) => updateEducation(i, 'school', e.target.value)} className={inputClass} />
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="space-y-1">
+                            <label className={labelClass}>Duration / Date Range</label>
+                            <input type="text" placeholder="e.g. 2018 - 2022" value={edu.duration || ''} onChange={(e) => updateEducation(i, 'duration', e.target.value)} className={inputClass} />
+                          </div>
+                          <div className="space-y-1">
+                            <label className={labelClass}>Grades / Core Modules</label>
+                            <input type="text" placeholder="e.g. GPA: 9.4/10" value={edu.details || ''} onChange={(e) => updateEducation(i, 'details', e.target.value)} className={inputClass} />
+                          </div>
+                        </div>
+                      </div>
+                    </ItemCard>
+                  ))}
+                </div>
+              </div>
+            )}
 
-          {/* Show / Hide Sections */}
-          <div className="space-y-2">
-            <label className={`text-[9.5px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-600'} block`}>Visible Sections</label>
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                { id: 'summary', label: 'Summary' },
-                { id: 'experience', label: 'Experience' },
-                { id: 'projects', label: 'Projects' },
-                { id: 'skills', label: 'Skills' },
-                { id: 'education', label: 'Education' },
-                { id: 'certifications', label: 'Certifications' },
-                { id: 'achievements', label: 'Achievements' },
-                { id: 'additionalInfo', label: 'Additional Info' }
-              ].map((sec) => {
-                const isChecked = getCustomization().visibleSections.includes(sec.id);
-                return (
-                  <label key={sec.id} className="flex items-center gap-2 text-xs font-semibold cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      checked={isChecked}
-                      onChange={() => toggleSectionVisibility(sec.id)}
-                      className="rounded border-slate-350 text-indigo-650 h-4.5 w-4.5 focus:ring-indigo-500"
-                    />
-                    <span className={isDarkMode ? 'text-slate-300' : 'text-slate-700'}>{sec.label}</span>
-                  </label>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Section Ordering */}
-          <div className="space-y-2">
-            <label className={`text-[9.5px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-600'} block`}>Section Order</label>
-            <div className={`border rounded-xl p-3 space-y-1.5 ${isDarkMode ? 'bg-slate-950 border-slate-900' : 'bg-slate-50 border-slate-200'}`}>
-              {getCustomization().sectionOrder.map((secId: string, idx: number) => {
-                const labelMap: Record<string, string> = {
-                  summary: 'Summary',
-                  experience: 'Experience',
-                  projects: 'Projects',
-                  skills: 'Skills',
-                  education: 'Education',
-                  certifications: 'Certifications',
-                  achievements: 'Achievements',
-                  additionalInfo: 'Additional Info'
-                };
-                return (
-                  <div
-                    key={secId}
-                    className={`flex items-center justify-between px-3 py-2 rounded-lg border text-xs font-bold ${
-                      isDarkMode ? 'bg-slate-900 border-slate-850 text-slate-300' : 'bg-white border-slate-200 text-slate-700 shadow-sm'
-                    }`}
-                  >
-                    <span>{labelMap[secId] || secId}</span>
-                    <div className="flex items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() => moveSection(idx, 'up')}
-                        disabled={idx === 0}
-                        className="p-1 text-slate-400 hover:text-indigo-500 disabled:opacity-30 cursor-pointer"
-                      >
-                        <ArrowUp size={12} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => moveSection(idx, 'down')}
-                        disabled={idx === getCustomization().sectionOrder.length - 1}
-                        className="p-1 text-slate-400 hover:text-indigo-500 disabled:opacity-30 cursor-pointer"
-                      >
-                        <ArrowDown size={12} />
-                      </button>
-                    </div>
+            {/* ── STEP 4: Skills ───────────────────────────── */}
+            {activeStep === 4 && (
+              <div className="space-y-4">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="text-[13px] font-bold text-[#111827]">Technical Skills</h3>
+                    <p className="text-[11px] text-[#6B7280] mt-0.5">Organize skills by category (e.g., Languages, Frameworks, Tools).</p>
                   </div>
-                );
-              })}
-            </div>
+                  <button onClick={addSkill} className="flex items-center gap-1.5 h-8 px-3 rounded-[10px] border border-[#E2E8F0] bg-white text-[11px] font-semibold text-[#374151] hover:bg-[#F9FAFB] transition-colors shadow-sm shrink-0">
+                    <Plus size={12} />Add Category
+                  </button>
+                </div>
+                {(formData.skills || []).length === 0 && (
+                  <div className="text-center py-6 border border-dashed border-[#E2E8F0] rounded-xl text-[#9CA3AF] text-[13px]">No skill categories added yet.</div>
+                )}
+                <div className="space-y-3">
+                  {(formData.skills || []).map((skill: any, i: number) => (
+                    <ItemCard key={i} onMoveUp={() => moveItem('skills', i, 'up')} onMoveDown={() => moveItem('skills', i, 'down')} onDelete={() => removeSkill(i)} canMoveUp={i > 0} canMoveDown={i < (formData.skills || []).length - 1}>
+                      <div className="space-y-2.5">
+                        <div className="space-y-1">
+                          <label className={labelClass}>Category Name</label>
+                          <input type="text" placeholder="e.g. Programming Languages or Cloud & Infrastructure" value={skill.category || ''} onChange={(e) => updateSkillCategory(i, e.target.value)} className={inputClass} />
+                        </div>
+                        <div className="space-y-1">
+                          <label className={labelClass}>Skills (comma-separated)</label>
+                          <input type="text" placeholder="e.g. React, Next.js, Node.js, TypeScript" value={skill.items?.join(', ') || ''} onChange={(e) => updateSkillItems(i, e.target.value)} className={inputClass} />
+                        </div>
+                      </div>
+                    </ItemCard>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ── STEP 5: Projects ─────────────────────────── */}
+            {activeStep === 5 && (
+              <div className="space-y-4">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="text-[13px] font-bold text-[#111827]">Projects</h3>
+                    <p className="text-[11px] text-[#6B7280] mt-0.5">Showcase your key technical projects and their impact.</p>
+                  </div>
+                  <button onClick={addProject} className="flex items-center gap-1.5 h-8 px-3 rounded-[10px] border border-[#E2E8F0] bg-white text-[11px] font-semibold text-[#374151] hover:bg-[#F9FAFB] transition-colors shadow-sm shrink-0">
+                    <Plus size={12} />Add Project
+                  </button>
+                </div>
+                {(formData.projects || []).length === 0 && (
+                  <div className="text-center py-6 border border-dashed border-[#E2E8F0] rounded-xl text-[#9CA3AF] text-[13px]">No projects added yet.</div>
+                )}
+                <div className="space-y-3">
+                  {(formData.projects || []).map((proj: any, i: number) => (
+                    <ItemCard key={i} onMoveUp={() => moveItem('projects', i, 'up')} onMoveDown={() => moveItem('projects', i, 'down')} onDelete={() => removeProject(i)} canMoveUp={i > 0} canMoveDown={i < (formData.projects || []).length - 1}>
+                      <div className="space-y-2.5">
+                        <div className="space-y-2.5">
+                          <div className="space-y-1">
+                            <label className={labelClass}>Project Name</label>
+                            <input type="text" placeholder="e.g. SmartCV Builder" value={proj.name || ''} onChange={(e) => updateProject(i, 'name', e.target.value)} className={inputClass} />
+                          </div>
+                          <div className="space-y-1">
+                            <label className={labelClass}>Technologies (comma-separated)</label>
+                            <input type="text" placeholder="e.g. Next.js, Supabase, TypeScript" value={proj.technologies?.join(', ') || ''} onChange={(e) => updateProject(i, 'technologies', e.target.value)} className={inputClass} />
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <label className={labelClass}>Project Description</label>
+                          <textarea rows={3} placeholder="Describe the purpose, your role, and the impact of this project..." value={proj.description || ''} onChange={(e) => updateProject(i, 'description', e.target.value)} className={textareaClass} />
+                        </div>
+                      </div>
+                    </ItemCard>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ── STEP 6: Experience ───────────────────────── */}
+            {activeStep === 6 && (
+              <div className="space-y-4">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="text-[13px] font-bold text-[#111827]">Work Experience</h3>
+                    <p className="text-[11px] text-[#6B7280] mt-0.5">Professional roles, internships, and responsibilities.</p>
+                  </div>
+                  <button onClick={addExperience} className="flex items-center gap-1.5 h-8 px-3 rounded-[10px] border border-[#E2E8F0] bg-white text-[11px] font-semibold text-[#374151] hover:bg-[#F9FAFB] transition-colors shadow-sm shrink-0">
+                    <Plus size={12} />Add Experience
+                  </button>
+                </div>
+                {(formData.experience || []).length === 0 && (
+                  <div className="text-center py-6 border border-dashed border-[#E2E8F0] rounded-xl text-[#9CA3AF] text-[13px]">No experience entries added yet.</div>
+                )}
+                <div className="space-y-3">
+                  {(formData.experience || []).map((exp: any, i: number) => (
+                    <ItemCard key={i} onMoveUp={() => moveItem('experience', i, 'up')} onMoveDown={() => moveItem('experience', i, 'down')} onDelete={() => removeExperience(i)} canMoveUp={i > 0} canMoveDown={i < (formData.experience || []).length - 1}>
+                      <div className="space-y-2.5">
+                        <div className="space-y-1">
+                          <label className={labelClass}>Job Role / Title</label>
+                          <input type="text" placeholder="e.g. Software Engineer Intern" value={exp.role || ''} onChange={(e) => updateExperience(i, 'role', e.target.value)} className={inputClass} />
+                        </div>
+                        <div className="space-y-1">
+                          <label className={labelClass}>Company / Organization</label>
+                          <input type="text" placeholder="e.g. SmartTech Solutions" value={exp.company || ''} onChange={(e) => updateExperience(i, 'company', e.target.value)} className={inputClass} />
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="space-y-1">
+                            <label className={labelClass}>Duration</label>
+                            <input type="text" placeholder="e.g. May 2022 – Aug 2022" value={exp.duration || ''} onChange={(e) => updateExperience(i, 'duration', e.target.value)} className={inputClass} />
+                          </div>
+                          <div className="space-y-1">
+                            <label className={labelClass}>Location (optional)</label>
+                            <input type="text" placeholder="e.g. Remote or Hyderabad, India" value={exp.location || ''} onChange={(e) => updateExperience(i, 'location', e.target.value)} className={inputClass} />
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <label className={labelClass}>Key Responsibilities (one bullet per line)</label>
+                          <textarea rows={4} placeholder={`e.g. Led design migration to Next.js boosting load by 45%\nBuilt real-time dashboard capturing 10M daily events`} value={exp.bullets?.join('\n') || ''} onChange={(e) => updateExperience(i, 'bullets', e.target.value)} className={textareaClass} />
+                        </div>
+                      </div>
+                    </ItemCard>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ── STEP 7: Certifications ───────────────────── */}
+            {activeStep === 7 && (
+              <div className="space-y-4">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="text-[13px] font-bold text-[#111827]">Certifications</h3>
+                    <p className="text-[11px] text-[#6B7280] mt-0.5">Professional certifications, licenses, or credentials.</p>
+                  </div>
+                  <button onClick={addCert} className="flex items-center gap-1.5 h-8 px-3 rounded-[10px] border border-[#E2E8F0] bg-white text-[11px] font-semibold text-[#374151] hover:bg-[#F9FAFB] transition-colors shadow-sm shrink-0">
+                    <Plus size={12} />Add Certification
+                  </button>
+                </div>
+                {(formData.certifications || []).length === 0 && (
+                  <div className="text-center py-6 border border-dashed border-[#E2E8F0] rounded-xl text-[#9CA3AF] text-[13px]">No certifications added yet.</div>
+                )}
+                <div className="space-y-3">
+                  {(formData.certifications || []).map((cert: any, i: number) => (
+                    <ItemCard key={i} onMoveUp={() => moveItem('certifications', i, 'up')} onMoveDown={() => moveItem('certifications', i, 'down')} onDelete={() => removeCert(i)} canMoveUp={i > 0} canMoveDown={i < (formData.certifications || []).length - 1}>
+                      <div className="space-y-2.5">
+                        <div className="space-y-1">
+                          <label className={labelClass}>Certification Name</label>
+                          <input type="text" placeholder="e.g. AWS Solutions Architect" value={cert.name || ''} onChange={(e) => updateCert(i, 'name', e.target.value)} className={inputClass} />
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="space-y-1">
+                            <label className={labelClass}>Issuing Authority</label>
+                            <input type="text" placeholder="e.g. Amazon Web Services" value={cert.issuer || ''} onChange={(e) => updateCert(i, 'issuer', e.target.value)} className={inputClass} />
+                          </div>
+                          <div className="space-y-1">
+                            <label className={labelClass}>Date Earned</label>
+                            <input type="text" placeholder="e.g. Jan 2024" value={cert.date || ''} onChange={(e) => updateCert(i, 'date', e.target.value)} className={inputClass} />
+                          </div>
+                        </div>
+                      </div>
+                    </ItemCard>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ── STEP 8: Achievements ──────────────────────── */}
+            {activeStep === 8 && (
+              <div className="space-y-4">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="text-[13px] font-bold text-[#111827]">Achievements & Awards</h3>
+                    <p className="text-[11px] text-[#6B7280] mt-0.5">Competitions won, recognitions received, or significant milestones.</p>
+                  </div>
+                  <button onClick={addAchievement} className="flex items-center gap-1.5 h-8 px-3 rounded-[10px] border border-[#E2E8F0] bg-white text-[11px] font-semibold text-[#374151] hover:bg-[#F9FAFB] transition-colors shadow-sm shrink-0">
+                    <Plus size={12} />Add Achievement
+                  </button>
+                </div>
+                {(formData.achievements || []).length === 0 && (
+                  <div className="text-center py-6 border border-dashed border-[#E2E8F0] rounded-xl text-[#9CA3AF] text-[13px]">No achievements added yet.</div>
+                )}
+                <div className="space-y-3">
+                  {(formData.achievements || []).map((ach: any, i: number) => (
+                    <ItemCard key={i} onMoveUp={() => moveItem('achievements', i, 'up')} onMoveDown={() => moveItem('achievements', i, 'down')} onDelete={() => removeAchievement(i)} canMoveUp={i > 0} canMoveDown={i < (formData.achievements || []).length - 1}>
+                      <div className="space-y-2.5">
+                        <div className="space-y-1">
+                          <label className={labelClass}>Achievement Title</label>
+                          <input type="text" placeholder="e.g. Winner — Smart India Hackathon 2023" value={ach.title || ''} onChange={(e) => updateAchievement(i, 'title', e.target.value)} className={inputClass} />
+                        </div>
+                        <div className="space-y-1">
+                          <label className={labelClass}>Brief Description</label>
+                          <textarea rows={2} placeholder="Describe the competition, scale, and your contribution..." value={ach.description || ''} onChange={(e) => updateAchievement(i, 'description', e.target.value)} className={textareaClass} />
+                        </div>
+                      </div>
+                    </ItemCard>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ── STEP 9: Additional Info ───────────────────── */}
+            {activeStep === 9 && (
+              <div className="space-y-3">
+                <div>
+                  <h3 className="text-[13px] font-bold text-[#111827]">Additional Information</h3>
+                  <p className="text-[11px] text-[#6B7280] mt-0.5">Languages spoken, interests, and hobbies that round out your profile.</p>
+                </div>
+                <div className="bg-white rounded-xl border border-[#E2E8F0] p-4 space-y-3 shadow-[0_1px_4px_rgba(0,0,0,0.04)]">
+                  <div className="space-y-1">
+                    <label className={labelClass}>Languages Spoken (comma-separated)</label>
+                    <input type="text" placeholder="e.g. English (Fluent), Telugu (Native), Hindi (Conversational)" value={formData.additionalInfo?.languages || ''} onChange={(e) => updateAdditionalInfo('languages', e.target.value)} className={inputClass} />
+                  </div>
+                  <div className="space-y-1">
+                    <label className={labelClass}>Interests / Hobbies (comma-separated)</label>
+                    <input type="text" placeholder="e.g. Open Source, Competitive Programming, Chess" value={formData.additionalInfo?.interests || ''} onChange={(e) => updateAdditionalInfo('interests', e.target.value)} className={inputClass} />
+                  </div>
+                </div>
+              </div>
+            )}
+
           </div>
         </div>
-      )}
 
-      {/* Checklist Card */}
-      <div className={`mt-2 mb-4 border rounded-2xl p-4 transition-all duration-200 shrink-0 ${
-        isChecklistComplete
-          ? isDarkMode ? 'bg-emerald-950/10 border-emerald-900/40 text-emerald-450' : 'bg-emerald-50 border-emerald-100 text-emerald-800'
-          : isDarkMode ? 'bg-slate-900/40 border-slate-800' : 'bg-slate-50 border-slate-200'
-      }`}>
-        <div className="flex items-center justify-between mb-2">
-          <h4 className="text-[10px] font-black uppercase tracking-wider">Required Sections Checklist</h4>
-          {isChecklistComplete && (
-            <span className="text-[9px] bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded-full font-bold">
-              {templateId ? "Template Selected ✓" : "Ready to Selection"}
-            </span>
-          )}
-        </div>
-
-        {!templateId ? (
-          <>
-            <div className="grid grid-cols-2 gap-2 text-[10px] font-bold">
-              <div className="flex items-center gap-1.5">
-                {isPersonalInfoComplete ? (
-                  <Check className="text-emerald-500 shrink-0" size={13} />
-                ) : (
-                  <span className="h-3.5 w-3.5 rounded-full border border-slate-350 shrink-0" />
-                )}
-                <span className={isPersonalInfoComplete ? 'text-emerald-600 dark:text-emerald-450 line-through' : 'text-slate-500'}>Personal Info</span>
+        {/* ── Optional Checklist Footer (Only when no template selected) ───── */}
+        {!templateId && (
+          <div className="shrink-0 border-t border-[#ECEDF3] bg-white/95 backdrop-blur-sm px-4 py-2">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5 text-[10px] font-medium text-[#6B7280]">
+                {[
+                  { done: isPersonalInfoComplete, label: 'Personal Info' },
+                  { done: isEducationComplete, label: 'Education' },
+                  { done: isSkillsComplete, label: 'Skills' },
+                  { done: isProjectsComplete, label: 'Projects' },
+                ].map(({ done, label }) => (
+                  <span key={label} className={`flex items-center gap-1 ${done ? 'text-emerald-600' : ''}`}>
+                    {done ? <Check size={10} /> : <span className="h-2 w-2 rounded-full border border-current inline-block" />}
+                    {label}
+                  </span>
+                ))}
               </div>
-              <div className="flex items-center gap-1.5">
-                {isEducationComplete ? (
-                  <Check className="text-emerald-500 shrink-0" size={13} />
-                ) : (
-                  <span className="h-3.5 w-3.5 rounded-full border border-slate-350 shrink-0" />
-                )}
-                <span className={isEducationComplete ? 'text-emerald-600 dark:text-emerald-450 line-through' : 'text-slate-500'}>Education (1+)</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                {isSkillsComplete ? (
-                  <Check className="text-emerald-500 shrink-0" size={13} />
-                ) : (
-                  <span className="h-3.5 w-3.5 rounded-full border border-slate-350 shrink-0" />
-                )}
-                <span className={isSkillsComplete ? 'text-emerald-600 dark:text-emerald-450 line-through' : 'text-slate-500'}>Skills (1+)</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                {isProjectsComplete ? (
-                  <Check className="text-emerald-500 shrink-0" size={13} />
-                ) : (
-                  <span className="h-3.5 w-3.5 rounded-full border border-slate-350 shrink-0" />
-                )}
-                <span className={isProjectsComplete ? 'text-emerald-600 dark:text-emerald-450 line-through' : 'text-slate-500'}>Projects (1+)</span>
-              </div>
-            </div>
-
-            <div className="mt-3.5 pt-3 border-t border-slate-200/50 dark:border-slate-800 flex justify-between items-center gap-3">
-              <p className="text-[9px] text-slate-450 leading-tight max-w-[220px]">
-                {isChecklistComplete 
-                  ? "All required sections are complete! You are ready to choose your template design."
-                  : "Complete all 4 required sections to unlock the Template Gallery."}
-              </p>
               <button
-                type="button"
-                onClick={() => {
-                  if (isChecklistComplete) {
-                    window.location.href = `/templates?resumeId=${resumeId}`;
-                  }
-                }}
-                disabled={!isChecklistComplete}
-                className={`h-9 px-4 rounded-xl text-[10.5px] font-extrabold transition-all duration-200 flex items-center gap-1 cursor-pointer select-none shadow-sm ${
-                  isChecklistComplete
-                    ? 'bg-indigo-650 hover:bg-indigo-600 text-white shadow-indigo-600/10'
-                    : 'bg-slate-200 dark:bg-slate-850 text-slate-400 dark:text-slate-600 border border-slate-300/30 cursor-not-allowed'
-                }`}
+                onClick={() => { window.location.href = `/dashboard?tab=templates&source=builder&resumeId=${resumeId}`; }}
+                className="h-8 px-3 rounded-[10px] bg-[#2563EB] hover:bg-[#1D4ED8] text-white shadow-sm text-[11px] font-semibold flex items-center gap-1.5 transition-all shrink-0 cursor-pointer"
               >
-                <span>Choose Template Design</span>
-                <ArrowRight size={12} />
+                Change Template <ChevronRight size={12} />
               </button>
             </div>
-          </>
-        ) : (
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <span className={`text-[10px] font-extrabold px-3 py-1 rounded-full border uppercase tracking-wider ${
-                isDarkMode 
-                  ? 'border-teal-500/20 bg-teal-500/5 text-teal-400' 
-                  : 'bg-teal-50 border-teal-150 text-teal-700 shadow-sm'
-              }`}>
-                Selected Template: {TEMPLATE_NAMES[templateId] || templateId}
-              </span>
-            </div>
-            
-            <div className="pt-3 border-t border-slate-200/50 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3">
-              <p className="text-[9.5px] text-slate-450 leading-tight max-w-[200px]">
-                Your document layout is configured. Preview or export your PDF, or modify spacing and reorder sections.
-              </p>
-              <div className="flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    window.location.href = `/templates?resumeId=${resumeId}`;
-                  }}
-                  className={`h-8 px-3 rounded-lg text-[10px] font-extrabold transition duration-155 border cursor-pointer ${
-                    isDarkMode
-                      ? 'bg-slate-900 border-slate-800 text-indigo-400 hover:bg-slate-850 hover:text-indigo-300'
-                      : 'bg-indigo-50 border-indigo-100 text-indigo-655 hover:bg-indigo-100/50 shadow-sm'
-                  }`}
-                >
-                  Change Template
-                </button>
-                <button
-                  type="button"
-                  onClick={onPreviewPdf}
-                  className={`h-8 px-3 rounded-lg text-[10px] font-extrabold transition duration-155 border cursor-pointer ${
-                    isDarkMode
-                      ? 'bg-slate-900 border-slate-800 text-slate-300 hover:text-white hover:bg-slate-850'
-                      : 'bg-white border-slate-250 text-slate-705 hover:bg-slate-50 shadow-sm'
-                  }`}
-                >
-                  Preview PDF
-                </button>
-                <button
-                  type="button"
-                  onClick={handleExportPdf}
-                  disabled={isExportingPdf}
-                  className={`h-8 px-3 rounded-lg text-[10px] font-extrabold transition duration-155 border cursor-pointer disabled:opacity-50 ${
-                    isDarkMode
-                      ? 'bg-teal-500 hover:bg-teal-400 text-slate-950 border-teal-500/20'
-                      : 'bg-teal-50 border-teal-200 text-teal-700 hover:bg-teal-100 shadow-sm'
-                  }`}
-                >
-                  {isExportingPdf ? 'Generating PDF...' : 'Export PDF'}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSaveAndExit}
-                  disabled={exiting}
-                  className={`h-8 px-3 rounded-lg text-[10px] font-extrabold transition duration-155 border cursor-pointer disabled:opacity-55 ${
-                    isDarkMode
-                      ? 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-850'
-                      : 'bg-white border-slate-200 text-slate-655 hover:bg-slate-50 shadow-sm'
-                  }`}
-                >
-                  {exiting ? 'Saving...' : 'Save & Exit'}
-                </button>
-              </div>
-            </div>
           </div>
         )}
       </div>
-
-      {/* Back and Next navigation triggers */}
-      <div className="pt-4 border-t border-slate-900 flex justify-between items-center gap-3 shrink-0">
-        <button
-          onClick={() => setActiveStep(prev => Math.max(prev - 1, 1))}
-          disabled={activeStep === 1}
-          className={`px-4 h-11 border disabled:opacity-30 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer duration-150 ${isDarkMode ? 'border-slate-850 hover:bg-slate-900 active:bg-slate-950 text-slate-300' : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-600 shadow-sm'}`}
-        >
-          <ArrowLeft size={14} />
-          <span>Back Step</span>
-        </button>
-
-        {activeStep < STEPS.length ? (
-          <button
-            onClick={() => setActiveStep(prev => Math.min(prev + 1, STEPS.length))}
-            className="px-5 h-11 bg-indigo-600 hover:bg-indigo-550 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer hover:scale-[1.01] shadow-lg shadow-indigo-600/10"
-          >
-            <span>Next Step</span>
-            <ArrowRight size={14} />
-          </button>
-        ) : (
-          <div className={`text-[10px] font-bold flex items-center gap-1 px-3 py-1 rounded-lg ${isDarkMode ? 'text-teal-400 bg-teal-500/5 border border-teal-500/10' : 'text-teal-600 bg-teal-50 border border-teal-100 shadow-sm'}`}>
-            <Check size={12} className="stroke-[3]" />
-            <span>Wizard Finished</span>
-          </div>
-        )}
-      </div>
-
-      {toast && (
-        <div className="fixed bottom-5 right-5 z-50 animate-fade-in-up">
-          <div className={`px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-2 border text-[11px] font-bold bg-slate-900 text-white border-slate-850`}>
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-450 animate-pulse" />
-            <span>{toast.message}</span>
-          </div>
-        </div>
-      )}
-
     </div>
   );
 }

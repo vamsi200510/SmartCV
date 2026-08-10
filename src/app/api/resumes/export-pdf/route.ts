@@ -59,30 +59,32 @@ export async function GET(request: NextRequest) {
     // Check if running on localhost or similar, fall back safely
     const targetUrl = `${protocol}//${host}/builder/print-viewport?resumeId=${resumeId}`;
 
+    console.time('[EXPORT-PDF] Total time');
     console.log(`[EXPORT-PDF] Launching browser for URL: ${targetUrl}`);
 
     const browser = await puppeteer.launch({
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu'],
     });
 
     const page = await browser.newPage();
 
-    // Set auth cookies for the headless browser session
+    // Set auth cookies in batch for the headless browser session
     const allCookies = cookieStore.getAll();
     const domain = host.split(':')[0];
-    for (const c of allCookies) {
-      await page.setCookie({
-        name: c.name,
-        value: c.value,
-        domain: domain,
-        path: '/',
-      });
+    const cookiesToSet = allCookies.map(c => ({
+      name: c.name,
+      value: c.value,
+      domain: domain,
+      path: '/',
+    }));
+    if (cookiesToSet.length > 0) {
+      await page.setCookie(...cookiesToSet);
     }
 
     // Load print viewport page
     await page.goto(targetUrl, {
-      waitUntil: 'networkidle0',
+      waitUntil: 'networkidle2',
       timeout: 30000,
     });
 
@@ -99,6 +101,7 @@ export async function GET(request: NextRequest) {
     });
 
     await browser.close();
+    console.timeEnd('[EXPORT-PDF] Total time');
 
     return new NextResponse(pdfBuffer as any, {
       status: 200,

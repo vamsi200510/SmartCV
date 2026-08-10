@@ -5,35 +5,50 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 export async function GET(request: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return cookieStore.getAll().map((c) => ({
-              name: c.name,
-              value: c.value,
-            }));
-          },
-        },
-      }
-    );
+    let user = null;
 
-    const { data: { user } } = await supabase.auth.getUser();
+    // Check Authorization header first (for client-side token auth)
+    const authHeader = request.headers.get('Authorization');
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7);
+      const { data: { user: tokenUser } } = await supabaseAdmin.auth.getUser(token);
+      if (tokenUser) {
+        user = tokenUser;
+      }
+    }
+
+    // Fall back to server cookie check
+    if (!user) {
+      const cookieStore = await cookies();
+      const supabase = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+          cookies: {
+            getAll() {
+              return cookieStore.getAll().map((c) => ({
+                name: c.name,
+                value: c.value,
+              }));
+            },
+          },
+        }
+      );
+      const { data: { user: cookieUser } } = await supabase.auth.getUser();
+      user = cookieUser;
+    }
 
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Query user_profiles using the admin client to bypass client-side RLS restriction
-    let { data: profile, error } = await supabaseAdmin
+    const { data, error } = await supabaseAdmin
       .from('user_profiles')
       .select('*')
       .eq('id', user.id)
       .maybeSingle();
+    let profile = data;
 
     if (error) {
       throw error;

@@ -2,834 +2,806 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { 
-  Sparkles, 
-  ArrowRight, 
-  Check, 
-  X, 
-  Shield, 
-  Cpu, 
-  RefreshCw, 
-  Layers, 
-  HelpCircle, 
-  Mail, 
-  Globe, 
-  Compass, 
-  ChevronDown, 
-  ChevronRight,
-  Moon,
-  Sun,
-  Calendar,
-  Layers2,
-  FileSearch,
-  BookOpen
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Sparkles, ArrowRight, Check, Shield, Cpu,
+  ChevronDown, FileText, Zap, Target,
+  BarChart2, CheckCircle, Building2, Menu, X, Download,
+  Brain, Rocket, LayoutTemplate, ChevronRight,
+  GraduationCap, Briefcase, Users
 } from 'lucide-react';
+import { MouseGlow, AnimatedShader, Button, Badge, ATSRing } from '@/components/ui/design-system';
+import TemplateRenderer from '@/components/TemplateRenderer';
 
-const TEMPLATES = [
-  { id: 'creative', name: 'Creative Tech Spec', color: 'from-pink-500 via-purple-500 to-indigo-500', role: 'Senior Frontend Engineer', desc: 'Vibrant mesh background designed to stand out in creative agencies and tech startups.' },
-  { id: 'minimal', name: 'Minimalist Editorial', color: 'from-slate-700 to-slate-900', role: 'Lead Product Designer', desc: 'Elegant typography-first theme optimized for structural layout and editorial design roles.' },
-  { id: 'executive', name: 'Executive Corporate', color: 'from-blue-600 via-indigo-700 to-violet-800', role: 'VP of Product Management', desc: 'Structured grid alignment focusing on metrics, impact values, and key achievements.' },
-  { id: 'academic', name: 'Scientific CV Grid', color: 'from-teal-500 to-emerald-700', role: 'Research Fellow (AI)', desc: 'Clean academic columns focusing on publications, projects, and educational credentials.' },
-  { id: 'marketing', name: 'Impact Growth Spec', color: 'from-amber-500 to-rose-600', role: 'Director of Growth Marketing', desc: 'Warm gradients prioritizing performance metrics, marketing channels, and strategic goals.' }
-];
+// ── Data ─────────────────────────────────────────────────────────────────────
 
-const FEATURES = [
-  {
-    icon: <Cpu className="h-6 w-6 text-purple-500" />,
-    title: "AI Resume Generator",
-    desc: "Autocreate impact-driven bullet points customized for your specific career objectives and role descriptions."
-  },
-  {
-    icon: <Shield className="h-6 w-6 text-teal-500" />,
-    title: "ATS Real-Time Score Checker",
-    desc: "Scan your resume formatting, keywords, and section hierarchy to bypass screening tools instantly."
-  },
-  {
-    icon: <Layers className="h-6 w-6 text-blue-500" />,
-    title: "Flexible Layout Editor",
-    desc: "Reorder sections, toggle columns, customize headers, and format typography with zero coding experience."
-  },
-  {
-    icon: <RefreshCw className="h-6 w-6 text-pink-500" />,
-    title: "Dynamic Smart Enhancements",
-    desc: "Get instant structural recommendations based on industry metrics and recruiter standards."
-  }
-];
+const NAV_LINKS = ['Features', 'Templates', 'How It Works', 'About'];
 
-const CAROUSEL_TEMPLATES = [
-  { id: 1, title: 'Developer Modern', bg: 'from-slate-900 via-slate-950 to-slate-900', text: 'text-slate-100', role: 'Backend Engineer' },
-  { id: 2, title: 'Editorial Executive', bg: 'from-amber-50/50 to-orange-100/50', text: 'text-slate-900', role: 'Content Writer' },
-  { id: 3, title: 'Creative Designer', bg: 'from-pink-500/10 via-purple-500/10 to-indigo-500/10', text: 'text-indigo-950 dark:text-indigo-100', role: 'UX Researcher' },
-  { id: 4, title: 'Structured Analyst', bg: 'from-blue-600/5 via-indigo-600/5 to-purple-600/5', text: 'text-slate-800 dark:text-slate-200', role: 'Finance Analyst' }
-];
-
-const WHY_SMARTCV = [
+const _REVIEWS = [
   {
-    icon: <Shield className="h-6 w-6 text-teal-400" />,
-    title: "ATS Validation Native",
-    desc: "Every grid block and text column is structured according to parsing specifications, ensuring parsing algorithms read your resume content with 100% precision."
+    name: 'Priya S.', role: 'Software Engineer @ Google', initials: 'PS',
+    color: 'from-blue-500 to-indigo-600', rating: 5,
+    text: 'SmartCV helped me land my dream job at Google. The ATS score feature is a game-changer — I knew exactly what to fix before applying.',
   },
   {
-    icon: <Cpu className="h-6 w-6 text-indigo-400" />,
-    title: "AI Optimization Core",
-    desc: "Automatically checks for industry-specific terminology and checks your formatting constraints using dynamic backend checkers."
+    name: 'Rahul M.', role: 'Product Manager @ Flipkart', initials: 'RM',
+    color: 'from-purple-500 to-fuchsia-600', rating: 5,
+    text: 'I went from zero callbacks to 8 interviews in 2 weeks after rebuilding my resume with SmartCV. The AI suggestions were spot-on.',
   },
   {
-    icon: <Layers className="h-6 w-6 text-purple-400" />,
-    title: "Clean Typography Hierarchy",
-    desc: "Optimized fonts, line-height proportions, margins, and spacing built by expert engineers to make resumes stand out on screen and print."
+    name: 'Ananya K.', role: 'UX Designer @ Razorpay', initials: 'AK',
+    color: 'from-cyan-500 to-blue-600', rating: 5,
+    text: 'The templates are gorgeous and the customization is unmatched. My resume finally looks like a premium product, not a Word doc.',
   },
-  {
-    icon: <Check className="h-6 w-6 text-emerald-400" />,
-    title: "Zero Branding Restrictions",
-    desc: "Your data belongs entirely to you. Export standard high-contrast vector PDFs with no third-party watermark logs, limits, or branding."
-  }
-];
-
-const ROADMAP_ITEMS = [
-  { title: "AI Resume Builder", desc: "Interactive builder generating role-specific items tailored to career targets.", status: "In Development", icon: <Cpu className="h-5 w-5 text-purple-450" /> },
-  { title: "ATS Analyzer", desc: "Live keyword scanning and structural hierarchy scoring parameters.", status: "In Development", icon: <FileSearch className="h-5 w-5 text-teal-450" /> },
-  { title: "Resume Template Swiper", desc: "Interactive card deck to quickly evaluate layout options.", status: "In Development", icon: <Layers2 className="h-5 w-5 text-indigo-450" /> },
-  { title: "Resume Import", desc: "Parse and ingest existing PDF/Word resumes into the SmartCV format.", status: "In Development", icon: <RefreshCw className="h-5 w-5 text-pink-450" /> },
-  { title: "Portfolio Generator", desc: "Build a custom, shareable hosting page derived from your resume.", status: "In Development", icon: <Globe className="h-5 w-5 text-emerald-450" /> },
-  { title: "AI Career Assistant", desc: "Tailored guidelines comparing your layout parameters with target job posts.", status: "In Development", icon: <BookOpen className="h-5 w-5 text-amber-455" /> }
 ];
 
 const FAQS = [
-  {
-    q: "How does the AI optimize my resume templates?",
-    a: "Our AI model will cross-reference your resume content with job posts, advising on keywords, structure, action verbs, and sizing to match professional recruiters' standards."
-  },
-  {
-    q: "What makes the templates ATS-friendly?",
-    a: "We avoid non-standard custom layouts that confuse parsers. Our grid layout matches standard PDF reading structures, maintaining structural accessibility while looking visually stunning."
-  },
-  {
-    q: "Can I download my resume as a PDF?",
-    a: "Yes! High-contrast, clean PDF vectors are generated instantly on export, retaining exact alignments and layout colors."
-  },
-  {
-    q: "Is there a free tier available?",
-    a: "Yes, our standard account is free to edit, preview, and build. Advanced AI analysis and templates will be available in future releases."
-  }
+  { q: 'Is SmartCV completely free?', a: 'Yes — SmartCV is free for everyone. No credit card, no hidden fees, no premium tier. Build, customize, and export as many resumes as you need.' },
+  { q: 'How does the AI resume optimization work?', a: 'Our AI analyzes your resume against industry standards, rewrites weak bullet points with action verbs, adds impactful keywords, and structures your experience for maximum clarity.' },
+  { q: 'Will my resume pass ATS systems?', a: 'Our templates are built specifically to pass Applicant Tracking Systems. We check formatting, keywords, section structure, and more in real-time as you type.' },
+  { q: 'Can I import my existing resume?', a: 'Absolutely. Upload your PDF or DOCX and SmartCV will extract your information automatically. Then refine and enhance it with our builder tools.' },
+  { q: 'How many templates are available?', a: 'SmartCV offers 12+ professionally designed templates across styles — minimal, creative, corporate, tech, and academic — all ATS-optimized and recruiter-approved.' },
 ];
 
-export default function Home() {
-  const [isDarkMode, setIsDarkMode] = useState(true);
-  const [activeFaq, setActiveFaq] = useState<number | null>(null);
-  
-  // Swiper State
-  const [cards, setCards] = useState(TEMPLATES);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [swipeDir, setSwipeDir] = useState<'left' | 'right' | null>(null);
-  const [selectedTemplates, setSelectedTemplates] = useState<typeof TEMPLATES>([]);
-  const [swipedCount, setSwipedCount] = useState(0);
+const SKILL_BARS = [
+  { skill: 'React', match: 95, color: 'bg-blue-500' },
+  { skill: 'TypeScript', match: 88, color: 'bg-purple-500' },
+  { skill: 'Node.js', match: 72, color: 'bg-amber-500' },
+  { skill: 'Docker', match: 45, color: 'bg-red-400' },
+];
 
-  // Carousel State
-  const [carouselIndex, setCarouselIndex] = useState(0);
+const ATS_PANELS = [
+  { label: 'ATS Score', value: '92', unit: '/100', color: 'text-emerald-600', bar: 92, barColor: 'bg-emerald-500' },
+  { label: 'Keyword Match', value: '87', unit: '%', color: 'text-blue-600', bar: 87, barColor: 'bg-blue-500' },
+  { label: 'Formatting', value: '100', unit: '%', color: 'text-purple-600', bar: 100, barColor: 'bg-purple-500' },
+  { label: 'Readability', value: '94', unit: '%', color: 'text-cyan-600', bar: 94, barColor: 'bg-cyan-500' },
+];
+
+const TEMPLATE_CARDS = [
+  { name: 'ATS Professional', ats: 98, tag: 'Most Popular', tagColor: 'bg-blue-100 text-blue-700', accent: '#2563EB' },
+  { name: 'FAANG Elite', ats: 99, tag: 'Top Rated', tagColor: 'bg-purple-100 text-purple-700', accent: '#7C3AED' },
+  { name: 'Tech Minimal', ats: 97, tag: 'Trending', tagColor: 'bg-cyan-100 text-cyan-700', accent: '#0891B2' },
+  { name: 'Executive Pro', ats: 96, tag: 'New', tagColor: 'bg-amber-100 text-amber-700', accent: '#D97706' },
+];
+
+const TRUSTED_BY = [
+  { label: 'University Students', Icon: GraduationCap },
+  { label: 'Fresh Graduates', Icon: Briefcase },
+  { label: 'Job Seekers', Icon: Building2 },
+  { label: 'Career Switchers', Icon: Rocket },
+  { label: 'Tech Professionals', Icon: Brain },
+  { label: 'Working Professionals', Icon: Users },
+];
+
+const HOW_STEPS = [
+  { step: '01', Icon: FileText, bg: 'bg-blue-50 border-blue-100', color: 'text-blue-600', title: 'Import or Create', desc: 'Upload your existing resume or start fresh. AI extracts and organizes everything instantly.' },
+  { step: '02', Icon: Sparkles, bg: 'bg-violet-50 border-violet-100', color: 'text-violet-600', title: 'AI Optimizes', desc: 'Our AI rewrites bullets, adds keywords, and gives you a live ATS score as you type.' },
+  { step: '03', Icon: Download, bg: 'bg-emerald-50 border-emerald-100', color: 'text-emerald-600', title: 'Export and Apply', desc: 'Export a pixel-perfect PDF that beats ATS filters and impresses human reviewers.' },
+];
+
+// ── Component ─────────────────────────────────────────────────────────────────
+
+export default function LandingPage() {
+  const [faqOpen, setFaqOpen] = useState<number | null>(null);
+  const [mounted, setMounted] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCarouselIndex(prev => (prev + 1) % CAROUSEL_TEMPLATES.length);
-    }, 4000);
-    return () => clearInterval(timer);
+    setMounted(true);
+    const handler = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handler, { passive: true });
+    return () => window.removeEventListener('scroll', handler);
   }, []);
 
-  // Drag and Swipe Handlers
-  const handleStart = (clientX: number, clientY: number) => {
-    if (cards.length === 0) return;
-    setIsDragging(true);
-    setDragStart({ x: clientX, y: clientY });
-  };
-
-  const handleMove = (clientX: number, clientY: number) => {
-    if (!isDragging) return;
-    const dx = clientX - dragStart.x;
-    const dy = clientY - dragStart.y;
-    setDragOffset({ x: dx, y: dy });
-  };
-
-  const handleEnd = () => {
-    if (!isDragging) return;
-    setIsDragging(false);
-    
-    const threshold = 120;
-    if (dragOffset.x > threshold) {
-      triggerSwipe('right');
-    } else if (dragOffset.x < -threshold) {
-      triggerSwipe('left');
-    } else {
-      setDragOffset({ x: 0, y: 0 });
-    }
-  };
-
-  const triggerSwipe = (direction: 'left' | 'right') => {
-    setSwipeDir(direction);
-    setTimeout(() => {
-      if (direction === 'right') {
-        setSelectedTemplates(prev => [...prev, cards[0]]);
-      }
-      setCards(prev => prev.slice(1));
-      setDragOffset({ x: 0, y: 0 });
-      setSwipeDir(null);
-      setSwipedCount(prev => prev + 1);
-    }, 250);
-  };
-
-  const handleReset = () => {
-    setCards(TEMPLATES);
-    setSwipedCount(0);
-    setSelectedTemplates([]);
-  };
-
-  // Stack calculation style helpers
-  const getSubCardStyle = (index: number) => {
-    const scale = 1 - index * 0.04 + Math.min(Math.abs(dragOffset.x) / 3000, 0.04);
-    const translateY = (index * 14) - Math.min(Math.abs(dragOffset.x) * 0.08, 14);
-    const opacity = 1 - index * 0.25 + Math.min(Math.abs(dragOffset.x) / 1000, 0.25);
-    return {
-      transform: `scale(${scale}) translateY(${translateY}px)`,
-      opacity,
-      transition: isDragging ? 'none' : 'transform 250ms ease, opacity 250ms ease'
-    };
-  };
-
-  const topCardTransform = isDragging
-    ? `translate(${dragOffset.x}px, ${dragOffset.y}px) rotate(${dragOffset.x * 0.08}deg)`
-    : swipeDir === 'right'
-    ? `translate(600px, ${dragOffset.y}px) rotate(25deg)`
-    : swipeDir === 'left'
-    ? `translate(-600px, ${dragOffset.y}px) rotate(-25deg)`
-    : 'translate(0px, 0px) rotate(0deg)';
+  if (!mounted) return null;
 
   return (
-    <div className={`min-h-screen flex flex-col justify-between transition-colors duration-500 font-sans relative overflow-x-hidden ${isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
-      
-      {/* Background Accent Meshes */}
-      {isDarkMode && (
-        <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-          <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-indigo-500/5 rounded-full blur-[140px] animate-floating-glow" />
-          <div className="absolute bottom-20 left-1/4 w-[600px] h-[600px] bg-purple-500/5 rounded-full blur-[140px] animate-floating-glow" style={{ animationDelay: '-5s' }} />
-        </div>
-      )}
+    <div className="min-h-screen bg-[#F8FAFC] overflow-x-hidden" style={{ fontFamily: "'Inter', sans-serif" }}>
+      <AnimatedShader />
+      <MouseGlow />
 
-      {/* Navigation Header */}
-      <header className={`border-b backdrop-blur-md px-6 py-4 sticky top-0 z-50 flex items-center justify-between transition-colors duration-500 ${isDarkMode ? 'border-slate-900 bg-slate-950/70' : 'border-slate-200 bg-white/70'}`}>
-        <div className="flex items-center space-x-3">
-          <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-teal-500 via-indigo-600 to-purple-600 flex items-center justify-center font-bold text-white shadow-lg">
-            S
-          </div>
-          <div>
-            <span className="font-extrabold text-base tracking-tight bg-gradient-to-r from-teal-400 via-indigo-500 to-purple-500 bg-clip-text text-transparent">
-              SmartCV
-            </span>
-            <span className={`text-[8.5px] block font-bold tracking-widest uppercase -mt-0.5 ${isDarkMode ? 'text-slate-550' : 'text-slate-400'}`}>
-              AI Resume Platform
-            </span>
-          </div>
-        </div>
+      {/* ── NAVBAR ── */}
+      <header
+        className={`fixed top-0 w-full z-50 transition-all duration-300 ${
+          scrolled ? 'bg-white/90 backdrop-blur-xl border-b border-slate-200/80 shadow-sm' : 'bg-transparent'
+        }`}
+      >
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2.5 shrink-0">
+            <div className="w-8 h-8 rounded-xl bg-white border border-[#ECEDF3] flex items-center justify-center shadow-sm">
+              <img src="/SmartCV_logo.png" alt="Logo" className="h-5 w-5 object-contain" />
+            </div>
+            <span className="text-[17px] font-extrabold tracking-tight text-slate-900">SmartCV</span>
+          </Link>
+          <nav className="hidden md:flex items-center gap-1">
+            {NAV_LINKS.map(link => (
+              <a
+                key={link}
+                href={`#${link.toLowerCase().replace(/\s+/g, '-')}`}
+                className="px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-900 rounded-xl hover:bg-slate-100 transition-all duration-150"
+              >
+                {link}
+              </a>
+            ))}
+          </nav>
 
-        {/* Navigation Middle Links */}
-        <nav className="hidden md:flex items-center space-x-8 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-          <a href="#features" className="hover:text-indigo-500 dark:hover:text-teal-400 transition-colors">Features</a>
-          <a href="#swiper" className="hover:text-indigo-500 dark:hover:text-teal-400 transition-colors">Template Gallery</a>
-          <a href="#why-smartcv" className="hover:text-indigo-500 dark:hover:text-teal-400 transition-colors">Why SmartCV</a>
-          <a href="#roadmap" className="hover:text-indigo-500 dark:hover:text-teal-400 transition-colors">Roadmap</a>
-          <a href="#faqs" className="hover:text-indigo-500 dark:hover:text-teal-400 transition-colors">FAQs</a>
-        </nav>
-
-        {/* Theme + Entry actions */}
-        <div className="flex items-center space-x-4">
-          
-          {/* Segmented Theme Switch */}
-          <div className={`relative flex items-center p-0.5 rounded-xl border transition-all duration-500 ${isDarkMode ? 'bg-slate-950 border-slate-900' : 'bg-slate-100 border-slate-200'}`}>
-            <div
-              className={`absolute h-[24px] rounded-lg shadow-sm transition-all duration-300 ease-out border ${
-                isDarkMode ? 'bg-slate-900 border-slate-800 text-teal-400' : 'bg-white border-slate-200 text-indigo-600'
-              }`}
-              style={{ width: '56px', transform: `translateX(${isDarkMode ? '56px' : '0px'})` }}
-            />
-            <button
-              onClick={() => setIsDarkMode(false)}
-              className={`relative z-10 flex items-center justify-center w-[56px] py-1 rounded-lg text-[10px] font-bold cursor-pointer ${!isDarkMode ? 'text-indigo-600' : 'text-slate-550 hover:text-slate-300'}`}
-            >
-              <Sun className="h-3 w-3 mr-1" />
-              <span>Light</span>
-            </button>
-            <button
-              onClick={() => setIsDarkMode(true)}
-              className={`relative z-10 flex items-center justify-center w-[56px] py-1 rounded-lg text-[10px] font-bold cursor-pointer ${isDarkMode ? 'text-teal-400' : 'text-slate-500 hover:text-slate-700'}`}
-            >
-              <Moon className="h-3 w-3 mr-1" />
-              <span>Dark</span>
-            </button>
-          </div>
-
-          {/* Action CTAs */}
-          <div className="flex items-center space-x-2">
-            <Link
-              href="/auth?mode=signin"
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${
-                isDarkMode ? 'text-slate-300 hover:bg-slate-900 border border-slate-850' : 'text-slate-700 hover:bg-slate-100 border border-slate-250 shadow-sm bg-white'
-              }`}
-            >
-              Sign In
+          <div className="hidden md:flex items-center gap-3">
+            <Link href="/auth?mode=signin">
+              <Button variant="ghost" size="sm">Sign In</Button>
             </Link>
-            <Link
-              href="/auth?mode=signup"
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] text-white shadow-lg ${
-                isDarkMode ? 'bg-gradient-to-r from-teal-500 to-indigo-600 shadow-teal-500/10' : 'bg-indigo-600 shadow-indigo-600/15 hover:bg-indigo-500'
-              }`}
-            >
-              Sign Up
+            <Link href="/auth?mode=signup">
+              <Button variant="primary" size="sm">
+                Get Started <ArrowRight className="h-3.5 w-3.5" />
+              </Button>
             </Link>
           </div>
+
+          <button
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="md:hidden w-9 h-9 rounded-xl flex items-center justify-center hover:bg-slate-100 transition-colors"
+          >
+            {mobileOpen ? <X className="h-5 w-5 text-slate-700" /> : <Menu className="h-5 w-5 text-slate-700" />}
+          </button>
         </div>
+
+        <AnimatePresence>
+          {mobileOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="md:hidden overflow-hidden bg-white border-b border-slate-200"
+            >
+              <div className="px-6 py-4 space-y-1">
+                {NAV_LINKS.map(link => (
+                  <a
+                    key={link}
+                    href={`#${link.toLowerCase().replace(/\s+/g, '-')}`}
+                    onClick={() => setMobileOpen(false)}
+                    className="block px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-colors"
+                  >
+                    {link}
+                  </a>
+                ))}
+                <div className="pt-3 flex flex-col gap-2">
+                  <Link href="/auth?mode=signin" onClick={() => setMobileOpen(false)}>
+                    <Button variant="secondary" size="sm" className="w-full">Sign In</Button>
+                  </Link>
+                  <Link href="/auth?mode=signup" onClick={() => setMobileOpen(false)}>
+                    <Button variant="primary" size="sm" className="w-full">Get Started Free</Button>
+                  </Link>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
-      {/* Main Sections Body */}
-      <main className="flex-grow">
+      {/* ── HERO ── */}
+      <section className="relative pt-32 pb-24 px-6 overflow-hidden min-h-screen flex items-center">
+        <div className="absolute top-20 left-1/4 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-violet-400/10 rounded-full blur-3xl pointer-events-none" />
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ backgroundImage: 'radial-gradient(circle, #CBD5E1 1px, transparent 1px)', backgroundSize: '28px 28px', opacity: 0.4 }}
+        />
 
-        {/* 1. HERO SECTION */}
-        <section className="relative px-6 py-20 md:py-32 max-w-6xl mx-auto flex flex-col items-center text-center space-y-8 z-10 animate-fade-in-up">
-          <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${
-            isDarkMode ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' : 'bg-indigo-50 text-indigo-750 border border-indigo-100'
-          }`}>
-            <Sparkles className="h-3.5 w-3.5 mr-1.5 animate-pulse text-indigo-400" />
-            AI Resume Platform
-          </span>
+        <div className="max-w-7xl mx-auto w-full relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
 
-          <h1 className={`text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight max-w-4xl leading-tight ${isDarkMode ? 'text-white' : 'text-slate-950'}`}>
-            Design your career path with{' '}
-            <span className="bg-gradient-to-r from-teal-400 via-indigo-500 to-purple-500 bg-clip-text text-transparent animate-gradient-shift">
-              SmartCV
-            </span>
-          </h1>
-
-          <p className={`text-sm sm:text-lg max-w-2xl leading-relaxed font-medium ${isDarkMode ? 'text-slate-400' : 'text-slate-555'}`}>
-            Build ATS-friendly resumes, optimize your career profile, and prepare for your next opportunity. Built and Developed by Vamsi Krishna Tadisetti.
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 items-center justify-center pt-4">
-            <Link
-              href="/auth?mode=signup"
-              className={`inline-flex items-center space-x-2 px-7 py-3.5 rounded-2xl text-sm font-bold text-white shadow-xl transition-all duration-300 hover:scale-[1.03] active:scale-[0.97] hover:shadow-2xl cursor-pointer ${
-                isDarkMode 
-                  ? 'bg-gradient-to-r from-teal-500 via-indigo-600 to-purple-600 shadow-teal-500/20' 
-                  : 'bg-indigo-600 shadow-indigo-600/20 hover:bg-indigo-500'
-              }`}
-            >
-              <span>Build My Resume</span>
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-            <a
-              href="#swiper"
-              className={`px-7 py-3.5 border rounded-2xl text-sm font-bold transition-all duration-300 hover:scale-[1.03] active:scale-[0.97] shadow-sm cursor-pointer ${
-                isDarkMode ? 'border-slate-850 hover:bg-slate-900 text-slate-300 bg-slate-950/20' : 'border-slate-200 hover:bg-slate-100 text-slate-700 bg-white'
-              }`}
-            >
-              Explore Templates
-            </a>
-          </div>
-        </section>
-
-        {/* 2. TEMPLATE SWIPER (Deck Swipe Experience) */}
-        <section id="swiper" className="py-20 bg-slate-900/10 dark:bg-slate-950/20 border-y border-slate-900/10 dark:border-slate-900/60 relative z-10 overflow-hidden">
-          <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            
-            {/* Swiper Texts */}
-            <div className="lg:col-span-5 space-y-5 text-left animate-fade-in-up">
-              <span className={`text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'text-teal-400' : 'text-indigo-650'}`}>
-                Swipe-To-Select Concept
-              </span>
-              <h2 className={`text-3xl sm:text-4xl font-extrabold tracking-tight leading-tight ${isDarkMode ? 'text-white' : 'text-slate-950'}`}>
-                Find your perfect format using our card deck
-              </h2>
-              <p className={`text-xs sm:text-sm leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-555'}`}>
-                Drag cards left or right to browse layout structures. Swipe right to approve templates, and swipe left to dismiss. The matching layouts will populate your dashboard builder.
-              </p>
-              
-              {/* Selected List Badge Indicators */}
-              <div className="space-y-3 pt-2">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
-                  Swiped templates ({selectedTemplates.length} Selected)
+            {/* Left — Copy */}
+            <div className="lg:col-span-6 flex flex-col gap-7">
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                  Free · No account required to browse · Built for students
                 </span>
-                <div className="flex flex-wrap gap-2">
-                  {selectedTemplates.length === 0 ? (
-                    <span className="text-xs text-slate-400 italic">No selections yet. Swipe right to pick!</span>
-                  ) : (
-                    selectedTemplates.map(t => (
-                      <span key={t.id} className="inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-bold bg-gradient-to-r from-teal-500/10 to-indigo-500/10 border border-teal-500/10 text-teal-400">
-                        <Check className="h-3 w-3 mr-1 text-teal-400" />
-                        {t.name}
-                      </span>
-                    ))
-                  )}
-                </div>
-              </div>
-            </div>
+              </motion.div>
 
-            {/* Swiper Interactive Stack Box */}
-            <div className="lg:col-span-7 flex flex-col items-center justify-center relative min-h-[460px]">
-              
-              {/* Active Deck Stack */}
-              {cards.length > 0 ? (
-                <div 
-                  className="relative w-full max-w-[340px] h-[380px] select-none"
-                  onMouseMove={(e) => handleMove(e.clientX, e.clientY)}
-                  onMouseUp={handleEnd}
-                  onMouseLeave={handleEnd}
-                  onTouchMove={(e) => handleMove(e.touches[0].clientX, e.touches[0].clientY)}
-                  onTouchEnd={handleEnd}
-                >
-                  
-                  {/* Map over sub-cards stacked behind */}
-                  {cards.slice(1, 4).map((template, idx) => {
-                    const depthIndex = idx + 1;
-                    return (
-                      <div
-                        key={template.id}
-                        className={`absolute inset-0 rounded-[28px] border p-6 flex flex-col justify-between shadow-xl ${
-                          isDarkMode 
-                            ? 'bg-slate-900 border-slate-800 text-white' 
-                            : 'bg-white border-slate-200 text-slate-900 shadow-slate-250/20'
-                        }`}
-                        style={getSubCardStyle(depthIndex)}
-                      >
-                        <div className="space-y-4">
-                          <div className={`h-8 w-24 rounded-lg bg-gradient-to-r ${template.color} opacity-40`} />
-                          <h4 className="text-base font-extrabold">{template.name}</h4>
-                          <span className="text-[11px] block font-bold uppercase tracking-widest text-indigo-400">{template.role}</span>
-                          <p className="text-xs leading-relaxed text-slate-400">{template.desc}</p>
-                        </div>
-                        <div className="h-10 border-t border-dashed border-slate-800/40 mt-4 flex items-center justify-between text-[10px] font-semibold text-slate-500">
-                          <span>A4 Format Layout</span>
-                          <span>ATS Certified</span>
-                        </div>
-                      </div>
-                    );
-                  })}
-
-                  {/* Active Top Card */}
-                  <div
-                    onMouseDown={(e) => handleStart(e.clientX, e.clientY)}
-                    onTouchStart={(e) => handleStart(e.touches[0].clientX, e.touches[0].clientY)}
-                    className={`absolute inset-0 rounded-[28px] border p-6 flex flex-col justify-between shadow-2xl transition-transform cursor-grab active:cursor-grabbing backdrop-blur-xl ${
-                      isDarkMode 
-                        ? 'bg-slate-900/90 border-slate-800 text-white shadow-slate-950/50' 
-                        : 'bg-white/95 border-indigo-100 text-slate-900 shadow-indigo-600/5'
-                    }`}
-                    style={{
-                      transform: topCardTransform,
-                      transition: isDragging ? 'none' : 'transform 250ms cubic-bezier(0.16, 1, 0.3, 1)',
-                      touchAction: 'none',
-                      zIndex: 10
-                    }}
-                  >
-                    {/* Visual Card Accent Top Gutter */}
-                    <div className="space-y-4 pointer-events-none">
-                      <div className="flex items-center justify-between">
-                        <div className={`h-2.5 w-2.5 rounded-full bg-gradient-to-r ${cards[0].color}`} />
-                        <span className="text-[9px] font-extrabold uppercase tracking-widest text-slate-500">Resume Outline</span>
-                      </div>
-                      
-                      {/* Dashboard Mockup Graphics */}
-                      <div className={`rounded-xl p-4 bg-gradient-to-tr ${cards[0].color} text-white flex flex-col justify-between h-28 shadow-md relative overflow-hidden`}>
-                        <div className="absolute right-0 top-0 translate-x-4 -translate-y-4 w-24 h-24 bg-white/10 rounded-full blur-xl" />
-                        <div>
-                          <h5 className="font-extrabold text-sm tracking-tight">{cards[0].role}</h5>
-                          <span className="text-[9px] uppercase tracking-wider font-semibold opacity-70">Template Layout</span>
-                        </div>
-                        <div className="flex justify-between items-center text-[9px] font-bold">
-                          <span>SmartCV Design</span>
-                          <span>ATS Verified</span>
-                        </div>
-                      </div>
-                      
-                      <h4 className="text-base font-extrabold tracking-tight pt-2">{cards[0].name}</h4>
-                      <p className="text-xs leading-relaxed text-slate-450 dark:text-slate-400">{cards[0].desc}</p>
-                    </div>
-
-                    <div className="h-10 border-t border-dashed border-slate-800/10 dark:border-slate-800/60 mt-4 flex items-center justify-between text-[10px] font-bold text-slate-500 pointer-events-none">
-                      <span>Standard A4 Grid</span>
-                      <span className="text-teal-400 font-extrabold uppercase tracking-widest">PRO</span>
-                    </div>
-                  </div>
-
-                </div>
-              ) : (
-                /* Empty Deck State */
-                <div className={`w-full max-w-[340px] border rounded-[28px] p-8 text-center transition-all ${
-                  isDarkMode ? 'bg-slate-900/20 border-slate-850' : 'bg-white border-slate-200 shadow-md'
-                }`}>
-                  <div className="h-12 w-12 rounded-full bg-teal-500/10 flex items-center justify-center mx-auto mb-4 text-teal-400">
-                    <Check className="h-6 w-6" />
-                  </div>
-                  <h4 className="font-bold text-sm mb-1">Deck Fully Reviewed</h4>
-                  <p className="text-xs text-slate-500 mb-6">You have swiped all available templates. Your selected formats are loaded in onboarding.</p>
-                  <button
-                    onClick={handleReset}
-                    className={`px-5 py-2.5 rounded-xl text-xs font-bold transition duration-200 cursor-pointer ${
-                      isDarkMode ? 'bg-slate-900 hover:bg-slate-800 text-teal-400 border border-slate-850' : 'bg-slate-50 hover:bg-slate-100 text-indigo-600 border border-slate-200'
-                    }`}
-                  >
-                    Reset Stack Deck
-                  </button>
-                </div>
-              )}
-
-              {/* Action Circle Swiper Buttons */}
-              {cards.length > 0 && (
-                <div className="flex items-center space-x-6 mt-8">
-                  <button
-                    onClick={() => triggerSwipe('left')}
-                    className={`h-11 w-11 rounded-full border flex items-center justify-center shadow-lg transition duration-200 hover:scale-110 active:scale-95 cursor-pointer ${
-                      isDarkMode ? 'border-slate-800 bg-slate-900 text-rose-500 hover:border-rose-500/30' : 'border-slate-250 bg-white text-rose-600 hover:border-rose-300'
-                    }`}
-                    title="Dismiss Layout"
-                  >
-                    <X className="h-5 w-5" strokeWidth={2.5} />
-                  </button>
-                  <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500">
-                    Swipe Cards
+              <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}>
+                <h1 className="text-5xl sm:text-6xl lg:text-[4.2rem] font-extrabold text-slate-900 leading-[1.07] tracking-tight">
+                  Build a Resume<br />
+                  <span style={{ background: 'linear-gradient(135deg, #2563EB, #7C3AED)', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                    Recruiters Notice.
                   </span>
-                  <button
-                    onClick={() => triggerSwipe('right')}
-                    className={`h-11 w-11 rounded-full border flex items-center justify-center shadow-lg transition duration-200 hover:scale-110 active:scale-95 cursor-pointer ${
-                      isDarkMode ? 'border-slate-800 bg-slate-900 text-teal-400 hover:border-teal-500/30' : 'border-slate-250 bg-white text-teal-600 hover:border-teal-350'
-                    }`}
-                    title="Approve Template"
-                  >
-                    <Check className="h-5 w-5" strokeWidth={2.5} />
-                  </button>
-                </div>
-              )}
-            </div>
+                </h1>
+              </motion.div>
 
-          </div>
-        </section>
-
-        {/* 3. INTERACTIVE TEMPLATE CAROUSEL */}
-        <section className="py-20 max-w-6xl mx-auto px-6 text-center space-y-12">
-          <div className="space-y-4 animate-fade-in-up">
-            <span className={`text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'text-indigo-400' : 'text-indigo-650'}`}>
-              Mockups Showcase
-            </span>
-            <h2 className={`text-3xl sm:text-4xl font-extrabold tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-950'}`}>
-              Browse layout variants in real-time
-            </h2>
-            <p className={`text-xs sm:text-sm max-w-xl mx-auto leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-550'}`}>
-              Our carousel showcases modern resume layouts featuring elegant spacing, premium dark card options, and high contrast typography.
-            </p>
-          </div>
-
-          {/* Carousel View Container */}
-          <div className="relative max-w-2xl mx-auto h-52 sm:h-60 rounded-3xl overflow-hidden shadow-2xl border border-slate-900/10 dark:border-slate-900/60 transition-all duration-500 animate-fade-in-up">
-            {CAROUSEL_TEMPLATES.map((item, idx) => {
-              const isActive = idx === carouselIndex;
-              return (
-                <div
-                  key={item.id}
-                  className={`absolute inset-0 p-8 flex flex-col justify-between bg-gradient-to-tr ${item.bg} ${item.text} transition-opacity duration-1000 ${
-                    isActive ? 'opacity-100 z-10' : 'opacity-0 z-0'
-                  }`}
-                >
-                  <div className="text-left space-y-2">
-                    <span className="text-[10px] font-bold tracking-widest uppercase opacity-70">Resume Style {item.id}</span>
-                    <h3 className="text-lg sm:text-xl font-extrabold tracking-tight">{item.title}</h3>
-                    <span className="text-xs font-bold uppercase text-teal-400 block tracking-widest">{item.role}</span>
-                  </div>
-                  
-                  {/* Dummy Mockup Lines */}
-                  <div className="space-y-2 mt-4 opacity-40">
-                    <div className="h-1.5 w-full bg-current rounded-full" />
-                    <div className="h-1.5 w-5/6 bg-current rounded-full" />
-                    <div className="h-1.5 w-4/6 bg-current rounded-full" />
-                  </div>
-
-                  <div className="flex justify-between items-center text-[10px] font-bold opacity-70 mt-4">
-                    <span>Designed by SmartCV</span>
-                    <span>Ready for AI Integration</span>
-                  </div>
-                </div>
-              );
-            })}
-
-            {/* Slider Dots */}
-            <div className="absolute bottom-4 left-0 right-0 z-20 flex justify-center space-x-1.5">
-              {CAROUSEL_TEMPLATES.map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setCarouselIndex(idx)}
-                  className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                    idx === carouselIndex ? 'w-4 bg-teal-450' : 'w-1.5 bg-slate-500'
-                  }`}
-                />
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* 4. FEATURES GRID */}
-        <section id="features" className="py-20 max-w-6xl mx-auto px-6 relative z-10 space-y-12">
-          <div className="text-center space-y-4 animate-fade-in-up">
-            <span className={`text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'text-purple-400' : 'text-indigo-650'}`}>
-              Product Capabilities
-            </span>
-            <h2 className={`text-3xl sm:text-4xl font-extrabold tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-950'}`}>
-              Everything you need to land interviews
-            </h2>
-            <p className={`text-xs sm:text-sm max-w-xl mx-auto leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-550'}`}>
-              Avoid boring text files. Use custom spacing frameworks, automated keyphrase scoring, and beautiful grids designed for visual excellence.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {FEATURES.map((feat, idx) => (
-              <div
-                key={idx}
-                className={`border rounded-2xl p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl flex flex-col justify-between backdrop-blur-md ${
-                  isDarkMode 
-                    ? 'bg-slate-900/20 border-slate-900/60 hover:border-slate-800 hover:bg-slate-900/30' 
-                    : 'bg-white border-slate-200/50 hover:border-slate-300 shadow-slate-200/50 hover:bg-slate-50/30'
-                }`}
+              <motion.p
+                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}
+                className="text-lg text-slate-500 leading-relaxed max-w-lg"
               >
-                <div>
-                  <div className={`h-10 w-10 rounded-xl flex items-center justify-center mb-5 ${
-                    isDarkMode ? 'bg-slate-950 border border-slate-850' : 'bg-slate-50 border border-slate-200'
-                  }`}>
-                    {feat.icon}
-                  </div>
-                  <h3 className={`text-sm sm:text-base font-bold tracking-tight mb-2.5 ${isDarkMode ? 'text-slate-200' : 'text-slate-900'}`}>
-                    {feat.title}
-                  </h3>
-                  <p className={`text-xs leading-relaxed font-medium ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                    {feat.desc}
-                  </p>
-                </div>
-                <div className="flex items-center space-x-1.5 text-[10px] font-bold text-indigo-400 mt-6 cursor-pointer group">
-                  <span>Explore features</span>
-                  <ChevronRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
+                SmartCV gives students and freshers a polished, ATS-optimized resume in minutes. No templates that look like everyone else&apos;s.
+              </motion.p>
 
-        {/* 5. WHY SMARTCV SECTION (REAL CAPABILITIES ONLY) */}
-        <section id="why-smartcv" className="py-20 bg-slate-900/10 dark:bg-slate-950/20 border-y border-slate-900/10 dark:border-slate-900/60 relative z-10">
-          <div className="max-w-6xl mx-auto px-6 space-y-12 animate-fade-in-up">
-            <div className="text-center space-y-4">
-              <span className={`text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'text-pink-400' : 'text-indigo-600'}`}>
-                Core Advantage
-              </span>
-              <h2 className={`text-3xl sm:text-4xl font-extrabold tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-950'}`}>
-                Why SmartCV?
-              </h2>
-              <p className={`text-xs sm:text-sm max-w-xl mx-auto leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                We build utilities tailored specifically for modern software engineers, product managers, and designers looking to highlight key data fields cleanly.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              {WHY_SMARTCV.map((item, idx) => (
-                <div
-                  key={idx}
-                  className={`border rounded-2xl p-6 shadow-sm flex flex-col justify-between backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${
-                    isDarkMode ? 'bg-slate-900/20 border-slate-900/60 hover:border-slate-800' : 'bg-white border-slate-200/50 hover:border-slate-300 shadow-slate-200/50 shadow-sm'
-                  }`}
-                >
-                  <div className="space-y-4">
-                    <div className={`h-9 w-9 rounded-lg flex items-center justify-center ${
-                      isDarkMode ? 'bg-slate-950 border border-slate-850' : 'bg-slate-50 border border-slate-250'
-                    }`}>
-                      {item.icon}
-                    </div>
-                    <h3 className={`text-sm font-bold tracking-tight ${isDarkMode ? 'text-slate-200' : 'text-slate-900'}`}>
-                      {item.title}
-                    </h3>
-                    <p className={`text-xs leading-relaxed font-semibold ${isDarkMode ? 'text-slate-400' : 'text-slate-550'}`}>
-                      {item.desc}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* 6. ROADMAP COMING SOON SECTION */}
-        <section id="roadmap" className="py-20 max-w-6xl mx-auto px-6 relative z-10 space-y-12">
-          <div className="text-center space-y-4 animate-fade-in-up">
-            <span className={`text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'text-teal-400' : 'text-indigo-650'}`}>
-              Roadmap Roadmap
-            </span>
-            <h2 className={`text-3xl sm:text-4xl font-extrabold tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-950'}`}>
-              Product Development Pipeline
-            </h2>
-            <p className={`text-xs sm:text-sm max-w-xl mx-auto leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-555'}`}>
-              SmartCV is continuously evolving. Explore the core modules currently being designed and deployed under our tech roadmap.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            {ROADMAP_ITEMS.map((item, idx) => (
-              <div
-                key={idx}
-                className={`border rounded-2xl p-6 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 ${
-                  isDarkMode ? 'bg-slate-900/20 border-slate-900/60 hover:border-slate-800' : 'bg-white border-slate-200 hover:border-slate-300 shadow-sm shadow-slate-200/50'
-                }`}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3 }}
+                className="flex flex-col sm:flex-row gap-3"
               >
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${
-                      isDarkMode ? 'bg-slate-950 border border-slate-850 shadow-inner' : 'bg-slate-50 border border-slate-200'
-                    }`}>
-                      {item.icon}
+                <Link href="/auth?mode=signup">
+                  <Button variant="primary" size="lg" className="w-full sm:w-auto">
+                    Start Building Free <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+                <Link href="#templates">
+                  <Button variant="secondary" size="lg" className="w-full sm:w-auto">Browse Templates</Button>
+                </Link>
+              </motion.div>
+
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="flex items-center gap-3 pt-1">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-700">
+                  <CheckCircle className="h-4 w-4 text-blue-600" />
+                  <span>Real-Time Canvas Editor & ATS Optimization</span>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Right — Browser mockup */}
+            <div className="lg:col-span-6 relative">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <div className="bg-white border border-slate-200/80 rounded-2xl shadow-[0_32px_80px_rgba(37,99,235,0.12)] p-4">
+                  <div className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+                    <div className="flex gap-1.5">
+                      <div className="w-3 h-3 rounded-full bg-red-400" />
+                      <div className="w-3 h-3 rounded-full bg-amber-400" />
+                      <div className="w-3 h-3 rounded-full bg-emerald-400" />
                     </div>
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[8.5px] font-extrabold uppercase bg-amber-500/10 text-amber-400 border border-amber-500/15 animate-pulse">
-                      {item.status}
-                    </span>
+                    <div className="flex-1 mx-2 bg-slate-100 rounded-full px-3 py-1 text-[10px] text-slate-400 flex items-center gap-1.5">
+                      <Shield className="h-2.5 w-2.5" /> smartcv.app/builder
+                    </div>
+                    <div className="text-[9px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full">Saved ✓</div>
                   </div>
-                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2.5">
+                      <div className="text-[9px] font-black uppercase tracking-widest text-slate-400">// Personal Info</div>
+                      <div className="h-8 bg-slate-50 border border-slate-200 rounded-lg flex items-center px-2.5"><div className="h-2 bg-slate-300 rounded w-3/4" /></div>
+                      <div className="h-8 bg-slate-50 border border-slate-200 rounded-lg flex items-center px-2.5"><div className="h-2 bg-slate-300 rounded w-1/2" /></div>
+                      <div className="text-[9px] font-black uppercase tracking-widest text-slate-400 mt-2">// Experience</div>
+                      <div className="h-8 bg-blue-50 border border-blue-200 rounded-lg flex items-center px-2.5"><div className="h-2 bg-blue-300 rounded w-4/5" /></div>
+                      <div className="h-8 bg-slate-50 border border-slate-200 rounded-lg flex items-center px-2.5"><div className="h-2 bg-slate-300 rounded w-2/3" /></div>
+                    </div>
+                    <div className="bg-white rounded-xl border border-slate-200 p-3 shadow-sm">
+                      <div className="h-3.5 w-2/3 bg-slate-800 rounded mb-1" />
+                      <div className="h-2 w-1/2 bg-slate-300 rounded mb-0.5" />
+                      <div className="h-px bg-slate-100 my-2" />
+                      <div className="space-y-1 mb-2">
+                        <div className="h-1.5 bg-slate-200 rounded w-full" />
+                        <div className="h-1.5 bg-slate-200 rounded w-5/6" />
+                        <div className="h-1.5 bg-slate-200 rounded w-4/6" />
+                      </div>
+                      <div className="mt-2 flex gap-1 flex-wrap">
+                        {['React', 'TS', 'Node'].map(t => (
+                          <span key={t} className="text-[7px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-bold">{t}</span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <motion.div
+                  animate={{ y: [0, -8, 0] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                  className="absolute -top-5 -right-4 bg-white border border-slate-200 rounded-2xl px-4 py-3 flex items-center gap-3 shadow-xl"
+                >
+                  <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center">
+                    <CheckCircle className="h-5 w-5 text-emerald-600" />
+                  </div>
                   <div>
-                    <h3 className={`text-sm font-bold ${isDarkMode ? 'text-slate-200' : 'text-slate-850'}`}>{item.title}</h3>
-                    <p className={`text-xs mt-1.5 leading-relaxed font-semibold ${isDarkMode ? 'text-slate-450' : 'text-slate-500'}`}>{item.desc}</p>
+                    <div className="text-[10px] font-bold text-slate-500">ATS Score</div>
+                    <div className="text-base font-black text-emerald-600 leading-none">98/100</div>
                   </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
+                </motion.div>
 
-        {/* 7. FAQ SECTION */}
-        <section id="faqs" className="py-20 max-w-3xl mx-auto px-6 relative z-10 space-y-12">
-          <div className="text-center space-y-4 animate-fade-in-up">
-            <span className={`text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'text-purple-400' : 'text-indigo-650'}`}>
-              Help Center
-            </span>
-            <h2 className={`text-3xl sm:text-4xl font-extrabold tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-950'}`}>
-              Frequently Asked Questions
-            </h2>
-          </div>
-
-          <div className="space-y-4">
-            {FAQS.map((faq, idx) => {
-              const isOpen = activeFaq === idx;
-              return (
-                <div
-                  key={idx}
-                  className={`border rounded-2xl overflow-hidden transition-all duration-300 ${
-                    isDarkMode ? 'border-slate-900 bg-slate-900/10' : 'border-slate-200 bg-white'
-                  }`}
+                <motion.div
+                  animate={{ y: [0, 6, 0] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+                  className="absolute -bottom-5 -left-4 bg-white border border-slate-200 rounded-2xl px-4 py-3 flex items-center gap-3 shadow-xl max-w-[190px]"
                 >
-                  <button
-                    type="button"
-                    onClick={() => setActiveFaq(isOpen ? null : idx)}
-                    className="w-full px-6 py-5 flex items-center justify-between font-bold text-xs sm:text-sm text-left transition hover:bg-slate-850/10 cursor-pointer"
-                  >
-                    <span className={isDarkMode ? 'text-slate-200' : 'text-slate-800'}>{faq.q}</span>
-                    <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform duration-300 ${isOpen ? 'rotate-180' : 'rotate-0'}`} />
-                  </button>
-                  
-                  {/* Accordion content */}
-                  <div
-                    className="transition-all duration-300 ease-in-out overflow-hidden"
-                    style={{ maxHeight: isOpen ? '160px' : '0px' }}
-                  >
-                    <p className={`px-6 pb-5 text-xs sm:text-[13px] leading-relaxed font-medium ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                      {faq.a}
-                    </p>
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-600 to-violet-600 flex items-center justify-center shrink-0">
+                    <Cpu className="h-4 w-4 text-white" />
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-
-      </main>
-
-      {/* 8. FOOTER */}
-      <footer className={`border-t py-12 px-6 transition-colors duration-500 z-10 relative ${
-        isDarkMode ? 'border-slate-900 bg-slate-950 text-slate-500' : 'border-slate-200 bg-white text-slate-400'
-      }`}>
-        <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-5 gap-8">
-          
-          {/* Logo Column */}
-          <div className="col-span-2 space-y-4">
-            <div className="flex items-center space-x-3 text-slate-800 dark:text-white">
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-tr from-teal-500 via-indigo-650 to-purple-600 flex items-center justify-center font-bold text-white shadow-md">
-                S
-              </div>
-              <span className="font-extrabold text-base tracking-tight bg-gradient-to-r from-teal-400 via-indigo-500 to-purple-500 bg-clip-text text-transparent">SmartCV</span>
-            </div>
-            <p className="text-xs leading-relaxed max-w-sm font-bold">
-              AI Resume Platform designed to help professionals format sections cleanly and build high-performance portfolios.
-            </p>
-            <p className="text-[10px] font-extrabold tracking-wider text-slate-500 dark:text-slate-400 uppercase">
-              Built and Developed by Vamsi Krishna Tadisetti
-            </p>
-            <div className="flex items-center space-x-4 pt-2">
-              <a href="#" className="hover:text-indigo-400 transition-colors"><Mail className="h-4 w-4" /></a>
-              <a href="#" className="hover:text-indigo-400 transition-colors"><Globe className="h-4 w-4" /></a>
-              <a href="#" className="hover:text-indigo-400 transition-colors"><Compass className="h-4 w-4" /></a>
+                  <div>
+                    <div className="text-[10px] font-bold text-slate-900">AI Suggestion</div>
+                    <div className="text-[9px] text-slate-400">Action verb improved ✓</div>
+                  </div>
+                </motion.div>
+              </motion.div>
             </div>
           </div>
-
-          {/* Nav Column 1 */}
-          <div className="space-y-4">
-            <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-900 dark:text-slate-300">Product</h4>
-            <ul className="space-y-2 text-xs font-semibold">
-              <li><a href="#features" className="hover:text-indigo-400 transition-colors">Features</a></li>
-              <li><a href="#swiper" className="hover:text-indigo-400 transition-colors">Template Gallery</a></li>
-              <li><a href="#roadmap" className="hover:text-indigo-400 transition-colors">Coming Soon</a></li>
-            </ul>
-          </div>
-
-          {/* Nav Column 2 */}
-          <div className="space-y-4">
-            <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-900 dark:text-slate-300">Resources</h4>
-            <ul className="space-y-2 text-xs font-semibold">
-              <li><a href="#" className="hover:text-indigo-400 transition-colors">ATS Secrets Blog</a></li>
-              <li><a href="#" className="hover:text-indigo-400 transition-colors">Resume Tips</a></li>
-              <li><a href="#faqs" className="hover:text-indigo-400 transition-colors">Help FAQs</a></li>
-            </ul>
-          </div>
-
-          {/* Nav Column 3 */}
-          <div className="space-y-4">
-            <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-900 dark:text-slate-300">Company</h4>
-            <ul className="space-y-2 text-xs font-semibold">
-              <li><a href="#" className="hover:text-indigo-400 transition-colors">About SmartCV</a></li>
-              <li><a href="#" className="hover:text-indigo-400 transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="hover:text-indigo-400 transition-colors">Terms of Service</a></li>
-            </ul>
-          </div>
-
         </div>
 
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between border-t border-slate-900/10 dark:border-slate-900/60 mt-12 pt-6 text-[10px] font-bold tracking-widest uppercase text-slate-550">
-          <span>&copy; {new Date().getFullYear()} SmartCV. Built and Developed by Vamsi Krishna Tadisetti.</span>
-          <span className="mt-2 sm:mt-0">AI Resume Platform</span>
+        <motion.div
+          animate={{ y: [0, 6, 0] }}
+          transition={{ duration: 2, repeat: Infinity }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-slate-400"
+        >
+          <span className="text-[10px] font-medium uppercase tracking-widest">Scroll to explore</span>
+          <ChevronDown className="h-4 w-4" />
+        </motion.div>
+      </section>
+
+      {/* ── TRUSTED BY ── */}
+      <section className="border-y border-slate-200 bg-white py-12 px-6">
+        <div className="max-w-5xl mx-auto">
+          <p className="text-center text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-8">
+            Built for every stage of your career journey
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+            {TRUSTED_BY.map(({ label, Icon }, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.07 }}
+                className="flex flex-col items-center gap-2 text-center p-3 rounded-2xl hover:bg-slate-50 transition-colors group cursor-default"
+              >
+                <div className="w-10 h-10 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 group-hover:text-blue-600 group-hover:bg-blue-50 group-hover:border-blue-100 transition-colors">
+                  <Icon className="h-5 w-5" />
+                </div>
+                <span className="text-[11px] font-semibold text-slate-500 group-hover:text-slate-800 transition-colors leading-tight">{label}</span>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── STATS ── */}
+      <section className="bg-gradient-to-b from-white to-slate-50 py-16 px-6">
+        <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
+          {[
+            { value: '12+', label: 'ATS Templates', Icon: LayoutTemplate },
+            { value: 'AI', label: 'Smart Optimization', Icon: Cpu },
+            { value: 'Real-Time', label: 'ATS Analysis', Icon: BarChart2 },
+            { value: '100%', label: 'Free Platform', Icon: Shield },
+          ].map(({ value, label, Icon }, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1 }}
+              className="flex flex-col items-center text-center"
+            >
+              <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 mb-3">
+                <Icon className="h-4 w-4" />
+              </div>
+              <div className="text-3xl font-extrabold text-slate-900 tracking-tight">{value}</div>
+              <div className="text-sm text-slate-400 mt-0.5">{label}</div>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── BENTO FEATURES ── */}
+      <section id="features" className="py-24 px-6">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+            className="text-center mb-16 max-w-2xl mx-auto"
+          >
+            <Badge variant="primary" className="mb-4">Core Features</Badge>
+            <h2 className="text-4xl font-extrabold text-slate-900 tracking-tight mb-4">
+              Engineered for{' '}
+              <span style={{ background: 'linear-gradient(135deg, #2563EB, #7C3AED)', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                Career Growth
+              </span>
+            </h2>
+            <p className="text-slate-500 text-lg leading-relaxed">
+              A suite of intelligent tools that takes the guesswork out of resume creation. Know exactly how strong your resume is before you apply.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
+            {/* AI Optimization */}
+            <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0 }}
+              className="md:col-span-8 bg-white border border-slate-200 rounded-2xl p-7 group overflow-hidden hover:shadow-lg transition-all duration-300">
+              <div className="flex items-start justify-between mb-5">
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center border bg-blue-50 border-blue-100"><Cpu className="h-6 w-6 text-blue-600" /></div>
+                <Badge variant="blue">AI-Powered</Badge>
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-2">AI Resume Optimization</h3>
+              <p className="text-sm text-slate-500 leading-relaxed mb-5">Upload your existing resume and our AI rewrites it for maximum impact — stronger verbs, quantified achievements, perfectly structured experience.</p>
+              <ul className="space-y-2 mb-5">
+                {['Context-aware bullet rewriting', 'Action verb optimization', 'Keyword density tuning for ATS'].map((b, j) => (
+                  <li key={j} className="flex items-center gap-2 text-sm text-slate-700"><Check className="h-4 w-4 text-blue-600 shrink-0" />{b}</li>
+                ))}
+              </ul>
+              <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 space-y-3">
+                {[{ r: 'Software Engineer', s: 98, m: 94 }, { r: 'Product Manager', s: 95, m: 91 }, { r: 'UX Designer', s: 92, m: 88 }].map((x, j) => (
+                  <div key={j} className="flex items-center gap-3 bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shrink-0">{x.r[0]}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-semibold text-slate-800 truncate">{x.r}</div>
+                      <div className="text-[10px] text-slate-400">Match: {x.m}%</div>
+                    </div>
+                    <div className="text-sm font-black text-emerald-600 shrink-0">{x.s}%</div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* ATS Score */}
+            <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }}
+              className="md:col-span-4 bg-white border border-slate-200 rounded-2xl p-7 group overflow-hidden hover:shadow-lg transition-all duration-300">
+              <div className="flex items-start justify-between mb-5">
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center border bg-purple-50 border-purple-100"><Target className="h-6 w-6 text-purple-600" /></div>
+                <Badge variant="purple">Real-Time</Badge>
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-2">ATS Score</h3>
+              <p className="text-sm text-slate-500 leading-relaxed mb-5">See exactly how your resume scores before you apply.</p>
+              <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 flex flex-col items-center gap-3 py-6">
+                <ATSRing score={92} size={90} />
+                <div className="text-center">
+                  <div className="text-xs font-bold text-slate-800">Excellent</div>
+                  <div className="text-[10px] text-slate-400">Ready for submission</div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Templates */}
+            <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }}
+              className="md:col-span-4 bg-white border border-slate-200 rounded-2xl p-7 group overflow-hidden hover:shadow-lg transition-all duration-300">
+              <div className="flex items-start justify-between mb-5">
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center border bg-amber-50 border-amber-100"><LayoutTemplate className="h-6 w-6 text-amber-600" /></div>
+                <Badge variant="amber">12+ Templates</Badge>
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-2">Recruiter-Approved Layouts</h3>
+              <p className="text-sm text-slate-500 leading-relaxed mb-5">ATS-optimized templates for every industry — from tech to finance.</p>
+              <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 flex gap-2 items-end justify-center py-6">
+                <div className="w-14 h-20 rounded-lg opacity-60 -rotate-6 translate-x-2 shadow-sm overflow-hidden border border-slate-200 bg-white">
+                  <div className="scale-[0.065] origin-top-left pointer-events-none" style={{ width: '900px', height: '1200px', position: 'relative', left: '2px', top: '2px' }}>
+                    <TemplateRenderer templateId="tech-minimal" zoom={100} />
+                  </div>
+                </div>
+                <div className="w-16 h-24 rounded-lg shadow-lg z-10 overflow-hidden border-2 border-blue-400 bg-white">
+                  <div className="scale-[0.075] origin-top-left pointer-events-none" style={{ width: '900px', height: '1200px', position: 'relative', left: '2px', top: '2px' }}>
+                    <TemplateRenderer templateId="ats-professional" zoom={100} />
+                  </div>
+                </div>
+                <div className="w-14 h-20 rounded-lg opacity-60 rotate-6 -translate-x-2 shadow-sm overflow-hidden border border-slate-200 bg-white">
+                  <div className="scale-[0.065] origin-top-left pointer-events-none" style={{ width: '900px', height: '1200px', position: 'relative', left: '2px', top: '2px' }}>
+                    <TemplateRenderer templateId="faang-elite" zoom={100} />
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Skill Gap */}
+            <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }}
+              className="md:col-span-8 bg-white border border-slate-200 rounded-2xl p-7 group overflow-hidden hover:shadow-lg transition-all duration-300">
+              <div className="flex items-start justify-between mb-5">
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center border bg-cyan-50 border-cyan-100"><BarChart2 className="h-6 w-6 text-cyan-600" /></div>
+                <Badge variant="cyan">Analysis</Badge>
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-2">Skill Gap Analysis</h3>
+              <p className="text-sm text-slate-500 leading-relaxed mb-5">Paste a job description and our AI highlights missing keywords and skills with natural suggestions to incorporate them.</p>
+              <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 space-y-2.5">
+                {SKILL_BARS.map((s, j) => (
+                  <div key={j} className="flex items-center gap-3">
+                    <span className="text-[11px] font-semibold text-slate-600 w-20 shrink-0">{s.skill}</span>
+                    <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        whileInView={{ width: `${s.match}%` }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.8, delay: j * 0.1, ease: 'easeOut' }}
+                        className={`h-full rounded-full ${s.color}`}
+                      />
+                    </div>
+                    <span className="text-[10px] font-bold text-slate-400 w-8 text-right shrink-0">{s.match}%</span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── HOW IT WORKS ── */}
+      <section id="how-it-works" className="py-24 px-6 bg-white">
+        <div className="max-w-5xl mx-auto">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
+            <Badge variant="purple" className="mb-4">How It Works</Badge>
+            <h2 className="text-4xl font-extrabold text-slate-900 tracking-tight mb-4">Ready in three steps</h2>
+            <p className="text-slate-500 text-lg">From blank page to interview-ready in minutes.</p>
+          </motion.div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {HOW_STEPS.map((s, i) => (
+              <motion.div key={i} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.15 }}
+                className="bg-white border border-slate-200 rounded-2xl p-7 text-center hover:shadow-lg transition-shadow duration-300">
+                <div className="flex items-center justify-center mb-5">
+                  <div className={`w-14 h-14 rounded-2xl border flex items-center justify-center ${s.bg}`}>
+                    <s.Icon className={`h-6 w-6 ${s.color}`} />
+                  </div>
+                </div>
+                <div className="text-5xl font-black text-slate-100 mb-3">{s.step}</div>
+                <h3 className="text-lg font-bold text-slate-900 mb-2">{s.title}</h3>
+                <p className="text-sm text-slate-500 leading-relaxed">{s.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── ATS PREVIEW ── */}
+      <section className="py-24 px-6 bg-gradient-to-b from-slate-50 to-white">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <motion.div initial={{ opacity: 0, x: -24 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
+              <Badge variant="cyan" className="mb-5">ATS Intelligence</Badge>
+              <h2 className="text-4xl font-extrabold text-slate-900 tracking-tight mb-5">
+                Know your score<br />
+                <span style={{ background: 'linear-gradient(135deg, #0891B2, #2563EB)', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                  before you apply.
+                </span>
+              </h2>
+              <p className="text-slate-500 text-lg leading-relaxed mb-8">
+                SmartCV&apos;s ATS checker analyzes your resume across multiple dimensions and shows you exactly what to fix before you hit submit.
+              </p>
+              <ul className="space-y-3 mb-8">
+                {[
+                  'Real-time keyword match vs job descriptions',
+                  'Formatting compatibility check',
+                  'Recruiter readability score',
+                  'One-click improvement suggestions',
+                ].map((pt, i) => (
+                  <li key={i} className="flex items-center gap-3 text-sm text-slate-700">
+                    <div className="w-5 h-5 rounded-full bg-emerald-100 border border-emerald-200 flex items-center justify-center shrink-0">
+                      <Check className="h-3 w-3 text-emerald-600" />
+                    </div>
+                    {pt}
+                  </li>
+                ))}
+              </ul>
+              <Link href="/auth?mode=signup">
+                <Button variant="primary" size="md">Try ATS Checker Free <ArrowRight className="h-4 w-4" /></Button>
+              </Link>
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0, x: 24 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.1 }}>
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xl shadow-blue-600/5">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <div className="text-xs font-black uppercase tracking-widest text-slate-400">ATS Analysis</div>
+                    <div className="text-sm font-bold text-slate-800 mt-0.5">Frontend Developer Resume</div>
+                  </div>
+                  <div className="text-xs font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-3 py-1 rounded-full">ATS Ready</div>
+                </div>
+                <div className="space-y-4">
+                  {ATS_PANELS.map((panel, i) => (
+                    <motion.div key={i} initial={{ opacity: 0, x: 16 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 + 0.2 }}>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-xs font-semibold text-slate-600">{panel.label}</span>
+                        <span className={`text-sm font-black ${panel.color}`}>{panel.value}{panel.unit}</span>
+                      </div>
+                      <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          whileInView={{ width: `${panel.bar}%` }}
+                          viewport={{ once: true }}
+                          transition={{ duration: 0.9, delay: i * 0.1 + 0.3, ease: 'easeOut' }}
+                          className={`h-full rounded-full ${panel.barColor}`}
+                        />
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+                <div className="mt-6 pt-5 border-t border-slate-100">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Quick Fixes</div>
+                  <div className="space-y-2">
+                    {['Add "Agile" to skills section', 'Quantify achievement in line 3', 'Move summary above experience'].map((fix, i) => (
+                      <div key={i} className="flex items-center gap-2.5 text-xs text-slate-600 p-2 bg-slate-50 rounded-lg border border-slate-100">
+                        <Zap className="h-3.5 w-3.5 text-amber-500 shrink-0" />{fix}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── TEMPLATES ── */}
+      <section id="templates" className="py-24 px-6 bg-white">
+        <div className="max-w-7xl mx-auto">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+            className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+            <div>
+              <Badge variant="amber" className="mb-4">Templates</Badge>
+              <h2 className="text-4xl font-extrabold text-slate-900 tracking-tight">
+                Designs that get<br />
+                <span style={{ background: 'linear-gradient(135deg, #D97706, #EA580C)', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                  you noticed.
+                </span>
+              </h2>
+            </div>
+            <Link href="/auth?mode=signup">
+              <Button variant="secondary" size="md">Browse All Templates <ChevronRight className="h-4 w-4" /></Button>
+            </Link>
+          </motion.div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {TEMPLATE_CARDS.map((tmpl, i) => (
+              <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
+                className="group relative bg-slate-50 border border-slate-200 rounded-2xl p-4 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer">
+                <span className={`absolute top-3 right-3 text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${tmpl.tagColor}`}>{tmpl.tag}</span>
+                <div className="bg-white rounded-xl border border-slate-200 mb-4 shadow-sm h-[160px] relative overflow-hidden">
+                  <div className="scale-[0.155] origin-top-left pointer-events-none" style={{ width: '900px', height: '1200px', position: 'relative', left: '4px', top: '4px' }}>
+                    <TemplateRenderer templateId={tmpl.name === 'ATS Professional' ? 'ats-professional' : tmpl.name === 'FAANG Elite' ? 'faang-elite' : tmpl.name === 'Tech Minimal' ? 'tech-minimal' : 'executive-pro'} zoom={100} />
+                  </div>
+                  <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center rounded-xl">
+                    <Link href="/auth?mode=signup">
+                      <button className="text-[10px] font-bold bg-white text-slate-900 px-3 py-1.5 rounded-lg shadow-md">Use Template</button>
+                    </Link>
+                  </div>
+                </div>
+                <div className="text-xs font-bold text-slate-800 mb-1">{tmpl.name}</div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  <span className="text-[10px] font-semibold text-slate-500">ATS {tmpl.ats}%</span>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── REAL PLATFORM HIGHLIGHTS ── */}
+      <section className="py-24 px-6 bg-gradient-to-b from-slate-50 to-white">
+        <div className="max-w-7xl mx-auto">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-14">
+            <Badge variant="success" className="mb-4">Capabilities</Badge>
+            <h2 className="text-4xl font-extrabold text-slate-900 tracking-tight mb-3">Built with features that empower your search</h2>
+            <p className="text-slate-500 text-lg">Real tools designed to help you build and refine your resume.</p>
+          </motion.div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {[
+              {
+                title: 'Real-Time Canvas Editing',
+                desc: 'Instantly preview layout modifications, formatting choices, and live updates as you build.',
+                icon: LayoutTemplate,
+                color: 'from-blue-500 to-indigo-600'
+              },
+              {
+                title: 'AI Resume Optimization',
+                desc: 'Leverage smart content suggestions to improve action verbs, structure, and professional summary impact.',
+                icon: Cpu,
+                color: 'from-purple-500 to-fuchsia-600'
+              },
+              {
+                title: 'ATS Compatibility & Scoring',
+                desc: 'Analyze keyword density, formatting compliance, and readiness for automated applicant tracking systems.',
+                icon: Target,
+                color: 'from-cyan-500 to-blue-600'
+              }
+            ].map((feature, i) => (
+              <motion.div key={i} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
+                className="bg-white border border-slate-200 rounded-2xl p-7 hover:shadow-lg transition-shadow duration-300 flex flex-col justify-between">
+                <div>
+                  <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${feature.color} flex items-center justify-center text-white mb-5`}>
+                    <feature.icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900 mb-2">{feature.title}</h3>
+                  <p className="text-sm text-slate-500 leading-relaxed">{feature.desc}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── FAQ ── */}
+      <section className="py-24 px-6 bg-white">
+        <div className="max-w-3xl mx-auto">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-14">
+            <Badge variant="cyan" className="mb-4">FAQ</Badge>
+            <h2 className="text-4xl font-extrabold text-slate-900 tracking-tight">Frequently asked questions</h2>
+          </motion.div>
+          <div className="space-y-3">
+            {FAQS.map((faq, i) => (
+              <motion.div key={i} initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}>
+                <div onClick={() => setFaqOpen(faqOpen === i ? null : i)}
+                  className="bg-white border border-slate-200 rounded-2xl p-5 cursor-pointer hover:border-slate-300 transition-colors">
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="font-semibold text-slate-900 text-sm">{faq.q}</span>
+                    <motion.div animate={{ rotate: faqOpen === i ? 180 : 0 }} transition={{ duration: 0.25 }}>
+                      <ChevronDown className="h-4 w-4 text-slate-400 shrink-0" />
+                    </motion.div>
+                  </div>
+                  <AnimatePresence>
+                    {faqOpen === i && (
+                      <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }} className="overflow-hidden">
+                        <p className="mt-3 text-sm text-slate-500 leading-relaxed">{faq.a}</p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── CTA ── */}
+      <section className="py-24 px-6">
+        <div className="max-w-5xl mx-auto">
+          <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+            className="relative rounded-3xl overflow-hidden p-12 md:p-16 text-center text-white"
+            style={{ background: 'linear-gradient(135deg, #2563EB, #4F46E5, #7C3AED)' }}>
+            <div className="absolute inset-0 opacity-[0.07]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)', backgroundSize: '36px 36px' }} />
+            <div className="absolute top-0 left-1/4 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
+            <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
+            <div className="relative z-10">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/15 border border-white/25 text-white text-xs font-semibold mb-6">
+                <Rocket className="h-3.5 w-3.5" /> 100% Free · No credit card required
+              </div>
+              <h2 className="text-4xl md:text-5xl font-extrabold mb-4 tracking-tight">
+                Start building your<br />dream resume today.
+              </h2>
+              <p className="text-blue-100 text-lg mb-8 max-w-xl mx-auto">
+                Build ATS-ready resumes with real-time feedback, AI optimization, and custom templates. No hidden fees. No limits.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link href="/auth?mode=signup">
+                  <Button variant="secondary" size="lg" className="bg-white text-blue-600 hover:bg-blue-50 border-0 font-bold shadow-lg">
+                    Create My Resume <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+                <Link href="#templates">
+                  <Button variant="ghost" size="lg" className="text-white border-white/30 hover:bg-white/10">Browse Templates</Button>
+                </Link>
+              </div>
+              <p className="text-blue-200/70 text-xs mt-6">No credit card · No subscription · No nonsense</p>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ── FOOTER ── */}
+      <footer className="border-t border-slate-200 bg-white py-12 px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
+            <div className="md:col-span-2">
+              <div className="flex items-center gap-2.5 mb-3">
+                <div className="w-8 h-8 rounded-xl bg-white border border-[#ECEDF3] flex items-center justify-center shadow-sm">
+                  <img src="/SmartCV_logo.png" alt="Logo" className="h-5 w-5 object-contain" />
+                </div>
+                <span className="text-[17px] font-extrabold tracking-tight text-slate-900">SmartCV</span>
+              </div>
+              <p className="text-sm text-slate-400 leading-relaxed max-w-xs">
+                The free, AI-powered resume builder for students and freshers. Build ATS-ready resumes that actually get you interviews.
+              </p>
+            </div>
+            <div>
+              <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-4">Product</div>
+              <div className="space-y-2.5">
+                {[{ label: 'Features', href: '#features' }, { label: 'Templates', href: '#templates' }, { label: 'ATS Checker', href: '/auth?mode=signup' }, { label: 'Resume Builder', href: '/auth?mode=signup' }, { label: 'Import Resume', href: '/auth?mode=signup' }].map(l => (
+                  <a key={l.label} href={l.href} className="block text-sm text-slate-500 hover:text-slate-900 transition-colors">{l.label}</a>
+                ))}
+              </div>
+            </div>
+            <div>
+              <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-4">Company</div>
+              <div className="space-y-2.5">
+                {[{ label: 'About', href: '/about' }, { label: 'Privacy Policy', href: '#' }, { label: 'Terms of Service', href: '#' }, { label: 'Contact', href: '#' }].map(l => (
+                  <a key={l.label} href={l.href} className="block text-sm text-slate-500 hover:text-slate-900 transition-colors">{l.label}</a>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="pt-8 border-t border-slate-100 flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-sm text-slate-400">· 2025 SmartCV. Built with care for students everywhere.</p>
+            <p className="text-xs text-slate-300">Free forever · No premium · No subscriptions</p>
+          </div>
         </div>
       </footer>
-
-      {/* CSS Animation Overrides */}
-      <style jsx global>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in-up {
-          animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-        .animation-delay-100 { animation-delay: 100ms; }
-        .animation-delay-200 { animation-delay: 200ms; }
-        .animation-delay-300 { animation-delay: 300ms; }
-      `}</style>
-      
     </div>
   );
 }

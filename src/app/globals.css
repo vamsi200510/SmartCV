@@ -1,137 +1,361 @@
 @import "tailwindcss";
 
+/* ============================================================
+   SMARTCV DESIGN SYSTEM v3
+   Light only. Clean. Professional. Production-ready.
+   ============================================================ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #0f172a;
+  --bg: #F7F8FC;
+  --bg-secondary: #F0F1F8;
+
+  --surface: #FFFFFF;
+  --border: #ECEDF3;
+  --border-hover: #DDDEE8;
+
+  --text: #111827;
+  --text-secondary: #4B5563;
+  --text-muted: #6B7280;
+  --text-subtle: #9CA3AF;
+
+  --primary: #2563EB;
+  --primary-hover: #1D4ED8;
+  --primary-light: #EFF6FF;
+  --accent: #4F46E5;
+  --accent-light: #EEF2FF;
+
+  --success: #10B981;
+  --success-light: #ECFDF5;
+  --warning: #F59E0B;
+  --warning-light: #FFFBEB;
+  --danger: #EF4444;
+  --danger-light: #FEF2F2;
+
+  --shadow-xs: 0 1px 2px rgba(0,0,0,0.02);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.03), 0 1px 2px rgba(0,0,0,0.02);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.04);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.06);
+  --shadow-xl: 0 16px 48px rgba(0,0,0,0.08);
+
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
 }
 
-@theme {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans), Inter, system-ui, -apple-system, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
-  --font-inter: var(--font-inter), sans-serif;
-  --font-geist: var(--font-geist-sans), sans-serif;
-  --font-poppins: var(--font-poppins), sans-serif;
-  --font-manrope: var(--font-manrope), sans-serif;
-  --font-source-sans: var(--font-source-sans), sans-serif;
-  --font-ibm-plex: var(--font-ibm-plex), sans-serif;
-  --font-plus-jakarta: var(--font-plus-jakarta), sans-serif;
-  --font-lato: var(--font-lato), sans-serif;
-}
+/* @theme block removed — variables are defined in :root above */
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ============================================================
+   BASE
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), Inter, system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', system-ui, sans-serif;
+  line-height: 1.6;
+  overflow-x: hidden;
 }
 
-@keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+::selection {
+  background: rgba(37, 99, 235, 0.12);
+  color: var(--primary);
 }
 
-@keyframes floatingGlow {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(15px, -15px) scale(1.05); }
+/* ============================================================
+   SCROLLBAR — minimal, consistent
+   ============================================================ */
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #9CA3AF; }
+
+.custom-scrollbar { scrollbar-width: thin; scrollbar-color: #D1D5DB transparent; }
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 99px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #9CA3AF; }
+
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* ============================================================
+   INPUTS — white bg, dark text, blue focus
+   ============================================================ */
+
+input, select, textarea {
+  background: #FFFFFF;
+  color: #111827;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+input::placeholder, textarea::placeholder { color: #9CA3AF; }
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.08);
+}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.animate-gradient-shift {
-  background-size: 200% 200%;
-  animation: gradientShift 8s ease infinite;
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.animate-floating-glow {
-  animation: floatingGlow 10s ease-in-out infinite;
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 
-.animate-fade-in-up {
-  opacity: 0;
-  animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 
-.animation-delay-100 {
-  animation-delay: 100ms;
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }
 
-.animation-delay-200 {
-  animation-delay: 200ms;
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
-.animation-delay-300 {
-  animation-delay: 300ms;
+@keyframes pulse-ring {
+  0% { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(1.3); opacity: 0; }
 }
 
-.animation-delay-400 {
-  animation-delay: 400ms;
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
-/* Print Specific Rules for Vector PDF Export */
+@keyframes bounce-subtle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.animate-fade-in { animation: fadeIn 0.25s ease forwards; }
+.animate-fade-in-up { animation: fadeInUp 0.35s cubic-bezier(0.16,1,0.3,1) forwards; }
+.animate-fade-in-down { animation: fadeInDown 0.3s cubic-bezier(0.16,1,0.3,1) forwards; }
+.animate-slide-in-right { animation: slideInRight 0.35s cubic-bezier(0.16,1,0.3,1) forwards; }
+
+@keyframes panelSlideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.animate-panel-slide-in { animation: panelSlideIn 0.3s cubic-bezier(0.16,1,0.3,1) forwards; }
+.animate-slide-in-left { animation: slideInLeft 0.35s cubic-bezier(0.16,1,0.3,1) forwards; }
+.animate-scale-in { animation: scaleIn 0.25s cubic-bezier(0.16,1,0.3,1) forwards; }
+.animate-bounce-subtle { animation: bounce-subtle 2s ease-in-out infinite; }
+
+/* Stagger delays */
+.stagger-1 { animation-delay: 0ms; }
+.stagger-2 { animation-delay: 50ms; }
+.stagger-3 { animation-delay: 100ms; }
+.stagger-4 { animation-delay: 150ms; }
+.stagger-5 { animation-delay: 200ms; }
+.stagger-6 { animation-delay: 250ms; }
+
+/* ============================================================
+   SKELETON — shimmer loader
+   ============================================================ */
+
+.skeleton {
+  background: linear-gradient(90deg, #F0F1F8 25%, #E5E6EE 50%, #F0F1F8 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+  border-radius: var(--radius-md);
+}
+
+/* ============================================================
+   RESUME CANVAS — used in builder preview pane
+   ============================================================ */
+
+.resume-canvas-shadow {
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,0.04),
+    0 4px 8px rgba(0,0,0,0.04),
+    0 20px 40px rgba(0,0,0,0.08),
+    0 40px 80px rgba(0,0,0,0.04);
+}
+
+/* ============================================================
+   PRINT / PDF EXPORT
+   Critical: must produce pixel-perfect A4 output.
+   No browser chrome. No headers. No footers. No margins.
+   ============================================================ */
+
 @media print {
+  /* Remove all browser-injected headers/footers/margins */
   @page {
-    size: A4;
-    margin: 15mm;
+    size: A4 portrait;
+    margin: 0;
   }
-  
-  body, html {
-    background: #ffffff !important;
-    color: #000000 !important;
-    margin: 0 !important;
-    padding: 0 !important;
+
+  /* Reset everything */
+  *, *::before, *::after {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  body * {
-    visibility: hidden !important;
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 210mm !important;
+    height: auto !important;
+    min-height: 297mm !important;
+    overflow: visible !important;
+    font-size: 10pt !important;
   }
 
-  #resume-preview-document,
-  #resume-preview-document * {
+  /* Hide everything except the resume document */
+  body * { visibility: hidden !important; }
+
+  #resume-print-root,
+  #resume-print-root * {
     visibility: visible !important;
   }
 
-  #resume-preview-document {
-    position: absolute !important;
-    left: 0 !important;
+  #resume-print-root {
+    position: fixed !important;
     top: 0 !important;
+    left: 0 !important;
     width: 210mm !important;
-    height: auto !important;
+    min-height: 297mm !important;
     margin: 0 !important;
     padding: 0 !important;
     transform: none !important;
     box-shadow: none !important;
     border: none !important;
+    background: #ffffff !important;
+    overflow: visible !important;
   }
 
-  /* Prevent page breaks inside heading elements */
+  /* Page break hints */
   h1, h2, h3, h4, h5, h6 {
     page-break-after: avoid !important;
     break-after: avoid !important;
   }
 
-  /* Prevent section splitting across pages where possible */
   .resume-section {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
   }
+
+  /* Hide UI chrome elements in print */
+  nav, header, footer, aside,
+  .no-print, [data-no-print],
+  .builder-toolbar, .zoom-controls {
+    display: none !important;
+  }
+}
+
+/* ============================================================
+   PRINT VIEWPORT PAGE (Puppeteer target)
+   Used by /builder/print-viewport for server-side PDF generation
+   ============================================================ */
+
+.print-viewport-body {
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  width: 794px; /* A4 at 96dpi */
+  overflow: visible;
+}
+
+.print-viewport-document {
+  width: 794px;
+  min-height: 1123px; /* A4 at 96dpi */
+  background: #ffffff;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+}
+
+/* ============================================================
+   UTILITY
+   ============================================================ */
+
+.text-balance { text-wrap: balance; }
+.truncate-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.truncate-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Focus visible — accessibility */
+.focus-ring:focus-visible {
+  outline: 2px solid #2563EB;
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Interactive element default */
+button, [role="button"] { cursor: pointer; }
+button:disabled, [role="button"][aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.animate-fade-in-down { animation: fadeInDown 0.18s cubic-bezier(0.16,1,0.3,1) both; }
+.animate-fade-in-up   { animation: fadeInUp   0.22s cubic-bezier(0.16,1,0.3,1) both; }
+.animate-scale-in     { animation: scaleIn    0.18s cubic-bezier(0.16,1,0.3,1) both; }
+
+/* Resume canvas drop shadow in builder */
+.resume-canvas-shadow {
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 8px 40px rgba(0,0,0,0.12);
 }

@@ -78,11 +78,65 @@ CREATE INDEX IF NOT EXISTS otp_verifications_email_idx ON public.otp_verificatio
     }
     console.log(`[AUTH-OTP] Database insert success for ${email}`);
 
-    // 4. Send Email via Resend
-    const resendKey = process.env.RESEND_API_KEY;
+    // 4. Email Sending Strategy: Gmail SMTP -> Resend -> Developer Mode
+    const gmailUser = (process.env.GMAIL_USER || process.env.SMTP_USER || '').trim();
+    const gmailPass = (process.env.GMAIL_APP_PASSWORD || process.env.SMTP_PASS || '').trim().replace(/\s+/g, '');
+    const resendKey = (process.env.RESEND_API_KEY || '').trim();
+
     console.log(`[AUTH-OTP] Generated OTP code for ${email}`);
 
-    if (resendKey && resendKey !== 're_your_api_key_here' && resendKey.trim() !== '') {
+    const htmlContent = `
+      <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+        <h2 style="color: #2563eb; font-weight: bold; margin-bottom: 20px;">SmartCV Verification</h2>
+        <p style="color: #334155; font-size: 14px; line-height: 1.6;">Hello,</p>
+        <p style="color: #334155; font-size: 14px; line-height: 1.6;">Your 6-digit verification code for SmartCV is:</p>
+        <div style="background-color: #f1f5f9; padding: 15px; text-align: center; border-radius: 8px; margin: 25px 0;">
+          <span style="font-size: 24px; font-weight: bold; letter-spacing: 4px; color: #0f172a;">${otp}</span>
+        </div>
+        <p style="color: #64748b; font-size: 12px;">This code will expire in 10 minutes. If you did not request this code, please ignore this email.</p>
+      </div>
+    `;
+
+    // Strategy 1: Gmail SMTP via Nodemailer
+    if (gmailUser !== '' && gmailPass !== '') {
+      console.log(`[AUTH-OTP] Sending OTP via Gmail SMTP (${gmailUser}) to ${email}...`);
+      try {
+        const dns = await import('dns');
+        try { dns.setDefaultResultOrder('ipv4first'); } catch { /* ignore */}
+
+        const nodemailer = await import('nodemailer');
+        const transporter = nodemailer.createTransport({
+          host: 'smtp.gmail.com',
+          port: 587,
+          secure: false, // TLS upgrade
+          family: 4, // Force IPv4 for Windows compatibility
+          auth: {
+            user: gmailUser,
+            pass: gmailPass,
+          },
+          connectionTimeout: 15000,
+        } as any);
+
+        const info = await transporter.sendMail({
+          from: `"SmartCV Auth" <${gmailUser}>`,
+          to: email,
+          subject: 'Your SmartCV Verification Code',
+          html: htmlContent,
+        });
+
+        console.log(`[AUTH-OTP] Gmail SMTP sent successfully. Message ID: ${info.messageId}`);
+        return NextResponse.json({ success: true, message: 'OTP sent to your email via Gmail SMTP.' });
+      } catch (gmailErr: any) {
+        console.error('[AUTH-OTP] Gmail SMTP Failed:', gmailErr);
+        return NextResponse.json(
+          { error: `Gmail SMTP failed: ${gmailErr?.message || 'Invalid Gmail credentials or app password.'}` },
+          { status: 500 }
+        );
+      }
+    }
+
+    // Strategy 2: Resend API
+    if (resendKey !== '' && resendKey !== 're_your_api_key_here') {
       const resend = new Resend(resendKey);
       
       console.log(`[AUTH-OTP] Sending Resend email to ${email}...`);
@@ -90,17 +144,7 @@ CREATE INDEX IF NOT EXISTS otp_verifications_email_idx ON public.otp_verificatio
         from: 'SmartCV Auth <onboarding@resend.dev>',
         to: email,
         subject: 'Your SmartCV Verification Code',
-        html: `
-          <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
-            <h2 style="color: #0d9488; font-weight: bold; margin-bottom: 20px;">SmartCV Verification</h2>
-            <p style="color: #334155; font-size: 14px; line-height: 1.6;">Hello,</p>
-            <p style="color: #334155; font-size: 14px; line-height: 1.6;">Your 6-digit verification code for SmartCV is:</p>
-            <div style="background-color: #f1f5f9; padding: 15px; text-align: center; border-radius: 8px; margin: 25px 0;">
-              <span style="font-size: 24px; font-weight: bold; letter-spacing: 4px; color: #0f172a;">${otp}</span>
-            </div>
-            <p style="color: #64748b; font-size: 12px;">This code will expire in 10 minutes. If you did not request this code, please ignore this email.</p>
-          </div>
-        `,
+        html: htmlContent,
       });
 
       console.log('[AUTH-OTP] Resend Send API Response:', { data, error });
@@ -112,17 +156,17 @@ CREATE INDEX IF NOT EXISTS otp_verifications_email_idx ON public.otp_verificatio
 
       console.log(`[AUTH-OTP] Email sent successfully. Resend ID: ${data?.id}`);
       return NextResponse.json({ success: true, message: 'OTP sent to your email.' });
-    } else {
-      // Local Developer Fallback
-      console.log('====================================');
-      console.log(`[DEVELOPER MODE] OTP Verification Code for ${email}: ${otp}`);
-      console.log('====================================');
-      return NextResponse.json({
-        success: true,
-        devMode: true,
-        message: 'Developer Mode: OTP logged to the server command line console.'
-      });
     }
+
+    // Strategy 3: Local Developer Fallback
+    console.log('====================================');
+    console.log(`[DEVELOPER MODE] OTP Verification Code for ${email}: ${otp}`);
+    console.log('====================================');
+    return NextResponse.json({
+      success: true,
+      devMode: true,
+      message: 'Developer Mode: OTP logged to the server command line console.'
+    });
   } catch (err: any) {
     console.error('Error in send-otp API:', err);
     return NextResponse.json(

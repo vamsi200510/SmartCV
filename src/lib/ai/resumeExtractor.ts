@@ -8,11 +8,22 @@ export interface ExtractorStats {
   fallbackUsed: boolean;
   geminiTimeMs: number;
   extractorTimeMs: number;
+  
+  // Telemetry fields
+  parser?: 'gemini-text' | 'gemini-vision' | 'cache' | 'fallback';
+  processingMode?: 'text' | 'vision' | 'cache' | 'fallback';
+  aiUsed?: boolean;
+  cacheHit?: boolean;
+  classificationConfidence?: number;
+  extractionConfidence?: number;
+  geminiModel?: string;
 }
 
 export interface ExtractorResult {
   data: LegacyParsedData;
   stats: ExtractorStats;
+  errorType?: 'quota' | 'timeout' | 'network' | 'unknown' | 'rejected';
+  errorMessage?: string;
 }
 
 // Check if string matches typical email format
@@ -46,8 +57,17 @@ function cleanStrings(val: any): any {
 export function validateAndNormalizeResumeData(parsedJson: any, rawText: string): LegacyParsedData {
   const normalized: any = {};
 
+  // Classification
+  const cl = parsedJson?.classification || {};
+  normalized.classification = {
+    documentType: String(cl.documentType || 'resume').trim(),
+    isResume: typeof cl.isResume === 'boolean' ? cl.isResume : true,
+    confidence: typeof cl.confidence === 'number' ? cl.confidence : 0.5
+  };
+
   // 1. Personal Information
   const p = parsedJson?.personal || {};
+  const hl = p.headline || {};
   normalized.personal = {
     fullName: String(p.fullName || '').trim(),
     email: String(p.email || '').trim(),
@@ -55,7 +75,11 @@ export function validateAndNormalizeResumeData(parsedJson: any, rawText: string)
     linkedin: String(p.linkedin || '').trim(),
     github: String(p.github || '').trim(),
     website: String(p.website || '').trim(),
-    address: String(p.address || '').trim()
+    address: String(p.address || '').trim(),
+    headline: {
+      value: String(hl.value || '').trim(),
+      confidence: typeof hl.confidence === 'number' ? hl.confidence : 0.0
+    }
   };
 
   // Validate Email
@@ -153,30 +177,66 @@ export function validateAndNormalizeResumeData(parsedJson: any, rawText: string)
     normalized.confidence[key] = isNaN(val) ? 0.5 : Math.max(0.0, Math.min(1.0, val));
   }
 
-  normalized.isResume = typeof parsedJson?.isResume === 'boolean' ? parsedJson.isResume : true;
+  normalized.isResume = typeof parsedJson?.isResume === 'boolean' ? parsedJson.isResume : normalized.classification.isResume;
 
   return cleanStrings(normalized);
 }
 
-export function resemblesResume(text: string, parsedData: LegacyParsedData): boolean {
+// Conservative local pre-rejection check to avoid false positives on resumes mentioning blacklist items
+function isClearlyNotAResumeLocal(text: string): boolean {
   const cleanText = text.toLowerCase();
   
-  // 1. Check semantic AI classification if available
-  if (parsedData && typeof parsedData.isResume === 'boolean') {
-    const isResumeVal = parsedData.isResume;
-    console.log('[DEBUG-STAGE-3] AI isResume classification:', isResumeVal);
-    return isResumeVal;
+  // Non-resume signals
+  const nonResumeSignals = [
+    'tax invoice', 'utility bill', 'bank statement', 
+    'purchase order', 'receipt number', 'amount due'
+  ];
+  const hasNonResumeSignal = nonResumeSignals.some(kw => cleanText.includes(kw));
+
+  // Resume validation signals
+  const resumeSignals = [
+    'experience', 'education', 'skills', 'projects', 
+    'work history', 'curriculum vitae', 'employment history'
+  ];
+  const hasResumeSignal = resumeSignals.some(kw => cleanText.includes(kw));
+
+  // Email format check
+  const hasEmail = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/.test(cleanText);
+
+  // If it has a non-resume indicator AND completely lacks both email and typical resume sections,
+  // we can safely conclude with high confidence that it is NOT a resume.
+  if (hasNonResumeSignal && !hasResumeSignal && !hasEmail) {
+    console.log('[LOCAL-PRE-REJECT] File clearly classified as non-resume locally.');
+    return true;
   }
 
-  // 2. Reject nature essays or other obvious non-resume content
-  let rejectReason = '';
-  if (cleanText.includes('beauty of nature') || cleanText.includes('deforestation') || cleanText.includes('ecosystems')) {
-    rejectReason = 'Contains non-resume words like beauty of nature/deforestation/ecosystems';
-    console.log('[DEBUG-STAGE-3] Resume validation failed:', rejectReason);
+  return false;
+}
+
+export function resemblesResume(text: string, parsedData: LegacyParsedData): boolean {
+  // 1. Check semantic AI classification if available
+  if (parsedData && parsedData.classification && typeof parsedData.classification.isResume === 'boolean') {
+    const isResumeVal = parsedData.classification.isResume;
+    console.log('[DEBUG-STAGE-3] AI classification matches isResume:', isResumeVal);
+    return isResumeVal;
+  }
+  if (parsedData && typeof parsedData.isResume === 'boolean') {
+    return parsedData.isResume;
+  }
+
+  // 2. Reject obvious non-resume documents in fallback mode
+  const cleanText = text.toLowerCase();
+  const nonResumeIndicators = [
+    'beauty of nature', 'deforestation', 'ecosystems',
+    'invoice', 'bill to', 'amount due', 'aadhaar', 'permanent account number', 
+    'pan card', 'driving license', 'driver license', 'question paper', 'bank statement'
+  ];
+  if (nonResumeIndicators.some(ind => cleanText.includes(ind))) {
+    console.log('[DEBUG-STAGE-3] Fallback validation failed: Contains obvious non-resume indicators');
     return false;
   }
   
-  // 3. Fallback contact and section checks for legacy parser
+  // 3. Fallback checks for legacy parser
   const resumeKeywords = [
     'education', 'experience', 'skills', 'projects', 'work', 
     'university', 'college', 'institute', 'school', 'employment', 
@@ -190,38 +250,20 @@ export function resemblesResume(text: string, parsedData: LegacyParsedData): boo
   const hasEmail = !!parsedData.personal?.email?.trim();
   const hasPhone = !!parsedData.personal?.phone?.trim();
   
-  const hasExperience = parsedData.experience.length > 0;
-  const hasEducation = parsedData.education.length > 0;
-  const hasProjects = parsedData.projects.length > 0;
-  const hasSkills = Object.values(parsedData.skills).some(arr => arr.length > 0);
+  const hasExperience = parsedData.experience?.length > 0;
+  const hasEducation = parsedData.education?.length > 0;
+  const hasProjects = parsedData.projects?.length > 0;
+  const hasSkills = parsedData.skills && Object.values(parsedData.skills).some(arr => Array.isArray(arr) && arr.length > 0);
   
   const hasContact = hasName || hasEmail || hasPhone;
   const hasSections = hasExperience || hasEducation || hasProjects || hasSkills;
 
-  const keywordScorePassed = text.length >= 100 && keywordCount >= 2;
-  const validationPassed = rejectReason === '' && (keywordScorePassed || (hasContact && hasSections));
+  const validationPassed = text.length >= 50 && (keywordCount >= 1 || hasContact || hasSections);
 
-  if (!validationPassed && rejectReason === '') {
-    if (!keywordScorePassed) {
-      if (!hasContact) rejectReason = 'Failed contact check (no name, email, or phone)';
-      else if (!hasSections) rejectReason = 'Failed sections check (no experience, education, projects, or skills)';
-    }
-  }
-
-  // Stage 3: Resume validation
-  console.log('[DEBUG-STAGE-3] Resume validation metrics:', {
-    detectedEmail: parsedData.personal?.email || null,
-    detectedPhone: parsedData.personal?.phone || null,
-    detectedSections: {
-      experienceCount: parsedData.experience.length,
-      educationCount: parsedData.education.length,
-      projectsCount: parsedData.projects.length,
-      hasSkills
-    },
+  console.log('[DEBUG-STAGE-3] Fallback resume validation metrics:', {
     keywordScore: keywordCount,
     textLength: text.length,
-    validationPassed,
-    rejectReason: validationPassed ? null : rejectReason
+    validationPassed
   });
   
   return validationPassed;
@@ -230,36 +272,51 @@ export function resemblesResume(text: string, parsedData: LegacyParsedData): boo
 export async function extractResume(rawText: string, fileBuffer?: Buffer): Promise<ExtractorResult> {
   const startTime = Date.now();
   let attempts = 0;
-  const maxAttempts = 3; // 1 initial + up to 2 retries
+  const maxAttempts = 3; 
   let aiSuccess = false;
   let fallbackUsed = false;
   let parsedJson: any = null;
   let geminiTimeMs = 0;
+  let errorType: 'quota' | 'timeout' | 'network' | 'unknown' | 'rejected' | undefined = undefined;
+  let errorMessage: string | undefined = undefined;
 
   // Detect scanned PDF
   const cleanRawText = rawText.replace(/-- \d+ of \d+ --/g, '').trim();
   const isScanned = cleanRawText.length < 100 && fileBuffer;
 
-  console.log(`[AI-EXTRACTOR] Starting extraction process. Text length: ${rawText.length}, Is Scanned PDF: ${isScanned}`);
+  console.log(`[AI-EXTRACTOR] Starting v3 import pipeline. Text length: ${rawText.length}, Is Scanned: ${isScanned}`);
 
+  // 1. Local Pre-rejection Check (Only for text-based resumes)
+  if (!isScanned && isClearlyNotAResumeLocal(rawText)) {
+    console.warn('[AI-EXTRACTOR] Local pre-rejection triggered. Bypassing Gemini.');
+    return {
+      data: parseWithLegacyRegex(''),
+      stats: {
+        attempts: 0,
+        aiSuccess: false,
+        fallbackUsed: false,
+        geminiTimeMs: 0,
+        extractorTimeMs: Date.now() - startTime,
+        parser: 'fallback',
+        processingMode: 'fallback',
+        aiUsed: false,
+        cacheHit: false
+      },
+      errorType: 'rejected',
+      errorMessage: 'Please upload a valid resume.'
+    };
+  }
+
+  // 2. Gemini Extraction attempts
   while (attempts < maxAttempts) {
     attempts++;
     const callStart = Date.now();
     try {
-      console.log(`[AI-EXTRACTOR] Attempt ${attempts} of ${maxAttempts} started...`);
-      
-      const apiKey = process.env.GEMINI_API_KEY;
-      console.log('[DEBUG-STAGE-4] Gemini API key status:', {
-        loaded: !!apiKey,
-        isPlaceholder: apiKey === 'your_gemini_api_key'
-      });
-
+      console.log(`[AI-EXTRACTOR] Attempt ${attempts} of ${maxAttempts}...`);
       const ai = getGeminiClient();
-      console.log('[DEBUG-STAGE-4] Gemini Model Called: gemini-2.5-flash');
       
       let response;
       if (isScanned && fileBuffer) {
-        console.log('[DEBUG-STAGE-4] Gemini Request Sent (Direct PDF binary mode).');
         response = await ai.models.generateContent({
           model: 'gemini-2.5-flash',
           contents: [
@@ -277,7 +334,6 @@ export async function extractResume(rawText: string, fileBuffer?: Buffer): Promi
           }
         });
       } else {
-        console.log('[DEBUG-STAGE-4] Gemini Request Sent (Plain text mode).');
         response = await ai.models.generateContent({
           model: 'gemini-2.5-flash',
           contents: `${RESUME_EXTRACTION_PROMPT}\nRaw Resume Text:\n${rawText}`,
@@ -291,10 +347,6 @@ export async function extractResume(rawText: string, fileBuffer?: Buffer): Promi
       geminiTimeMs += (Date.now() - callStart);
       const responseText = response.text;
 
-      console.log('[DEBUG-STAGE-4] Gemini Response Received.', {
-        responseLength: responseText ? responseText.length : 0
-      });
-
       if (!responseText) {
         throw new Error('Gemini returned an empty text response.');
       }
@@ -304,53 +356,99 @@ export async function extractResume(rawText: string, fileBuffer?: Buffer): Promi
       try {
         parsedJson = JSON.parse(responseText);
         parsedSuccessfully = true;
-      } catch (jsonErr) {
-        console.error('[DEBUG-STAGE-5] JSON parsed successfully? False');
+      } catch (_jsonErr) {
+        console.error('[AI-EXTRACTOR] JSON parsing failed.');
       }
 
       if (parsedSuccessfully) {
         // Validate key structures are present
-        if (parsedJson.personal && typeof parsedJson.personal === 'object' && parsedJson.skills && typeof parsedJson.skills === 'object' && typeof parsedJson.isResume === 'boolean') {
+        if (parsedJson.classification && parsedJson.personal && parsedJson.skills) {
           schemaValid = true;
         }
-        console.log('[DEBUG-STAGE-5] JSON validation:', {
-          parsedSuccessfully,
-          schemaValid
-        });
       }
 
       if (!schemaValid) {
-        throw new Error('JSON structure is missing required top-level fields.');
+        throw new Error('JSON structure is missing required v3 schema fields.');
       }
 
       aiSuccess = true;
-      console.log(`[AI-EXTRACTOR] Attempt ${attempts} succeeded.`);
       break;
     } catch (err: any) {
-      console.error(`[AI-EXTRACTOR] Attempt ${attempts} failed: ${err?.message || err}`);
-      if (attempts >= maxAttempts) {
-        console.warn(`[AI-EXTRACTOR] All ${maxAttempts} AI attempts failed. Preparing fallback.`);
+      errorMessage = err?.message || String(err);
+      console.error(`[AI-EXTRACTOR] Attempt ${attempts} error: ${errorMessage}`);
+      
+      const lowerMsg = (errorMessage || '').toLowerCase();
+      if (
+        err?.status === 429 ||
+        lowerMsg.includes('429') ||
+        lowerMsg.includes('quota') ||
+        lowerMsg.includes('rate limit') ||
+        lowerMsg.includes('exhausted')
+      ) {
+        errorType = 'quota';
+      } else if (
+        err?.name === 'TimeoutError' ||
+        lowerMsg.includes('timeout') ||
+        lowerMsg.includes('timed out') ||
+        lowerMsg.includes('deadline')
+      ) {
+        errorType = 'timeout';
+      } else if (
+        lowerMsg.includes('fetch') ||
+        lowerMsg.includes('network') ||
+        lowerMsg.includes('connect') ||
+        lowerMsg.includes('econn') ||
+        err?.code === 'ENOTFOUND'
+      ) {
+        errorType = 'network';
+      } else {
+        errorType = 'unknown';
       }
     }
   }
 
   let finalData: LegacyParsedData;
+  let processingMode: 'text' | 'vision' | 'fallback' = isScanned ? 'vision' : 'text';
+  let parser: 'gemini-text' | 'gemini-vision' | 'fallback' = isScanned ? 'gemini-vision' : 'gemini-text';
 
   if (aiSuccess && parsedJson) {
     try {
       finalData = validateAndNormalizeResumeData(parsedJson, rawText);
     } catch (valErr: any) {
-      console.error(`[AI-EXTRACTOR] Post-AI normalization failed, falling back: ${valErr?.message || valErr}`);
-      finalData = parseWithLegacyRegex(rawText);
-      fallbackUsed = true;
+      console.error(`[AI-EXTRACTOR] Normalization error, falling back: ${valErr?.message}`);
+      if (!isScanned) {
+        finalData = parseWithLegacyRegex(rawText);
+        fallbackUsed = true;
+        parser = 'fallback';
+        processingMode = 'fallback';
+      } else {
+        finalData = parseWithLegacyRegex('');
+        parser = 'fallback';
+        processingMode = 'fallback';
+      }
     }
   } else {
-    finalData = parseWithLegacyRegex(rawText);
-    fallbackUsed = true;
+    if (!isScanned) {
+      finalData = parseWithLegacyRegex(rawText);
+      fallbackUsed = true;
+      parser = 'fallback';
+      processingMode = 'fallback';
+    } else {
+      finalData = parseWithLegacyRegex('');
+      parser = 'fallback';
+      processingMode = 'fallback';
+    }
+  }
+
+  // Calculate average confidence for telemetry if AI succeeded
+  let avgConfidence = 0.5;
+  if (aiSuccess && finalData && finalData.confidence) {
+    const values = Object.values(finalData.confidence) as number[];
+    avgConfidence = values.reduce((a, b) => a + b, 0) / values.length;
   }
 
   const extractorTimeMs = Date.now() - startTime;
-  console.log(`[AI-EXTRACTOR] Completed. AI Success: ${aiSuccess}, Fallback used: ${fallbackUsed}, Total time: ${extractorTimeMs}ms`);
+  console.log(`[AI-EXTRACTOR] Complete. AI: ${aiSuccess}, Fallback: ${fallbackUsed}, Time: ${extractorTimeMs}ms`);
 
   return {
     data: finalData,
@@ -359,7 +457,16 @@ export async function extractResume(rawText: string, fileBuffer?: Buffer): Promi
       aiSuccess,
       fallbackUsed,
       geminiTimeMs,
-      extractorTimeMs
-    }
+      extractorTimeMs,
+      parser,
+      processingMode,
+      aiUsed: aiSuccess,
+      cacheHit: false,
+      classificationConfidence: finalData.classification?.confidence || 0.5,
+      extractionConfidence: avgConfidence,
+      geminiModel: aiSuccess ? 'gemini-2.5-flash' : undefined
+    },
+    errorType,
+    errorMessage
   };
 }

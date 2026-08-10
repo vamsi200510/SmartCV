@@ -3,7 +3,7 @@
 import React from 'react';
 import { 
   Mail, Phone, MapPin, Globe, 
-  Award, Briefcase, GraduationCap, Code2, FolderGit2, Calendar 
+  Award, Briefcase, GraduationCap, Code2, FolderGit2 
 } from 'lucide-react';
 
 // Custom inline SVG icons for GitHub and LinkedIn to avoid import version dependencies
@@ -33,6 +33,7 @@ export interface ResumeData {
     github?: string;
     linkedin?: string;
     summary: string;
+    profileImage?: string;
   };
   experience: Array<{
     role: string;
@@ -71,12 +72,22 @@ export interface ResumeData {
     interests?: string;
   };
   customization?: {
-    fontFamily?: 'Inter' | 'Geist' | 'Poppins' | 'Manrope' | 'Source Sans 3' | 'IBM Plex Sans' | 'Plus Jakarta Sans' | 'Lato';
+    // Global typography (applied to the entire resume)
+    fontFamily?: 'Inter' | 'DM Sans' | 'Poppins' | 'Manrope' | 'Source Sans 3' | 'IBM Plex Sans' | 'Plus Jakarta Sans' | 'Lato';
     fontSize?: 'small' | 'medium' | 'large' | 'extraLarge';
     density?: 'compact' | 'balanced' | 'spacious';
     primaryColor?: string;
     visibleSections?: string[];
     sectionOrder?: string[];
+    // Section-level typography overrides (sectionId → style)
+    // Falls back to globalTypography when undefined
+    sectionTypography?: Record<string, {
+      fontSize?: 'small' | 'medium' | 'large' | 'extraLarge' | string;
+      fontWeight?: 'normal' | 'medium' | 'semibold' | 'bold' | string;
+      color?: string;
+      lineHeight?: string;
+      letterSpacing?: string;
+    }>;
   };
 }
 
@@ -311,6 +322,7 @@ export function sanitizeResumeData(data: any): ResumeData {
       github: cleanStr(data?.personalInfo?.github),
       linkedin: cleanStr(data?.personalInfo?.linkedin),
       summary: cleanStr(data?.personalInfo?.summary),
+      profileImage: cleanStr(data?.personalInfo?.profileImage),
     },
     experience: cleanExperience(data?.experience),
     education: cleanEducation(data?.education),
@@ -332,9 +344,48 @@ export function sanitizeResumeData(data: any): ResumeData {
         : ['summary', 'experience', 'projects', 'skills', 'education', 'certifications', 'achievements', 'additionalInfo'],
       sectionOrder: Array.isArray(data?.customization?.sectionOrder)
         ? data.customization.sectionOrder
-        : ['summary', 'experience', 'projects', 'skills', 'education', 'certifications', 'achievements', 'additionalInfo']
+        : ['summary', 'experience', 'projects', 'skills', 'education', 'certifications', 'achievements', 'additionalInfo'],
+      // Preserve section typography overrides as-is (backward compatible — undefined = global fallback)
+      sectionTypography: data?.customization?.sectionTypography || undefined,
     }
   };
+}
+
+function ResumeAvatar({
+  profileImage,
+  fullName,
+  size = 'h-16 w-16',
+  shape = 'rounded-full',
+  className = '',
+}: {
+  profileImage?: string;
+  fullName?: string;
+  size?: string;
+  shape?: string;
+  className?: string;
+}) {
+  const getInitials = (name?: string) => {
+    if (!name) return 'CV';
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  };
+
+  if (profileImage && profileImage.trim()) {
+    return (
+      <img
+        src={profileImage.trim()}
+        alt={fullName || 'Profile photo'}
+        className={`${size} ${shape} object-cover border-2 border-white/80 shadow-md ${className}`}
+      />
+    );
+  }
+
+  return (
+    <div className={`${size} ${shape} bg-gradient-to-tr from-slate-800 to-indigo-900 text-white font-extrabold flex items-center justify-center border-2 border-white/80 shadow-md text-xs tracking-wider shrink-0 ${className}`}>
+      {getInitials(fullName)}
+    </div>
+  );
 }
 
 interface TemplateRendererProps {
@@ -343,7 +394,7 @@ interface TemplateRendererProps {
   zoom?: number; // 50 to 150 (percentage scale)
 }
 
-export default function TemplateRenderer({ 
+function TemplateRendererComponent({ 
   templateId, 
   data = defaultSampleData, 
   zoom = 105 
@@ -352,16 +403,16 @@ export default function TemplateRenderer({
   const safeData = sanitizeResumeData(data);
   const customization = safeData.customization || {};
 
-  // Internal mapping values
+  // Internal mapping values — direct Google Font family declarations
   const fontFamilies: Record<string, string> = {
-    'Inter': 'var(--font-inter)',
-    'Geist': 'var(--font-geist)',
-    'Poppins': 'var(--font-poppins)',
-    'Manrope': 'var(--font-manrope)',
-    'Source Sans 3': 'var(--font-source-sans)',
-    'IBM Plex Sans': 'var(--font-ibm-plex)',
-    'Plus Jakarta Sans': 'var(--font-plus-jakarta)',
-    'Lato': 'var(--font-lato)'
+    'Inter': "'Inter', system-ui, -apple-system, sans-serif",
+    'DM Sans': "'DM Sans', system-ui, sans-serif",
+    'Poppins': "'Poppins', sans-serif",
+    'Manrope': "'Manrope', sans-serif",
+    'Source Sans 3': "'Source Sans 3', sans-serif",
+    'IBM Plex Sans': "'IBM Plex Sans', sans-serif",
+    'Plus Jakarta Sans': "'Plus Jakarta Sans', sans-serif",
+    'Lato': "'Lato', sans-serif"
   };
   const fontSizes: Record<string, string> = {
     'small': '10.5px',
@@ -414,7 +465,9 @@ export default function TemplateRenderer({
     .resume-preview-container-${templateId} p,
     .resume-preview-container-${templateId} li,
     .resume-preview-container-${templateId} span,
-    .resume-preview-container-${templateId} div {
+    .resume-preview-container-${templateId} div,
+    .resume-preview-container-${templateId} td,
+    .resume-preview-container-${templateId} th {
       font-size: ${fontSizeValue} !important;
       line-height: ${customization.density === 'compact' ? '1.25' : customization.density === 'spacious' ? '1.6' : '1.45'} !important;
     }
@@ -423,8 +476,8 @@ export default function TemplateRenderer({
     }
     .resume-preview-container-${templateId} h2 {
       font-size: calc(${fontSizeValue} * 1.25) !important;
-      color: ${primaryColorValue} !important;
-      border-color: ${primaryColorValue} !important;
+      color: ${primaryColorValue};
+      border-color: ${primaryColorValue};
     }
     .resume-preview-container-${templateId} h3,
     .resume-preview-container-${templateId} h4 {
@@ -511,18 +564,16 @@ export default function TemplateRenderer({
       margin-top: calc(var(--resume-element-spacing) * 0.25) !important;
     }
 
-    /* Theme Color Customization Overrides */
-    .resume-preview-container-${templateId} .text-teal-600,
+    .resume-preview-container-${templateId} .text-[#0f172a],
+    .resume-preview-container-[#0f172a] .text-[#1e293b],
+    .resume-preview-container-${templateId} .text-slate-900,
+    .resume-preview-container-${templateId} .text-slate-950,
+    .resume-preview-container-${templateId} .text-[#4F46E5],
     .resume-preview-container-${templateId} .text-indigo-600,
     .resume-preview-container-${templateId} .text-indigo-700,
-    .resume-preview-container-${templateId} .text-indigo-655,
-    .resume-preview-container-${templateId} .text-indigo-650,
-    .resume-preview-container-${templateId} .text-rose-450,
-    .resume-preview-container-${templateId} .text-rose-500,
-    .resume-preview-container-${templateId} .text-rose-600,
-    .resume-preview-container-${templateId} .text-emerald-655,
+    .resume-preview-container-${templateId} .text-[#2563EB],
+    .resume-preview-container-${templateId} .text-blue-600,
     .resume-preview-container-${templateId} .text-emerald-600,
-    .resume-preview-container-${templateId} .text-emerald-700,
     .resume-preview-container-${templateId} .text-emerald-800,
     .resume-preview-container-${templateId} .text-purple-700,
     .resume-preview-container-${templateId} .text-purple-800,
@@ -562,6 +613,67 @@ export default function TemplateRenderer({
       background-image: linear-gradient(to top right, ${primaryColorValue}, ${primaryColorValue}aa) !important;
     }
   `;
+
+  // Generate per-section and granular element typography CSS rules
+  const fontSizeMap: Record<string, string> = {
+    'small': '10.5px',
+    'medium': '11.5px',
+    'large': '13.5px',
+    'extraLarge': '16.5px',
+  };
+  const fontWeightMap: Record<string, string> = {
+    'normal': '400',
+    'medium': '500',
+    'semibold': '600',
+    'bold': '700',
+  };
+
+  const sectionTypographyCss = Object.entries(customization.sectionTypography || {}).map(
+    ([targetKey, styles]) => {
+      if (!styles) return '';
+      const rules: string[] = [];
+      const resolvedSize = styles.fontSize
+        ? (fontSizeMap[styles.fontSize] || styles.fontSize)
+        : null;
+      const resolvedWeight = styles.fontWeight
+        ? (fontWeightMap[styles.fontWeight] || styles.fontWeight)
+        : null;
+
+      const sel = `.resume-preview-container-${templateId} .resume-section-${targetKey}, .resume-preview-container-${templateId} .resume-target-${targetKey}`;
+
+      if (resolvedSize) {
+        rules.push(`
+    ${sel}, ${sel} p, ${sel} li, ${sel} span, ${sel} div, ${sel} h1, ${sel} h2, ${sel} h3, ${sel} h4 {
+      font-size: ${resolvedSize} !important;
+    }`);
+      }
+      if (resolvedWeight) {
+        rules.push(`
+    ${sel}, ${sel} p, ${sel} li, ${sel} span, ${sel} div, ${sel} h1, ${sel} h2, ${sel} h3, ${sel} h4 {
+      font-weight: ${resolvedWeight} !important;
+    }`);
+      }
+      if (styles.color) {
+        rules.push(`
+    ${sel}, ${sel} p, ${sel} li, ${sel} span, ${sel} div, ${sel} h1, ${sel} h2, ${sel} h3, ${sel} h4 {
+      color: ${styles.color} !important;
+    }`);
+      }
+      if (styles.lineHeight) {
+        rules.push(`
+    ${sel}, ${sel} p, ${sel} li {
+      line-height: ${styles.lineHeight} !important;
+    }`);
+      }
+      if (styles.letterSpacing) {
+        rules.push(`
+    ${sel}, ${sel} p, ${sel} span {
+      letter-spacing: ${styles.letterSpacing} !important;
+    }`);
+      }
+      return rules.join('');
+    }
+  ).join('');
 
   const renderLayout = () => {
     switch (templateId) {
@@ -605,11 +717,20 @@ export default function TemplateRenderer({
         margin: '0 auto',
       }}
     >
-      <style dangerouslySetInnerHTML={{ __html: dynamicCss }} />
+      <style dangerouslySetInnerHTML={{ __html: dynamicCss + sectionTypographyCss }} />
       {renderLayout()}
     </div>
   );
 }
+
+const TemplateRenderer = React.memo(TemplateRendererComponent, (prevProps, nextProps) => {
+  return (
+    prevProps.templateId === nextProps.templateId &&
+    prevProps.zoom === nextProps.zoom &&
+    prevProps.data === nextProps.data
+  );
+});
+export default TemplateRenderer;
 
 /* -------------------------------------------------------------------------
    1. ATS PROFESSIONAL TEMPLATE (Single Column - Maps sectionOrder)
@@ -628,7 +749,7 @@ function ATSProfessional({ data }: { data: ResumeData }) {
     switch (sec) {
       case 'summary':
         return data.personalInfo.summary ? (
-          <div className="mb-5 resume-section" key="summary">
+          <div className="mb-5 resume-section resume-section-summary" key="summary">
             <h2 className="text-[12px] font-bold uppercase border-b border-black pb-0.5 mb-2">Professional Summary</h2>
             <p className="text-justify">{data.personalInfo.summary}</p>
           </div>
@@ -636,7 +757,7 @@ function ATSProfessional({ data }: { data: ResumeData }) {
 
       case 'experience':
         return data.experience.length > 0 ? (
-          <div className="mb-5 resume-section" key="experience">
+          <div className="mb-5 resume-section resume-section-experience" key="experience">
             <h2 className="text-[12px] font-bold uppercase border-b border-black pb-0.5 mb-2">Experience</h2>
             <div className="space-y-4">
               {data.experience.map((exp, idx) => (
@@ -659,7 +780,7 @@ function ATSProfessional({ data }: { data: ResumeData }) {
 
       case 'projects':
         return data.projects.length > 0 ? (
-          <div className="mb-5 resume-section" key="projects">
+          <div className="mb-5 resume-section resume-section-projects" key="projects">
             <h2 className="text-[12px] font-bold uppercase border-b border-black pb-0.5 mb-2">Projects</h2>
             <div className="space-y-3">
               {data.projects.map((proj, idx) => (
@@ -676,7 +797,7 @@ function ATSProfessional({ data }: { data: ResumeData }) {
 
       case 'skills':
         return data.skills.length > 0 ? (
-          <div className="mb-5 resume-section" key="skills">
+          <div className="mb-5 resume-section resume-section-skills" key="skills">
             <h2 className="text-[12px] font-bold uppercase border-b border-black pb-0.5 mb-2">Technical Skills</h2>
             <div className="space-y-1">
               {data.skills.map((skill, idx) => (
@@ -690,7 +811,7 @@ function ATSProfessional({ data }: { data: ResumeData }) {
 
       case 'education':
         return data.education.length > 0 ? (
-          <div className="mb-5 resume-section" key="education">
+          <div className="mb-5 resume-section resume-section-education" key="education">
             <h2 className="text-[12px] font-bold uppercase border-b border-black pb-0.5 mb-2">Education</h2>
             <div className="space-y-2">
               {data.education.map((edu, idx) => (
@@ -708,7 +829,7 @@ function ATSProfessional({ data }: { data: ResumeData }) {
 
       case 'certifications':
         return data.certifications && data.certifications.length > 0 ? (
-          <div className="mb-5 resume-section" key="certifications">
+          <div className="mb-5 resume-section resume-section-certifications" key="certifications">
             <h2 className="text-[12px] font-bold uppercase border-b border-black pb-0.5 mb-2">Certifications</h2>
             <div className="space-y-1">
               {data.certifications.map((cert, idx) => (
@@ -723,7 +844,7 @@ function ATSProfessional({ data }: { data: ResumeData }) {
 
       case 'achievements':
         return data.achievements && data.achievements.length > 0 ? (
-          <div className="mb-5 resume-section" key="achievements">
+          <div className="mb-5 resume-section resume-section-achievements" key="achievements">
             <h2 className="text-[12px] font-bold uppercase border-b border-black pb-0.5 mb-2">Achievements</h2>
             <div className="space-y-1">
               {data.achievements.map((ach, idx) => (
@@ -737,7 +858,7 @@ function ATSProfessional({ data }: { data: ResumeData }) {
 
       case 'additionalInfo':
         return data.additionalInfo && (data.additionalInfo.languages || data.additionalInfo.interests) ? (
-          <div className="mb-5 resume-section" key="additionalInfo">
+          <div className="mb-5 resume-section resume-section-additionalInfo" key="additionalInfo">
             <h2 className="text-[12px] font-bold uppercase border-b border-black pb-0.5 mb-2">Additional Information</h2>
             <div className="space-y-1">
               {data.additionalInfo.languages && (
@@ -766,11 +887,11 @@ function ATSProfessional({ data }: { data: ResumeData }) {
         <h1 className="text-2xl font-bold uppercase tracking-wide mb-1">{data.personalInfo.fullName}</h1>
         <p className="text-[12px] italic text-slate-700 mb-2">{data.personalInfo.title}</p>
         <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-slate-600 text-[10px]">
-          <span>{data.personalInfo.email}</span>
+          <span className="resume-target-email">{data.personalInfo.email}</span>
           <span>•</span>
-          <span>{data.personalInfo.phone}</span>
+          <span className="resume-target-phone">{data.personalInfo.phone}</span>
           <span>•</span>
-          <span>{data.personalInfo.location}</span>
+          <span className="resume-target-location">{data.personalInfo.location}</span>
           {data.personalInfo.website && (
             <>
               <span>•</span>
@@ -806,7 +927,7 @@ function TechMinimal({ data }: { data: ResumeData }) {
     switch (sec) {
       case 'skills':
         return data.skills.length > 0 ? (
-          <div className="space-y-4" key="skills">
+          <div className="resume-section resume-section-skills space-y-4" key="skills">
             <h3 className="text-xs font-bold text-slate-900 border-b-2 border-teal-500 pb-1 uppercase tracking-wider">// SKILLS</h3>
             {data.skills.map((cat, idx) => (
               <div key={idx}>
@@ -823,7 +944,7 @@ function TechMinimal({ data }: { data: ResumeData }) {
 
       case 'education':
         return data.education.length > 0 ? (
-          <div className="space-y-3" key="education">
+          <div className="resume-section resume-section-education space-y-3" key="education">
             <h3 className="text-xs font-bold text-slate-900 border-b-2 border-teal-500 pb-1 uppercase tracking-wider">// EDUCATION</h3>
             {data.education.map((edu, idx) => (
               <div key={idx} className="space-y-0.5">
@@ -837,7 +958,7 @@ function TechMinimal({ data }: { data: ResumeData }) {
 
       case 'summary':
         return data.personalInfo.summary ? (
-          <div key="summary">
+          <div className="resume-section resume-section-summary" key="summary">
             <h3 className="text-xs font-bold text-slate-900 border-b-2 border-slate-900 pb-1 uppercase tracking-wider">// SUMMARY</h3>
             <p className="mt-2 text-justify text-[10px]">{data.personalInfo.summary}</p>
           </div>
@@ -845,7 +966,7 @@ function TechMinimal({ data }: { data: ResumeData }) {
 
       case 'experience':
         return data.experience.length > 0 ? (
-          <div key="experience">
+          <div className="resume-section resume-section-experience" key="experience">
             <h3 className="text-xs font-bold text-slate-900 border-b-2 border-slate-900 pb-1 uppercase tracking-wider">// WORK EXPERIENCE</h3>
             <div className="mt-3 space-y-4">
               {data.experience.map((exp, idx) => (
@@ -868,7 +989,7 @@ function TechMinimal({ data }: { data: ResumeData }) {
 
       case 'projects':
         return data.projects.length > 0 ? (
-          <div key="projects">
+          <div className="resume-section resume-section-projects" key="projects">
             <h3 className="text-xs font-bold text-slate-900 border-b-2 border-slate-900 pb-1 uppercase tracking-wider">// KEY PROJECTS</h3>
             <div className="mt-3 space-y-3">
               {data.projects.map((proj, idx) => (
@@ -884,7 +1005,7 @@ function TechMinimal({ data }: { data: ResumeData }) {
 
       case 'certifications':
         return data.certifications && data.certifications.length > 0 ? (
-          <div key="certifications">
+          <div className="resume-section resume-section-certifications" key="certifications">
             <h3 className="text-xs font-bold text-slate-900 border-b-2 border-slate-900 pb-1 uppercase tracking-wider">// CERTIFICATIONS</h3>
             <div className="mt-3 space-y-1.5 text-[9.5px]">
               {data.certifications.map((cert, idx) => (
@@ -899,7 +1020,7 @@ function TechMinimal({ data }: { data: ResumeData }) {
 
       case 'achievements':
         return data.achievements && data.achievements.length > 0 ? (
-          <div key="achievements">
+          <div className="resume-section resume-section-achievements" key="achievements">
             <h3 className="text-xs font-bold text-slate-900 border-b-2 border-slate-900 pb-1 uppercase tracking-wider">// KEY ACHIEVEMENTS</h3>
             <div className="mt-3 space-y-1.5 text-[9.5px]">
               {data.achievements.map((ach, idx) => (
@@ -913,7 +1034,7 @@ function TechMinimal({ data }: { data: ResumeData }) {
 
       case 'additionalInfo':
         return data.additionalInfo && (data.additionalInfo.languages || data.additionalInfo.interests) ? (
-          <div key="additionalInfo">
+          <div className="resume-section resume-section-additionalInfo" key="additionalInfo">
             <h3 className="text-xs font-bold text-slate-900 border-b-2 border-slate-900 pb-1 uppercase tracking-wider">// ADDITIONAL INFO</h3>
             <div className="mt-3 space-y-1.5 text-[9.5px]">
               {data.additionalInfo.languages && (
@@ -935,16 +1056,24 @@ function TechMinimal({ data }: { data: ResumeData }) {
     <div className="p-10 font-mono text-[10.5px] leading-relaxed text-slate-800 flex gap-8">
       {/* Left Sidebar (35%) */}
       <div className="w-[35%] border-r border-slate-200 pr-6 flex flex-col gap-6">
-        <div>
-          <h1 className="text-xl font-bold tracking-tight text-indigo-955 uppercase mb-1">{data.personalInfo.fullName}</h1>
-          <p className="text-[10px] text-teal-600 font-semibold uppercase tracking-wider">{data.personalInfo.title}</p>
+        <div className="space-y-3">
+          <ResumeAvatar
+            profileImage={data.personalInfo.profileImage}
+            fullName={data.personalInfo.fullName}
+            size="h-16 w-16"
+            className="shadow-sm border border-slate-200"
+          />
+          <div>
+            <h1 className="text-xl font-bold tracking-tight text-indigo-955 uppercase mb-1 resume-target-fullName">{data.personalInfo.fullName}</h1>
+            <p className="text-[10px] text-teal-600 font-semibold uppercase tracking-wider resume-target-jobTitle">{data.personalInfo.title}</p>
+          </div>
         </div>
 
         {/* Contact info */}
         <div className="space-y-2 text-[10px] text-slate-600">
-          <div className="flex items-center gap-2"><Mail size={12} className="text-teal-600" /> <span className="break-all">{data.personalInfo.email}</span></div>
-          <div className="flex items-center gap-2"><Phone size={12} className="text-teal-600" /> <span>{data.personalInfo.phone}</span></div>
-          <div className="flex items-center gap-2"><MapPin size={12} className="text-teal-600" /> <span>{data.personalInfo.location}</span></div>
+          <div className="flex items-center gap-2"><Mail size={12} className="text-teal-600" /> <span className="break-all resume-target-email">{data.personalInfo.email}</span></div>
+          <div className="flex items-center gap-2"><Phone size={12} className="text-teal-600" /> <span className="resume-target-phone">{data.personalInfo.phone}</span></div>
+          <div className="flex items-center gap-2"><MapPin size={12} className="text-teal-600" /> <span className="resume-target-location">{data.personalInfo.location}</span></div>
           {data.personalInfo.github && <div className="flex items-center gap-2"><GithubIcon className="text-teal-600 h-3 w-3" /> <span>{data.personalInfo.github}</span></div>}
           {data.personalInfo.linkedin && <div className="flex items-center gap-2"><LinkedinIcon className="text-teal-600 h-3 w-3" /> <span>{data.personalInfo.linkedin}</span></div>}
         </div>
@@ -977,14 +1106,14 @@ function SiliconValley({ data }: { data: ResumeData }) {
     switch (sec) {
       case 'summary':
         return data.personalInfo.summary ? (
-          <div className="mb-6 bg-slate-50 p-4 rounded-xl border border-slate-100" key="summary">
+          <div className="resume-section resume-section-summary mb-6 bg-slate-50 p-4 rounded-xl border border-slate-100" key="summary">
             <p className="text-justify italic text-slate-700">{data.personalInfo.summary}</p>
           </div>
         ) : null;
 
       case 'experience':
         return data.experience.length > 0 ? (
-          <div className="mb-6" key="experience">
+          <div className="resume-section resume-section-experience mb-6" key="experience">
             <h2 className="text-xs font-bold text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-1 mb-3">Professional Experience</h2>
             <div className="space-y-4">
               {data.experience.map((exp, idx) => (
@@ -992,8 +1121,12 @@ function SiliconValley({ data }: { data: ResumeData }) {
                   <div className="flex justify-between items-baseline mb-1">
                     <div>
                       <span className="font-bold text-slate-955 text-[12px]">{exp.role}</span>
-                      <span className="text-slate-400 mx-2">|</span>
-                      <span className="text-slate-700 font-medium">{exp.company}</span>
+                      {exp.company && (
+                        <>
+                          <span className="text-slate-400 mx-2">|</span>
+                          <span className="text-slate-700 font-medium">{exp.company}</span>
+                        </>
+                      )}
                     </div>
                     <span className="text-slate-500 text-[10px] font-semibold">{exp.duration}</span>
                   </div>
@@ -1010,7 +1143,7 @@ function SiliconValley({ data }: { data: ResumeData }) {
 
       case 'skills':
         return data.skills.length > 0 ? (
-          <div className="mb-6" key="skills">
+          <div className="resume-section resume-section-skills mb-6" key="skills">
             <h2 className="text-xs font-bold text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-1 mb-3">Technical Skills</h2>
             <div className="space-y-2">
               {data.skills.map((skill, idx) => (
@@ -1029,7 +1162,7 @@ function SiliconValley({ data }: { data: ResumeData }) {
 
       case 'education':
         return data.education.length > 0 ? (
-          <div className="mb-6" key="education">
+          <div className="resume-section resume-section-education mb-6" key="education">
             <h2 className="text-xs font-bold text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-1 mb-3">Education</h2>
             <div className="space-y-3">
               {data.education.map((edu, idx) => (
@@ -1045,7 +1178,7 @@ function SiliconValley({ data }: { data: ResumeData }) {
 
       case 'projects':
         return data.projects.length > 0 ? (
-          <div className="mb-6" key="projects">
+          <div className="resume-section resume-section-projects mb-6" key="projects">
             <h2 className="text-xs font-bold text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-1 mb-3">Key Projects</h2>
             <div className="space-y-3">
               {data.projects.map((proj, idx) => (
@@ -1060,7 +1193,7 @@ function SiliconValley({ data }: { data: ResumeData }) {
 
       case 'certifications':
         return data.certifications && data.certifications.length > 0 ? (
-          <div className="mb-6" key="certifications">
+          <div className="resume-section resume-section-certifications mb-6" key="certifications">
             <h2 className="text-xs font-bold text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-1 mb-3">Certifications</h2>
             <div className="space-y-1">
               {data.certifications.map((cert, idx) => (
@@ -1075,7 +1208,7 @@ function SiliconValley({ data }: { data: ResumeData }) {
 
       case 'achievements':
         return data.achievements && data.achievements.length > 0 ? (
-          <div className="mb-6" key="achievements">
+          <div className="resume-section resume-section-achievements mb-6" key="achievements">
             <h2 className="text-xs font-bold text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-1 mb-3">Achievements</h2>
             <div className="space-y-1">
               {data.achievements.map((ach, idx) => (
@@ -1089,7 +1222,7 @@ function SiliconValley({ data }: { data: ResumeData }) {
 
       case 'additionalInfo':
         return data.additionalInfo && (data.additionalInfo.languages || data.additionalInfo.interests) ? (
-          <div className="mb-6" key="additionalInfo">
+          <div className="resume-section resume-section-additionalInfo mb-6" key="additionalInfo">
             <h2 className="text-xs font-bold text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-1 mb-3">Additional Information</h2>
             <div className="space-y-1">
               {data.additionalInfo.languages && (
@@ -1113,11 +1246,11 @@ function SiliconValley({ data }: { data: ResumeData }) {
         <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">{data.personalInfo.fullName}</h1>
         <p className="text-indigo-600 font-semibold tracking-wide text-xs uppercase">{data.personalInfo.title}</p>
         <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-slate-500 text-[10px]">
-          <span>{data.personalInfo.email}</span>
+          <span className="resume-target-email">{data.personalInfo.email}</span>
           <span>•</span>
-          <span>{data.personalInfo.phone}</span>
+          <span className="resume-target-phone">{data.personalInfo.phone}</span>
           <span>•</span>
-          <span>{data.personalInfo.location}</span>
+          <span className="resume-target-location">{data.personalInfo.location}</span>
           {data.personalInfo.website && (
             <>
               <span>•</span>
@@ -1149,14 +1282,14 @@ function ModernGradient({ data }: { data: ResumeData }) {
     switch (sec) {
       case 'summary':
         return data.personalInfo.summary ? (
-          <div key="summary">
+          <div className="resume-section resume-section-summary" key="summary">
             <p className="text-justify text-slate-700 font-medium text-[11.5px]">{data.personalInfo.summary}</p>
           </div>
         ) : null;
 
       case 'experience':
         return data.experience.length > 0 ? (
-          <div key="experience">
+          <div className="resume-section resume-section-experience" key="experience">
             <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider border-b border-indigo-100 pb-1 mb-3 flex items-center gap-2">
               <Briefcase size={14} className="text-indigo-600" />
               <span>Work Experience</span>
@@ -1166,7 +1299,7 @@ function ModernGradient({ data }: { data: ResumeData }) {
                 <div key={idx} className="relative pl-4 border-l-2 border-indigo-100 hover:border-indigo-600 transition-colors">
                   <div className="absolute w-2 h-2 rounded-full bg-indigo-600 -left-[5px] top-1" />
                   <div className="flex justify-between items-baseline mb-0.5">
-                    <span className="font-bold text-slate-955 text-[11.5px]">{exp.role} <span className="text-indigo-600">@ {exp.company}</span></span>
+                    <span className="font-bold text-slate-955 text-[11.5px]">{exp.role}{exp.company ? <span className="text-indigo-600"> @ {exp.company}</span> : ''}</span>
                     <span className="text-slate-505 font-semibold text-[9.5px]">{exp.duration}</span>
                   </div>
                   <ul className="list-disc pl-4 space-y-0.5 text-slate-700 text-[10.5px]">
@@ -1182,7 +1315,7 @@ function ModernGradient({ data }: { data: ResumeData }) {
 
       case 'projects':
         return data.projects.length > 0 ? (
-          <div key="projects">
+          <div className="resume-section resume-section-projects" key="projects">
             <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider border-b border-indigo-100 pb-1 mb-3 flex items-center gap-2">
               <FolderGit2 size={14} className="text-indigo-600" />
               <span>Selected Projects</span>
@@ -1198,14 +1331,14 @@ function ModernGradient({ data }: { data: ResumeData }) {
                     ))}
                   </div>
                 </div>
-              ))}
+))}
             </div>
           </div>
         ) : null;
 
       case 'skills':
         return data.skills.length > 0 ? (
-          <div key="skills">
+          <div className="resume-section resume-section-skills" key="skills">
             <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider border-b border-indigo-100 pb-1 mb-3 flex items-center gap-2">
               <Code2 size={14} className="text-indigo-600" />
               <span>Skills Matrix</span>
@@ -1227,7 +1360,7 @@ function ModernGradient({ data }: { data: ResumeData }) {
 
       case 'education':
         return data.education.length > 0 ? (
-          <div key="education">
+          <div className="resume-section resume-section-education" key="education">
             <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider border-b border-indigo-100 pb-1 mb-3 flex items-center gap-2">
               <GraduationCap size={14} className="text-indigo-600" />
               <span>Education</span>
@@ -1246,7 +1379,7 @@ function ModernGradient({ data }: { data: ResumeData }) {
 
       case 'certifications':
         return data.certifications && data.certifications.length > 0 ? (
-          <div key="certifications">
+          <div className="resume-section resume-section-certifications" key="certifications">
             <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider border-b border-indigo-100 pb-1 mb-3 flex items-center gap-2">
               <Award size={14} className="text-indigo-600" />
               <span>Certifications</span>
@@ -1254,7 +1387,7 @@ function ModernGradient({ data }: { data: ResumeData }) {
             <div className="space-y-2">
               {data.certifications.map((cert, idx) => (
                 <div key={idx} className="flex justify-between items-baseline pl-4 border-l-2 border-indigo-100">
-                  <span className="font-bold text-slate-955">{cert.name} <span className="text-indigo-600">| {cert.issuer}</span></span>
+                  <span className="font-bold text-slate-955">{cert.name}{cert.issuer ? <span className="text-indigo-600"> | {cert.issuer}</span> : ''}</span>
                   <span className="text-slate-505 font-semibold text-[9.5px]">{cert.date}</span>
                 </div>
               ))}
@@ -1264,7 +1397,7 @@ function ModernGradient({ data }: { data: ResumeData }) {
 
       case 'achievements':
         return data.achievements && data.achievements.length > 0 ? (
-          <div key="achievements">
+          <div className="resume-section resume-section-achievements" key="achievements">
             <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider border-b border-indigo-100 pb-1 mb-3 flex items-center gap-2">
               <Award size={14} className="text-indigo-600" />
               <span>Achievements</span>
@@ -1281,7 +1414,7 @@ function ModernGradient({ data }: { data: ResumeData }) {
 
       case 'additionalInfo':
         return data.additionalInfo && (data.additionalInfo.languages || data.additionalInfo.interests) ? (
-          <div key="additionalInfo">
+          <div className="resume-section resume-section-additionalInfo" key="additionalInfo">
             <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider border-b border-indigo-100 pb-1 mb-3 flex items-center gap-2">
               <Globe size={14} className="text-indigo-600" />
               <span>Additional Information</span>
@@ -1307,14 +1440,22 @@ function ModernGradient({ data }: { data: ResumeData }) {
       {/* Top Banner Gradient */}
       <div className="bg-gradient-to-r from-violet-600 via-indigo-600 to-indigo-700 text-white p-8 px-12">
         <div className="flex justify-between items-end">
-          <div>
-            <h1 className="text-3xl font-extrabold tracking-tight mb-1">{data.personalInfo.fullName}</h1>
-            <p className="text-indigo-200 font-semibold text-xs tracking-wider uppercase">{data.personalInfo.title}</p>
+          <div className="flex items-center gap-4">
+            <ResumeAvatar
+              profileImage={data.personalInfo.profileImage}
+              fullName={data.personalInfo.fullName}
+              size="h-16 w-16"
+              className="border-white/80 shadow-md"
+            />
+            <div>
+              <h1 className="text-3xl font-extrabold tracking-tight mb-1 resume-target-fullName">{data.personalInfo.fullName}</h1>
+              <p className="text-indigo-200 font-semibold text-xs tracking-wider uppercase resume-target-jobTitle">{data.personalInfo.title}</p>
+            </div>
           </div>
           <div className="text-right text-[10px] text-indigo-100 space-y-0.5">
-            <div>{data.personalInfo.email}</div>
-            <div>{data.personalInfo.phone}</div>
-            <div>{data.personalInfo.location}</div>
+            <div className="resume-target-email">{data.personalInfo.email}</div>
+            <div className="resume-target-phone">{data.personalInfo.phone}</div>
+            <div className="resume-target-location">{data.personalInfo.location}</div>
           </div>
         </div>
       </div>
@@ -1347,7 +1488,7 @@ function ExecutivePro({ data }: { data: ResumeData }) {
     switch (sec) {
       case 'summary':
         return data.personalInfo.summary ? (
-          <div className="mb-6" key="summary">
+          <div className="resume-section resume-section-summary mb-6" key="summary">
             <h2 className="text-xs font-bold text-slate-900 uppercase border-b border-slate-300 pb-0.5 mb-2 font-sans tracking-wide">Executive Profile</h2>
             <p className="text-justify font-sans text-[11px] text-slate-700 leading-normal">{data.personalInfo.summary}</p>
           </div>
@@ -1355,7 +1496,7 @@ function ExecutivePro({ data }: { data: ResumeData }) {
 
       case 'experience':
         return data.experience.length > 0 ? (
-          <div key="experience">
+          <div className="resume-section resume-section-experience" key="experience">
             <h2 className="text-xs font-bold text-slate-900 uppercase border-b border-slate-300 pb-0.5 mb-3 font-sans tracking-wide">Professional Leadership</h2>
             <div className="space-y-4">
               {data.experience.map((exp, idx) => (
@@ -1364,7 +1505,7 @@ function ExecutivePro({ data }: { data: ResumeData }) {
                     <span className="text-slate-955">{exp.role}</span>
                     <span className="text-slate-600">{exp.duration}</span>
                   </div>
-                  <div className="text-amber-850 italic text-[10px] font-medium mb-1.5">{exp.company}</div>
+                  {exp.company && <div className="text-amber-850 italic text-[10px] font-medium mb-1.5">{exp.company}</div>}
                   <ul className="list-disc pl-5 space-y-1 text-slate-700">
                     {exp.bullets.map((bullet, bIdx) => (
                       <li key={bIdx} className="text-justify">{bullet}</li>
@@ -1378,7 +1519,7 @@ function ExecutivePro({ data }: { data: ResumeData }) {
 
       case 'certifications':
         return data.certifications && data.certifications.length > 0 ? (
-          <div key="certifications">
+          <div className="resume-section resume-section-certifications" key="certifications">
             <h2 className="text-xs font-bold text-slate-900 uppercase border-b border-slate-300 pb-0.5 mb-3 font-sans tracking-wide">Certifications</h2>
             <div className="space-y-3">
               {data.certifications.map((cert, idx) => (
@@ -1396,7 +1537,7 @@ function ExecutivePro({ data }: { data: ResumeData }) {
 
       case 'achievements':
         return data.achievements && data.achievements.length > 0 ? (
-          <div key="achievements">
+          <div className="resume-section resume-section-achievements" key="achievements">
             <h2 className="text-xs font-bold text-slate-900 uppercase border-b border-slate-300 pb-0.5 mb-3 font-sans tracking-wide">Key Achievements</h2>
             <div className="space-y-2 text-slate-700">
               {data.achievements.map((ach, idx) => (
@@ -1410,7 +1551,7 @@ function ExecutivePro({ data }: { data: ResumeData }) {
 
       case 'skills':
         return data.skills.length > 0 ? (
-          <div key="skills">
+          <div className="resume-section resume-section-skills" key="skills">
             <h2 className="text-xs font-bold text-slate-900 uppercase border-b border-slate-300 pb-0.5 mb-3 tracking-wide">Core Expertise</h2>
             <div className="space-y-3">
               {data.skills.map((skill, idx) => (
@@ -1429,7 +1570,7 @@ function ExecutivePro({ data }: { data: ResumeData }) {
 
       case 'education':
         return data.education.length > 0 ? (
-          <div key="education">
+          <div className="resume-section resume-section-education" key="education">
             <h2 className="text-xs font-bold text-slate-900 uppercase border-b border-slate-300 pb-0.5 mb-3 tracking-wide">Education</h2>
             <div className="space-y-3">
               {data.education.map((edu, idx) => (
@@ -1445,7 +1586,7 @@ function ExecutivePro({ data }: { data: ResumeData }) {
 
       case 'projects':
         return data.projects.length > 0 ? (
-          <div key="projects">
+          <div className="resume-section resume-section-projects" key="projects">
             <h2 className="text-xs font-bold text-slate-900 uppercase border-b border-slate-300 pb-0.5 mb-3 tracking-wide">Strategic Initiatives</h2>
             <div className="space-y-3">
               {data.projects.map((proj, idx) => (
@@ -1460,7 +1601,7 @@ function ExecutivePro({ data }: { data: ResumeData }) {
 
       case 'additionalInfo':
         return data.additionalInfo && (data.additionalInfo.languages || data.additionalInfo.interests) ? (
-          <div key="additionalInfo">
+          <div className="resume-section resume-section-additionalInfo" key="additionalInfo">
             <h2 className="text-xs font-bold text-slate-900 uppercase border-b border-slate-300 pb-0.5 mb-3 tracking-wide">Additional Details</h2>
             <div className="space-y-2 text-[9.5px] text-slate-700">
               {data.additionalInfo.languages && (
@@ -1482,12 +1623,18 @@ function ExecutivePro({ data }: { data: ResumeData }) {
     <div className="p-10 font-serif text-[11px] leading-relaxed text-slate-800">
       {/* Top Header */}
       <div className="border-b-2 border-slate-950 pb-4 mb-6 flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold tracking-wider text-slate-955 uppercase">{data.personalInfo.fullName}</h1>
-          <p className="text-[11px] font-semibold text-amber-700 uppercase tracking-widest italic">{data.personalInfo.title}</p>
-        </div>
+          <ResumeAvatar
+            profileImage={data.personalInfo.profileImage}
+            fullName={data.personalInfo.fullName}
+            size="h-16 w-16"
+            className="shadow-sm border border-slate-300"
+          />
+          <div>
+            <h1 className="text-2xl font-bold tracking-wider text-slate-955 uppercase resume-target-fullName">{data.personalInfo.fullName}</h1>
+            <p className="text-[11px] font-semibold text-amber-700 uppercase tracking-widest italic resume-target-jobTitle">{data.personalInfo.title}</p>
+          </div>
         <div className="text-right text-[10px] text-slate-600 font-sans space-y-0.5">
-          <div>{data.personalInfo.location}</div>
+          <div className="resume-target-location">{data.personalInfo.location}</div>
           <div>{data.personalInfo.phone} | {data.personalInfo.email}</div>
           {data.personalInfo.linkedin && <div>{data.personalInfo.linkedin}</div>}
         </div>
@@ -1532,7 +1679,7 @@ function CreativePortfolio({ data }: { data: ResumeData }) {
     switch (sec) {
       case 'skills':
         return data.skills.length > 0 ? (
-          <div className="space-y-4 border-t border-slate-800 pt-4" key="skills">
+          <div className="resume-section resume-section-skills space-y-4 border-t border-slate-800 pt-4" key="skills">
             <h3 className="text-[10px] font-bold text-white uppercase tracking-widest text-rose-400">Skills</h3>
             {data.skills.map((skill, idx) => (
               <div key={idx} className="space-y-1">
@@ -1549,7 +1696,7 @@ function CreativePortfolio({ data }: { data: ResumeData }) {
 
       case 'summary':
         return data.personalInfo.summary ? (
-          <div key="summary">
+          <div className="resume-section resume-section-summary" key="summary">
             <h2 className="text-[12px] font-extrabold text-slate-900 border-b-2 border-rose-500/50 pb-1 mb-2 uppercase tracking-wide">About Me</h2>
             <p className="text-justify text-slate-600 text-[10.5px]">{data.personalInfo.summary}</p>
           </div>
@@ -1557,13 +1704,13 @@ function CreativePortfolio({ data }: { data: ResumeData }) {
 
       case 'experience':
         return data.experience.length > 0 ? (
-          <div key="experience">
+          <div className="resume-section resume-section-experience" key="experience">
             <h2 className="text-[12px] font-extrabold text-slate-900 border-b-2 border-rose-500/50 pb-1 mb-3 uppercase tracking-wide">Work History</h2>
             <div className="space-y-4">
               {data.experience.map((exp, idx) => (
                 <div key={idx} className="bg-white p-3.5 rounded-xl border border-slate-200/60 shadow-sm hover:shadow-md transition-shadow">
                   <div className="flex justify-between items-baseline mb-1">
-                    <span className="font-bold text-slate-900 text-[11px]">{exp.role} <span className="text-rose-500 font-medium">@ {exp.company}</span></span>
+                    <span className="font-bold text-slate-900 text-[11px]">{exp.role}{exp.company ? <span className="text-rose-500 font-medium"> @ {exp.company}</span> : ''}</span>
                     <span className="text-slate-400 text-[9px] font-semibold">{exp.duration}</span>
                   </div>
                   <ul className="list-disc pl-4 space-y-0.5 text-slate-600 text-[10px]">
@@ -1579,7 +1726,7 @@ function CreativePortfolio({ data }: { data: ResumeData }) {
 
       case 'projects':
         return data.projects.length > 0 ? (
-          <div key="projects">
+          <div className="resume-section resume-section-projects" key="projects">
             <h2 className="text-[12px] font-extrabold text-slate-900 border-b-2 border-rose-500/50 pb-1 mb-3 uppercase tracking-wide">Recent Works</h2>
             <div className="grid grid-cols-2 gap-4">
               {data.projects.map((proj, idx) => (
@@ -1601,7 +1748,7 @@ function CreativePortfolio({ data }: { data: ResumeData }) {
 
       case 'education':
         return data.education.length > 0 ? (
-          <div key="education">
+          <div className="resume-section resume-section-education" key="education">
             <h2 className="text-[12px] font-extrabold text-slate-900 border-b-2 border-rose-500/50 pb-1 mb-2 uppercase tracking-wide">Education</h2>
             <div className="space-y-3">
               {data.education.map((edu, idx) => (
@@ -1619,7 +1766,7 @@ function CreativePortfolio({ data }: { data: ResumeData }) {
 
       case 'certifications':
         return data.certifications && data.certifications.length > 0 ? (
-          <div key="certifications">
+          <div className="resume-section resume-section-certifications" key="certifications">
             <h2 className="text-[12px] font-extrabold text-slate-900 border-b-2 border-rose-500/50 pb-1 mb-2 uppercase tracking-wide">Certifications</h2>
             <div className="space-y-1">
               {data.certifications.map((cert, idx) => (
@@ -1634,7 +1781,7 @@ function CreativePortfolio({ data }: { data: ResumeData }) {
 
       case 'achievements':
         return data.achievements && data.achievements.length > 0 ? (
-          <div key="achievements">
+          <div className="resume-section resume-section-achievements" key="achievements">
             <h2 className="text-[12px] font-extrabold text-slate-900 border-b-2 border-rose-500/50 pb-1 mb-2 uppercase tracking-wide">Key Achievements</h2>
             <div className="space-y-1">
               {data.achievements.map((ach, idx) => (
@@ -1648,7 +1795,7 @@ function CreativePortfolio({ data }: { data: ResumeData }) {
 
       case 'additionalInfo':
         return data.additionalInfo && (data.additionalInfo.languages || data.additionalInfo.interests) ? (
-          <div key="additionalInfo">
+          <div className="resume-section resume-section-additionalInfo" key="additionalInfo">
             <h2 className="text-[12px] font-extrabold text-slate-900 border-b-2 border-rose-500/50 pb-1 mb-2 uppercase tracking-wide">Additional Information</h2>
             <div className="space-y-1 text-slate-655 text-[10px]">
               {data.additionalInfo.languages && (
@@ -1672,17 +1819,20 @@ function CreativePortfolio({ data }: { data: ResumeData }) {
       <div className="w-[30%] bg-slate-900 text-slate-200 p-8 flex flex-col justify-between">
         <div className="space-y-6">
           <div className="text-center py-4">
-            <div className="h-20 w-20 rounded-full bg-gradient-to-tr from-rose-500 to-violet-500 mx-auto flex items-center justify-center font-extrabold text-white text-xl shadow-lg border border-slate-800">
-              {data.personalInfo.fullName ? data.personalInfo.fullName.split(' ').map(n => n[0] || '').join('').toUpperCase() : 'CV'}
-            </div>
-            <h1 className="text-[14px] font-extrabold tracking-wide mt-3 text-white">{data.personalInfo.fullName}</h1>
-            <p className="text-[9.5px] text-rose-400 font-semibold uppercase tracking-wider">{data.personalInfo.title}</p>
+            <ResumeAvatar
+              profileImage={data.personalInfo.profileImage}
+              fullName={data.personalInfo.fullName}
+              size="h-20 w-20"
+              className="mx-auto shadow-lg border border-slate-800"
+            />
+            <h1 className="text-[14px] font-extrabold tracking-wide mt-3 text-white resume-target-fullName">{data.personalInfo.fullName}</h1>
+            <p className="text-[9.5px] text-rose-400 font-semibold uppercase tracking-wider resume-target-jobTitle">{data.personalInfo.title}</p>
           </div>
 
           <div className="space-y-3 text-[9.5px] text-slate-300 border-t border-slate-800 pt-4">
-            <div className="break-all">{data.personalInfo.email}</div>
-            <div>{data.personalInfo.phone}</div>
-            <div>{data.personalInfo.location}</div>
+            <div className="break-all resume-target-email">{data.personalInfo.email}</div>
+            <div className="resume-target-phone">{data.personalInfo.phone}</div>
+            <div className="resume-target-location">{data.personalInfo.location}</div>
             {data.personalInfo.website && <div className="text-rose-400">{data.personalInfo.website}</div>}
           </div>
 
@@ -1719,7 +1869,7 @@ function CleanAcademic({ data }: { data: ResumeData }) {
     switch (sec) {
       case 'summary':
         return data.personalInfo.summary ? (
-          <div className="mb-6 resume-section" key="summary">
+          <div className="mb-6 resume-section resume-section-summary" key="summary">
             <h2 className="text-xs font-bold uppercase tracking-wider border-b border-black pb-0.5 mb-2.5">Research Statement</h2>
             <p className="text-justify italic">{data.personalInfo.summary}</p>
           </div>
@@ -1727,7 +1877,7 @@ function CleanAcademic({ data }: { data: ResumeData }) {
 
       case 'education':
         return data.education.length > 0 ? (
-          <div className="mb-6 resume-section" key="education">
+          <div className="mb-6 resume-section resume-section-education" key="education">
             <h2 className="text-xs font-bold uppercase tracking-wider border-b border-black pb-0.5 mb-2.5">Education</h2>
             <div className="space-y-3">
               {data.education.map((edu, idx) => (
@@ -1745,13 +1895,13 @@ function CleanAcademic({ data }: { data: ResumeData }) {
 
       case 'experience':
         return data.experience.length > 0 ? (
-          <div className="mb-6 resume-section" key="experience">
+          <div className="mb-6 resume-section resume-section-experience" key="experience">
             <h2 className="text-xs font-bold uppercase tracking-wider border-b border-black pb-0.5 mb-2.5">Academic & Professional Appointments</h2>
             <div className="space-y-4">
               {data.experience.map((exp, idx) => (
                 <div key={idx}>
                   <div className="flex justify-between font-bold">
-                    <span>{exp.role}, {exp.company}</span>
+                    <span>{exp.role && exp.company ? `${exp.role}, ${exp.company}` : (exp.role || exp.company)}</span>
                     <span className="font-normal italic">{exp.duration}</span>
                   </div>
                   <ul className="list-disc pl-5 space-y-1 mt-1 text-slate-800">
@@ -1767,7 +1917,7 @@ function CleanAcademic({ data }: { data: ResumeData }) {
 
       case 'projects':
         return data.projects.length > 0 ? (
-          <div className="mb-6 resume-section" key="projects">
+          <div className="mb-6 resume-section resume-section-projects" key="projects">
             <h2 className="text-xs font-bold uppercase tracking-wider border-b border-black pb-0.5 mb-2.5">Research Projects & Implementations</h2>
             <div className="space-y-3">
               {data.projects.map((proj, idx) => (
@@ -1783,7 +1933,7 @@ function CleanAcademic({ data }: { data: ResumeData }) {
 
       case 'skills':
         return data.skills.length > 0 ? (
-          <div className="mb-6 resume-section" key="skills">
+          <div className="mb-6 resume-section resume-section-skills" key="skills">
             <h2 className="text-xs font-bold uppercase tracking-wider border-b border-black pb-0.5 mb-2.5">Methodology & Skillset</h2>
             <div className="space-y-1">
               {data.skills.map((skill, idx) => (
@@ -1798,7 +1948,7 @@ function CleanAcademic({ data }: { data: ResumeData }) {
 
       case 'certifications':
         return data.certifications && data.certifications.length > 0 ? (
-          <div className="mb-6 resume-section" key="certifications">
+          <div className="mb-6 resume-section resume-section-certifications" key="certifications">
             <h2 className="text-xs font-bold uppercase tracking-wider border-b border-black pb-0.5 mb-2.5">Certifications</h2>
             <div className="space-y-2">
               {data.certifications.map((cert, idx) => (
@@ -1813,7 +1963,7 @@ function CleanAcademic({ data }: { data: ResumeData }) {
 
       case 'achievements':
         return data.achievements && data.achievements.length > 0 ? (
-          <div className="mb-6 resume-section" key="achievements">
+          <div className="mb-6 resume-section resume-section-achievements" key="achievements">
             <h2 className="text-xs font-bold uppercase tracking-wider border-b border-black pb-0.5 mb-2.5">Honors & Awards</h2>
             <div className="space-y-1">
               {data.achievements.map((ach, idx) => (
@@ -1827,7 +1977,7 @@ function CleanAcademic({ data }: { data: ResumeData }) {
 
       case 'additionalInfo':
         return data.additionalInfo && (data.additionalInfo.languages || data.additionalInfo.interests) ? (
-          <div className="mb-6 resume-section" key="additionalInfo">
+          <div className="mb-6 resume-section resume-section-additionalInfo" key="additionalInfo">
             <h2 className="text-xs font-bold uppercase tracking-wider border-b border-black pb-0.5 mb-2.5">Additional Information</h2>
             <div className="space-y-1">
               {data.additionalInfo.languages && (
@@ -1852,11 +2002,11 @@ function CleanAcademic({ data }: { data: ResumeData }) {
         <h1 className="text-2xl tracking-wide font-normal mb-1">{data.personalInfo.fullName}</h1>
         <p className="text-[10px] text-slate-700 tracking-widest uppercase mb-3">{data.personalInfo.title}</p>
         <div className="text-[9.5px] text-slate-600 space-x-2">
-          <span>{data.personalInfo.location}</span>
+          <span className="resume-target-location">{data.personalInfo.location}</span>
           <span>•</span>
-          <span>{data.personalInfo.email}</span>
+          <span className="resume-target-email">{data.personalInfo.email}</span>
           <span>•</span>
-          <span>{data.personalInfo.phone}</span>
+          <span className="resume-target-phone">{data.personalInfo.phone}</span>
         </div>
       </div>
 
@@ -1882,7 +2032,7 @@ function ImpactStartup({ data }: { data: ResumeData }) {
     switch (sec) {
       case 'summary':
         return data.personalInfo.summary ? (
-          <div className="mb-6" key="summary">
+          <div className="resume-section resume-section-summary mb-6" key="summary">
             <h2 className="text-xs font-black text-slate-900 border-l-4 border-emerald-500 pl-2 uppercase tracking-wider mb-2">Core Profile</h2>
             <p className="text-justify text-slate-600">{data.personalInfo.summary}</p>
           </div>
@@ -1890,13 +2040,13 @@ function ImpactStartup({ data }: { data: ResumeData }) {
 
       case 'experience':
         return data.experience.length > 0 ? (
-          <div className="mb-6" key="experience">
+          <div className="resume-section resume-section-experience mb-6" key="experience">
             <h2 className="text-xs font-black text-slate-900 border-l-4 border-emerald-500 pl-2 uppercase tracking-wider mb-3">Key Impact Roles</h2>
             <div className="space-y-4">
               {data.experience.map((exp, idx) => (
                 <div key={idx}>
                   <div className="flex justify-between items-baseline mb-0.5">
-                    <span className="font-bold text-slate-900 text-[11.5px]">{exp.role} @ <span className="text-emerald-600">{exp.company}</span></span>
+                    <span className="font-bold text-slate-900 text-[11.5px]">{exp.role}{exp.company ? <> @ <span className="text-emerald-600">{exp.company}</span></> : ''}</span>
                     <span className="text-slate-505 font-semibold text-[9.5px]">{exp.duration}</span>
                   </div>
                   <ul className="list-disc pl-5 space-y-0.5 text-slate-600">
@@ -1912,7 +2062,7 @@ function ImpactStartup({ data }: { data: ResumeData }) {
 
       case 'skills':
         return data.skills.length > 0 ? (
-          <div className="mb-6" key="skills">
+          <div className="resume-section resume-section-skills mb-6" key="skills">
             <h2 className="text-xs font-black text-slate-900 border-l-4 border-emerald-500 pl-2 uppercase tracking-wider mb-3">Skillsets</h2>
             <div className="space-y-2">
               {data.skills.map((skill, idx) => (
@@ -1931,7 +2081,7 @@ function ImpactStartup({ data }: { data: ResumeData }) {
 
       case 'projects':
         return data.projects.length > 0 ? (
-          <div className="mb-6" key="projects">
+          <div className="resume-section resume-section-projects mb-6" key="projects">
             <h2 className="text-xs font-black text-slate-900 border-l-4 border-emerald-500 pl-2 uppercase tracking-wider mb-3">Key Projects</h2>
             <div className="space-y-3">
               {data.projects.map((proj, idx) => (
@@ -1946,7 +2096,7 @@ function ImpactStartup({ data }: { data: ResumeData }) {
 
       case 'education':
         return data.education.length > 0 ? (
-          <div className="mb-6" key="education">
+          <div className="resume-section resume-section-education mb-6" key="education">
             <h2 className="text-xs font-black text-slate-900 border-l-4 border-emerald-500 pl-2 uppercase tracking-wider mb-3">Education</h2>
             <div className="space-y-3">
               {data.education.map((edu, idx) => (
@@ -1962,7 +2112,7 @@ function ImpactStartup({ data }: { data: ResumeData }) {
 
       case 'certifications':
         return data.certifications && data.certifications.length > 0 ? (
-          <div className="mb-6" key="certifications">
+          <div className="resume-section resume-section-certifications mb-6" key="certifications">
             <h2 className="text-xs font-black text-slate-900 border-l-4 border-emerald-500 pl-2 uppercase tracking-wider mb-3">Certifications</h2>
             <div className="space-y-2">
               {data.certifications.map((cert, idx) => (
@@ -1977,7 +2127,7 @@ function ImpactStartup({ data }: { data: ResumeData }) {
 
       case 'achievements':
         return data.achievements && data.achievements.length > 0 ? (
-          <div className="mb-6" key="achievements">
+          <div className="resume-section resume-section-achievements mb-6" key="achievements">
             <h2 className="text-xs font-black text-slate-900 border-l-4 border-emerald-500 pl-2 uppercase tracking-wider mb-3">Key Achievements</h2>
             <div className="space-y-1.5 text-slate-655">
               {data.achievements.map((ach, idx) => (
@@ -1991,7 +2141,7 @@ function ImpactStartup({ data }: { data: ResumeData }) {
 
       case 'additionalInfo':
         return data.additionalInfo && (data.additionalInfo.languages || data.additionalInfo.interests) ? (
-          <div className="mb-6" key="additionalInfo">
+          <div className="resume-section resume-section-additionalInfo mb-6" key="additionalInfo">
             <h2 className="text-xs font-black text-slate-900 border-l-4 border-emerald-500 pl-2 uppercase tracking-wider mb-3">Additional Details</h2>
             <div className="space-y-1.5 text-slate-600">
               {data.additionalInfo.languages && (
@@ -2018,9 +2168,9 @@ function ImpactStartup({ data }: { data: ResumeData }) {
           <p className="text-emerald-600 font-bold tracking-wide uppercase text-xs mt-0.5">{data.personalInfo.title}</p>
         </div>
         <div className="text-right text-[10px] text-slate-505 bg-slate-50 border border-slate-100 p-3 rounded-xl">
-          <div>{data.personalInfo.email}</div>
-          <div>{data.personalInfo.phone}</div>
-          <div>{data.personalInfo.location}</div>
+          <div className="resume-target-email">{data.personalInfo.email}</div>
+          <div className="resume-target-phone">{data.personalInfo.phone}</div>
+          <div className="resume-target-location">{data.personalInfo.location}</div>
         </div>
       </div>
 
@@ -2062,14 +2212,14 @@ function FAANGElite({ data }: { data: ResumeData }) {
     switch (sec) {
       case 'summary':
         return data.personalInfo.summary ? (
-          <div className="mb-4 resume-section" key="summary">
+          <div className="mb-4 resume-section resume-section-summary" key="summary">
             <p className="text-justify text-[10px] leading-relaxed text-slate-800">{data.personalInfo.summary}</p>
           </div>
         ) : null;
 
       case 'experience':
         return data.experience.length > 0 ? (
-          <div className="mb-4 resume-section" key="experience">
+          <div className="mb-4 resume-section resume-section-experience" key="experience">
             <h2 className="text-[11px] font-bold uppercase tracking-wider border-b border-slate-900 pb-0.5 mb-2">Work Experience</h2>
             <div className="space-y-3">
               {data.experience.map((exp, idx) => (
@@ -2091,7 +2241,7 @@ function FAANGElite({ data }: { data: ResumeData }) {
 
       case 'projects':
         return data.projects.length > 0 ? (
-          <div className="mb-4 resume-section" key="projects">
+          <div className="mb-4 resume-section resume-section-projects" key="projects">
             <h2 className="text-[11px] font-bold uppercase tracking-wider border-b border-slate-900 pb-0.5 mb-2">Key Engineering Projects</h2>
             <div className="space-y-2">
               {data.projects.map((proj, idx) => (
@@ -2106,7 +2256,7 @@ function FAANGElite({ data }: { data: ResumeData }) {
 
       case 'skills':
         return data.skills.length > 0 ? (
-          <div className="mb-4 resume-section" key="skills">
+          <div className="mb-4 resume-section resume-section-skills" key="skills">
             <h2 className="text-[11px] font-bold uppercase tracking-wider border-b border-slate-900 pb-0.5 mb-2">Technical Skills</h2>
             <div className="space-y-0.5">
               {data.skills.map((skill, idx) => (
@@ -2120,7 +2270,7 @@ function FAANGElite({ data }: { data: ResumeData }) {
 
       case 'education':
         return data.education.length > 0 ? (
-          <div className="mb-4 resume-section" key="education">
+          <div className="mb-4 resume-section resume-section-education" key="education">
             <h2 className="text-[11px] font-bold uppercase tracking-wider border-b border-slate-900 pb-0.5 mb-2">Education</h2>
             <div className="space-y-1">
               {data.education.map((edu, idx) => (
@@ -2138,7 +2288,7 @@ function FAANGElite({ data }: { data: ResumeData }) {
 
       case 'certifications':
         return data.certifications && data.certifications.length > 0 ? (
-          <div className="mb-4 resume-section" key="certifications">
+          <div className="mb-4 resume-section resume-section-certifications" key="certifications">
             <h2 className="text-[11px] font-bold uppercase tracking-wider border-b border-slate-900 pb-0.5 mb-2">Certifications</h2>
             <div className="space-y-1">
               {data.certifications.map((cert, idx) => (
@@ -2153,7 +2303,7 @@ function FAANGElite({ data }: { data: ResumeData }) {
 
       case 'achievements':
         return data.achievements && data.achievements.length > 0 ? (
-          <div className="mb-4 resume-section" key="achievements">
+          <div className="mb-4 resume-section resume-section-achievements" key="achievements">
             <h2 className="text-[11px] font-bold uppercase tracking-wider border-b border-slate-900 pb-0.5 mb-2">Honors & Awards</h2>
             <div className="space-y-0.5">
               {data.achievements.map((ach, idx) => (
@@ -2167,7 +2317,7 @@ function FAANGElite({ data }: { data: ResumeData }) {
 
       case 'additionalInfo':
         return data.additionalInfo && (data.additionalInfo.languages || data.additionalInfo.interests) ? (
-          <div className="mb-4 resume-section" key="additionalInfo">
+          <div className="mb-4 resume-section resume-section-additionalInfo" key="additionalInfo">
             <h2 className="text-[11px] font-bold uppercase tracking-wider border-b border-slate-900 pb-0.5 mb-2">Additional Information</h2>
             <div className="space-y-0.5 text-[10px]">
               {data.additionalInfo.languages && (
@@ -2191,11 +2341,11 @@ function FAANGElite({ data }: { data: ResumeData }) {
       <div className="text-center mb-4">
         <h1 className="text-xl font-bold tracking-tight mb-0.5">{data.personalInfo.fullName}</h1>
         <div className="flex justify-center gap-x-3 text-[10px] text-slate-700">
-          <span>{data.personalInfo.email}</span>
+          <span className="resume-target-email">{data.personalInfo.email}</span>
           <span>|</span>
-          <span>{data.personalInfo.phone}</span>
+          <span className="resume-target-phone">{data.personalInfo.phone}</span>
           <span>|</span>
-          <span>{data.personalInfo.location}</span>
+          <span className="resume-target-location">{data.personalInfo.location}</span>
           {data.personalInfo.linkedin && (
             <>
               <span>|</span>
@@ -2231,7 +2381,7 @@ function OnePageCompact({ data }: { data: ResumeData }) {
     switch (sec) {
       case 'skills':
         return data.skills.length > 0 ? (
-          <div className="space-y-3" key="skills">
+          <div className="resume-section resume-section-skills space-y-3" key="skills">
             <h4 className="font-black text-slate-900 uppercase tracking-widest text-[9px]">Skills</h4>
             {data.skills.map((skill, idx) => (
               <div key={idx} className="space-y-1">
@@ -2248,7 +2398,7 @@ function OnePageCompact({ data }: { data: ResumeData }) {
 
       case 'education':
         return data.education.length > 0 ? (
-          <div className="space-y-2" key="education">
+          <div className="resume-section resume-section-education space-y-2" key="education">
             <h4 className="font-black text-slate-900 uppercase tracking-widest text-[9px]">Education</h4>
             {data.education.map((edu, idx) => (
               <div key={idx} className="space-y-0.5">
@@ -2262,7 +2412,7 @@ function OnePageCompact({ data }: { data: ResumeData }) {
 
       case 'summary':
         return data.personalInfo.summary ? (
-          <div key="summary">
+          <div className="resume-section resume-section-summary" key="summary">
             <h3 className="font-black text-slate-900 border-b border-slate-200 pb-0.5 uppercase tracking-wider text-[9.5px]">Overview</h3>
             <p className="mt-1.5 text-justify text-[9.5px] leading-relaxed text-slate-600">{data.personalInfo.summary}</p>
           </div>
@@ -2270,7 +2420,7 @@ function OnePageCompact({ data }: { data: ResumeData }) {
 
       case 'experience':
         return data.experience.length > 0 ? (
-          <div key="experience">
+          <div className="resume-section resume-section-experience" key="experience">
             <h3 className="font-black text-slate-900 border-b border-slate-200 pb-0.5 uppercase tracking-wider text-[9.5px]">Experience</h3>
             <div className="mt-2 space-y-3">
               {data.experience.map((exp, idx) => (
@@ -2279,7 +2429,7 @@ function OnePageCompact({ data }: { data: ResumeData }) {
                     <span>{exp.role}</span>
                     <span className="font-normal text-slate-505 text-[8.5px]">{exp.duration}</span>
                   </div>
-                  <div className="text-slate-400 font-semibold text-[8.5px]">{exp.company}</div>
+                  {exp.company && <div className="text-slate-400 font-semibold text-[8.5px]">{exp.company}</div>}
                   <ul className="list-disc pl-4 space-y-0.5 mt-1 text-slate-600 text-[9px]">
                     {exp.bullets.map((bullet, bIdx) => (
                       <li key={bIdx} className="text-justify">{bullet}</li>
@@ -2293,7 +2443,7 @@ function OnePageCompact({ data }: { data: ResumeData }) {
 
       case 'projects':
         return data.projects.length > 0 ? (
-          <div key="projects">
+          <div className="resume-section resume-section-projects" key="projects">
             <h3 className="font-black text-slate-900 border-b border-slate-200 pb-0.5 uppercase tracking-wider text-[9.5px]">Selected Projects</h3>
             <div className="mt-2 space-y-2">
               {data.projects.map((proj, idx) => (
@@ -2308,7 +2458,7 @@ function OnePageCompact({ data }: { data: ResumeData }) {
 
       case 'certifications':
         return data.certifications && data.certifications.length > 0 ? (
-          <div key="certifications">
+          <div className="resume-section resume-section-certifications" key="certifications">
             <h3 className="font-black text-slate-900 border-b border-slate-200 pb-0.5 uppercase tracking-wider text-[9.5px]">Certifications</h3>
             <div className="mt-2 space-y-1">
               {data.certifications.map((cert, idx) => (
@@ -2323,7 +2473,7 @@ function OnePageCompact({ data }: { data: ResumeData }) {
 
       case 'achievements':
         return data.achievements && data.achievements.length > 0 ? (
-          <div key="achievements">
+          <div className="resume-section resume-section-achievements" key="achievements">
             <h3 className="font-black text-slate-900 border-b border-slate-200 pb-0.5 uppercase tracking-wider text-[9.5px]">Achievements</h3>
             <div className="mt-2 space-y-0.5 text-[8.5px] text-slate-600">
               {data.achievements.map((ach, idx) => (
@@ -2337,7 +2487,7 @@ function OnePageCompact({ data }: { data: ResumeData }) {
 
       case 'additionalInfo':
         return data.additionalInfo && (data.additionalInfo.languages || data.additionalInfo.interests) ? (
-          <div key="additionalInfo">
+          <div className="resume-section resume-section-additionalInfo" key="additionalInfo">
             <h3 className="font-black text-slate-900 border-b border-slate-200 pb-0.5 uppercase tracking-wider text-[9.5px]">Additional Details</h3>
             <div className="mt-2 space-y-0.5 text-[8.5px] text-slate-600">
               {data.additionalInfo.languages && (
@@ -2367,8 +2517,8 @@ function OnePageCompact({ data }: { data: ResumeData }) {
         {/* Contact info */}
         <div className="space-y-1.5 text-[9px] border-t border-slate-200 pt-3">
           <div className="text-slate-600 break-all">{data.personalInfo.email}</div>
-          <div>{data.personalInfo.phone}</div>
-          <div>{data.personalInfo.location}</div>
+          <div className="resume-target-phone">{data.personalInfo.phone}</div>
+          <div className="resume-target-location">{data.personalInfo.location}</div>
         </div>
 
         {leftSections.map(sec => renderSection(sec))}
@@ -2403,7 +2553,7 @@ function ModernTwoColumn({ data }: { data: ResumeData }) {
     switch (sec) {
       case 'skills':
         return data.skills.length > 0 ? (
-          <div className="space-y-4" key="skills">
+          <div className="resume-section resume-section-skills space-y-4" key="skills">
             <h3 className="text-xs font-bold text-slate-900 uppercase tracking-widest text-indigo-600">Skills</h3>
             {data.skills.map((skill, idx) => (
               <div key={idx} className="space-y-1">
@@ -2420,7 +2570,7 @@ function ModernTwoColumn({ data }: { data: ResumeData }) {
 
       case 'education':
         return data.education.length > 0 ? (
-          <div className="space-y-3" key="education">
+          <div className="resume-section resume-section-education space-y-3" key="education">
             <h3 className="text-xs font-bold text-slate-900 uppercase tracking-widest text-indigo-600">Education</h3>
             {data.education.map((edu, idx) => (
               <div key={idx}>
@@ -2434,7 +2584,7 @@ function ModernTwoColumn({ data }: { data: ResumeData }) {
 
       case 'certifications':
         return data.certifications && data.certifications.length > 0 ? (
-          <div className="space-y-3" key="certifications">
+          <div className="resume-section resume-section-certifications space-y-3" key="certifications">
             <h3 className="text-xs font-bold text-slate-900 uppercase tracking-widest text-indigo-600">Certifications</h3>
             {data.certifications.map((cert, idx) => (
               <div key={idx} className="space-y-0.5">
@@ -2448,7 +2598,7 @@ function ModernTwoColumn({ data }: { data: ResumeData }) {
 
       case 'additionalInfo':
         return data.additionalInfo && (data.additionalInfo.languages || data.additionalInfo.interests) ? (
-          <div className="space-y-3" key="additionalInfo">
+          <div className="resume-section resume-section-additionalInfo space-y-3" key="additionalInfo">
             <h3 className="text-xs font-bold text-slate-900 uppercase tracking-widest text-indigo-600">Additional Details</h3>
             <div className="space-y-1 text-slate-600 text-[9.5px]">
               {data.additionalInfo.languages && (
@@ -2463,7 +2613,7 @@ function ModernTwoColumn({ data }: { data: ResumeData }) {
 
       case 'summary':
         return data.personalInfo.summary ? (
-          <div key="summary">
+          <div className="resume-section resume-section-summary" key="summary">
             <h2 className="text-xs font-bold text-slate-900 border-b border-slate-200 pb-1 mb-2.5 uppercase tracking-wider">Executive Summary</h2>
             <p className="text-justify text-slate-600 text-[11px]">{data.personalInfo.summary}</p>
           </div>
@@ -2471,13 +2621,13 @@ function ModernTwoColumn({ data }: { data: ResumeData }) {
 
       case 'experience':
         return data.experience.length > 0 ? (
-          <div key="experience">
+          <div className="resume-section resume-section-experience" key="experience">
             <h2 className="text-xs font-bold text-slate-900 border-b border-slate-200 pb-1 mb-3.5 uppercase tracking-wider">Professional Experience</h2>
             <div className="space-y-4">
               {data.experience.map((exp, idx) => (
                 <div key={idx} className="space-y-1">
                   <div className="flex justify-between items-baseline">
-                    <span className="font-bold text-slate-900 text-[11.5px]">{exp.role} <span className="text-slate-400">@</span> {exp.company}</span>
+                    <span className="font-bold text-slate-900 text-[11.5px]">{exp.role}{exp.company ? <> <span className="text-slate-400">@</span> {exp.company}</> : ''}</span>
                     <span className="text-slate-500 text-[9.5px] font-semibold">{exp.duration}</span>
                   </div>
                   <ul className="list-disc pl-4 space-y-1 text-slate-600 text-[10.5px]">
@@ -2493,7 +2643,7 @@ function ModernTwoColumn({ data }: { data: ResumeData }) {
 
       case 'projects':
         return data.projects.length > 0 ? (
-          <div key="projects">
+          <div className="resume-section resume-section-projects" key="projects">
             <h2 className="text-xs font-bold text-slate-900 border-b border-slate-200 pb-1 mb-3 uppercase tracking-wider">Key Projects</h2>
             <div className="space-y-3">
               {data.projects.map((proj, idx) => (
@@ -2508,7 +2658,7 @@ function ModernTwoColumn({ data }: { data: ResumeData }) {
 
       case 'achievements':
         return data.achievements && data.achievements.length > 0 ? (
-          <div key="achievements">
+          <div className="resume-section resume-section-achievements" key="achievements">
             <h2 className="text-xs font-bold text-slate-900 border-b border-slate-200 pb-1 mb-3 uppercase tracking-wider">Achievements</h2>
             <div className="space-y-2 text-[10.5px]">
               {data.achievements.map((ach, idx) => (
@@ -2529,16 +2679,22 @@ function ModernTwoColumn({ data }: { data: ResumeData }) {
     <div className="font-sans text-[11px] leading-relaxed text-slate-800 flex min-h-[1123px]">
       {/* Left Sidebar (33%) */}
       <div className="w-[33%] bg-slate-50 border-r border-slate-200 p-8 flex flex-col gap-6">
+        <ResumeAvatar
+          profileImage={data.personalInfo.profileImage}
+          fullName={data.personalInfo.fullName}
+          size="h-20 w-20"
+          className="shadow-sm border border-slate-200"
+        />
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 leading-tight">{data.personalInfo.fullName}</h1>
-          <p className="text-[10px] text-indigo-600 font-bold uppercase tracking-wider mt-1">{data.personalInfo.title}</p>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 leading-tight resume-target-fullName">{data.personalInfo.fullName}</h1>
+          <p className="text-[10px] text-indigo-600 font-bold uppercase tracking-wider mt-1 resume-target-jobTitle">{data.personalInfo.title}</p>
         </div>
 
         {/* Contact Details */}
         <div className="space-y-2 text-[10px] text-slate-600 border-t border-slate-200 pt-4">
-          <div className="flex items-center gap-2"><Mail size={12} className="text-slate-400" /> <span className="break-all">{data.personalInfo.email}</span></div>
-          <div className="flex items-center gap-2"><Phone size={12} className="text-slate-400" /> <span>{data.personalInfo.phone}</span></div>
-          <div className="flex items-center gap-2"><MapPin size={12} className="text-slate-400" /> <span>{data.personalInfo.location}</span></div>
+          <div className="flex items-center gap-2"><Mail size={12} className="text-slate-400" /> <span className="break-all resume-target-email">{data.personalInfo.email}</span></div>
+          <div className="flex items-center gap-2"><Phone size={12} className="text-slate-400" /> <span className="resume-target-phone">{data.personalInfo.phone}</span></div>
+          <div className="flex items-center gap-2"><MapPin size={12} className="text-slate-400" /> <span className="resume-target-location">{data.personalInfo.location}</span></div>
         </div>
 
         {leftSections.map(sec => renderSection(sec))}
@@ -2569,14 +2725,14 @@ function ProductManagerPro({ data }: { data: ResumeData }) {
     switch (sec) {
       case 'summary':
         return data.personalInfo.summary ? (
-          <div className="mb-6 bg-purple-50/40 p-4 rounded-xl border border-purple-100/50" key="summary">
+          <div className="resume-section resume-section-summary mb-6 bg-purple-50/40 p-4 rounded-xl border border-purple-100/50" key="summary">
             <p className="text-justify text-slate-700 text-[11px] leading-relaxed">{data.personalInfo.summary}</p>
           </div>
         ) : null;
 
       case 'skills':
         return data.skills.length > 0 ? (
-          <div className="mb-6" key="skills">
+          <div className="resume-section resume-section-skills mb-6" key="skills">
             <h2 className="text-xs font-black text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-1 mb-3">Core Competencies</h2>
             <div className="grid grid-cols-3 gap-4">
               {data.skills.map((skill, idx) => (
@@ -2609,13 +2765,13 @@ function ProductManagerPro({ data }: { data: ResumeData }) {
 
       case 'experience':
         return data.experience.length > 0 ? (
-          <div className="mb-6" key="experience">
+          <div className="resume-section resume-section-experience mb-6" key="experience">
             <h2 className="text-xs font-black text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-1 mb-3">Professional Experience</h2>
             <div className="space-y-4">
               {data.experience.map((exp, idx) => (
                 <div key={idx}>
                   <div className="flex justify-between items-baseline mb-0.5">
-                    <span className="font-bold text-slate-900 text-[12px]">{exp.role} <span className="text-purple-700">@ {exp.company}</span></span>
+                    <span className="font-bold text-slate-900 text-[12px]">{exp.role}{exp.company ? <span className="text-purple-700"> @ {exp.company}</span> : ''}</span>
                     <span className="text-slate-500 font-semibold text-[10px]">{exp.duration}</span>
                   </div>
                   <ul className="list-disc pl-5 space-y-1 text-slate-600 text-[10.5px]">
@@ -2631,7 +2787,7 @@ function ProductManagerPro({ data }: { data: ResumeData }) {
 
       case 'projects':
         return data.projects.length > 0 ? (
-          <div className="mb-6" key="projects">
+          <div className="resume-section resume-section-projects mb-6" key="projects">
             <h2 className="text-xs font-black text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-1 mb-3">Strategic Initiatives</h2>
             <div className="space-y-3">
               {data.projects.map((proj, idx) => (
@@ -2646,7 +2802,7 @@ function ProductManagerPro({ data }: { data: ResumeData }) {
 
       case 'education':
         return data.education.length > 0 ? (
-          <div className="mb-6" key="education">
+          <div className="resume-section resume-section-education mb-6" key="education">
             <h2 className="text-xs font-black text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-1 mb-3">Education & Credentials</h2>
             <div className="space-y-3">
               {data.education.map((edu, idx) => (
@@ -2662,7 +2818,7 @@ function ProductManagerPro({ data }: { data: ResumeData }) {
 
       case 'certifications':
         return data.certifications && data.certifications.length > 0 ? (
-          <div className="mb-6" key="certifications">
+          <div className="resume-section resume-section-certifications mb-6" key="certifications">
             <h2 className="text-xs font-black text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-1 mb-3">Certifications</h2>
             <div className="space-y-1.5 text-[10px]">
               {data.certifications.map((cert, idx) => (
@@ -2677,7 +2833,7 @@ function ProductManagerPro({ data }: { data: ResumeData }) {
 
       case 'achievements':
         return data.achievements && data.achievements.length > 0 ? (
-          <div className="mb-6" key="achievements">
+          <div className="resume-section resume-section-achievements mb-6" key="achievements">
             <h2 className="text-xs font-black text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-1 mb-3">Achievements</h2>
             <div className="space-y-1.5 text-[10px] text-slate-650">
               {data.achievements.map((ach, idx) => (
@@ -2691,7 +2847,7 @@ function ProductManagerPro({ data }: { data: ResumeData }) {
 
       case 'additionalInfo':
         return data.additionalInfo && (data.additionalInfo.languages || data.additionalInfo.interests) ? (
-          <div className="mb-6" key="additionalInfo">
+          <div className="resume-section resume-section-additionalInfo mb-6" key="additionalInfo">
             <h2 className="text-xs font-black text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-1 mb-3">Additional Info</h2>
             <div className="space-y-1.5 text-[10px] text-slate-650">
               {data.additionalInfo.languages && (
@@ -2717,11 +2873,11 @@ function ProductManagerPro({ data }: { data: ResumeData }) {
         <p className="text-purple-700 font-extrabold text-xs uppercase tracking-widest">{data.personalInfo.title}</p>
         
         <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 mt-3 text-slate-500 text-[9.5px]">
-          <span>{data.personalInfo.email}</span>
+          <span className="resume-target-email">{data.personalInfo.email}</span>
           <span>•</span>
-          <span>{data.personalInfo.phone}</span>
+          <span className="resume-target-phone">{data.personalInfo.phone}</span>
           <span>•</span>
-          <span>{data.personalInfo.location}</span>
+          <span className="resume-target-location">{data.personalInfo.location}</span>
           {data.personalInfo.linkedin && (
             <>
               <span>•</span>
@@ -2735,3 +2891,6 @@ function ProductManagerPro({ data }: { data: ResumeData }) {
     </div>
   );
 }
+
+
+

@@ -15,6 +15,7 @@ CREATE TABLE public.resumes (
   template_version text DEFAULT '1.0.0'::text NOT NULL,
   status text DEFAULT 'draft'::text NOT NULL,
   resume_data jsonb DEFAULT '{}'::jsonb NOT NULL,
+  file_hash text,
   created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
   updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
 );
@@ -28,8 +29,15 @@ CREATE POLICY "Users can insert own resumes" ON public.resumes FOR INSERT WITH C
 CREATE POLICY "Users can update own resumes" ON public.resumes FOR UPDATE USING (auth.uid() = user_id);
 CREATE POLICY "Users can delete own resumes" ON public.resumes FOR DELETE USING (auth.uid() = user_id);`;
 
-export async function GET(request: NextRequest) {
+async function getAuthUser(request: NextRequest) {
   try {
+    const authHeader = request.headers.get('Authorization');
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7);
+      const { data: { user: tokenUser } } = await supabaseAdmin.auth.getUser(token);
+      if (tokenUser) return tokenUser;
+    }
+
     const cookieStore = await cookies();
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -45,8 +53,17 @@ export async function GET(request: NextRequest) {
         },
       }
     );
-
     const { data: { user } } = await supabase.auth.getUser();
+    return user;
+  } catch (err) {
+    console.error('Error resolving auth user in resumes API:', err);
+    return null;
+  }
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const user = await getAuthUser(request);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -85,8 +102,10 @@ export async function GET(request: NextRequest) {
       console.error('[API-GET] Database error fetching resumes:', error);
       if (
         error.code === '42P01' ||
+        error.code === '42703' ||
         error.code === 'PGRST204' ||
         error.message?.includes('relation "public.resumes" does not exist') ||
+        error.message?.includes('column') ||
         (error.message?.includes('Could not find') && error.message?.includes('schema cache'))
       ) {
         return NextResponse.json({
@@ -110,23 +129,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return cookieStore.getAll().map((c) => ({
-              name: c.name,
-              value: c.value,
-            }));
-          },
-        },
-      }
-    );
-
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getAuthUser(request);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -151,7 +154,7 @@ export async function POST(request: NextRequest) {
 
     const initialResumeData = {
       personalInfo: {
-        fullName: profile?.full_name || user.user_metadata?.full_name || 'Vamsi Krishna Tadisetti',
+        fullName: profile?.full_name || user.user_metadata?.full_name || '',
         title: role,
         email: user.email || '',
         phone: '',
@@ -175,7 +178,7 @@ export async function POST(request: NextRequest) {
         category,
         role,
         status: 'draft',
-        template_id: null,
+        template_id: body.templateId || body.template_id || null,
         template_version: '1.0.0',
         resume_data: initialResumeData
       })
@@ -186,8 +189,10 @@ export async function POST(request: NextRequest) {
       console.error('[API-POST] Database error inserting resume:', error);
       if (
         error.code === '42P01' ||
+        error.code === '42703' ||
         error.code === 'PGRST204' ||
         error.message?.includes('relation "public.resumes" does not exist') ||
+        error.message?.includes('column') ||
         (error.message?.includes('Could not find') && error.message?.includes('schema cache'))
       ) {
         return NextResponse.json({
@@ -211,23 +216,7 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return cookieStore.getAll().map((c) => ({
-              name: c.name,
-              value: c.value,
-            }));
-          },
-        },
-      }
-    );
-
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getAuthUser(request);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -260,8 +249,10 @@ export async function PUT(request: NextRequest) {
       console.error('[API-PUT] Database error updating resume:', error);
       if (
         error.code === '42P01' ||
+        error.code === '42703' ||
         error.code === 'PGRST204' ||
         error.message?.includes('relation "public.resumes" does not exist') ||
+        error.message?.includes('column') ||
         (error.message?.includes('Could not find') && error.message?.includes('schema cache'))
       ) {
         return NextResponse.json({

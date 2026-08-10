@@ -1,4 +1,9 @@
 export interface LegacyParsedData {
+  classification?: {
+    documentType: string;
+    isResume: boolean;
+    confidence: number;
+  };
   personal: {
     fullName: string;
     email: string;
@@ -7,6 +12,10 @@ export interface LegacyParsedData {
     github: string;
     website: string;
     address: string;
+    headline: {
+      value: string;
+      confidence: number;
+    };
   };
   summary: string;
   experience: Array<{
@@ -309,7 +318,11 @@ export function parseWithLegacyRegex(rawText: string): LegacyParsedData {
       linkedin,
       github,
       website: '',
-      address: location
+      address: location,
+      headline: {
+        value: '',
+        confidence: 0.0
+      }
     },
     summary: summaryText,
     experience: experienceList,

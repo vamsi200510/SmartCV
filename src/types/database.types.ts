@@ -34,6 +34,7 @@ export interface Resume {
   template_version: string;
   status: string; // 'draft' | 'completed'
   resume_data?: any; // JSONB fields
+  file_hash?: string | null;
   created_at: string;
   updated_at: string;
 }
