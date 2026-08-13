@@ -157,8 +157,8 @@ export default function LandingPage() {
         </AnimatePresence>
       </header>
 
-      {/* ── HERO SECTION (Cream Background #FFFDD0) ── */}
-      <section className="relative pt-36 pb-20 px-6 overflow-hidden min-h-[92vh] flex items-center bg-[#FFFDD0]">
+      {/* ── HERO SECTION (Plain White Background) ── */}
+      <section className="relative pt-36 pb-20 px-6 overflow-hidden min-h-[92vh] flex items-center bg-white">
         <div className="max-w-7xl mx-auto w-full relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
 
@@ -292,8 +292,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── TRUSTED BY & STATS (Cream Background #FFFDD0) ── */}
-      <section className="py-12 px-6 bg-[#FFFDD0] border-t border-slate-200">
+      {/* ── TRUSTED BY & STATS (Plain White Background) ── */}
+      <section className="py-12 px-6 bg-white border-t border-slate-200">
         <div className="max-w-5xl mx-auto space-y-6">
           <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
             <p className="text-center text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-6">
@@ -344,8 +344,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── BENTO FEATURES (Cream Background #FFFDD0) ── */}
-      <section id="features" className="py-20 px-6 bg-[#FFFDD0] border-t border-slate-200">
+      {/* ── BENTO FEATURES (Plain White Background) ── */}
+      <section id="features" className="py-20 px-6 bg-white border-t border-slate-200">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
@@ -469,8 +469,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── HOW IT WORKS (Cream Background #FFFDD0) ── */}
-      <section id="how-it-works" className="py-20 px-6 bg-[#FFFDD0] border-t border-slate-200">
+      {/* ── HOW IT WORKS (Plain White Background) ── */}
+      <section id="how-it-works" className="py-20 px-6 bg-white border-t border-slate-200">
         <div className="max-w-5xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-14">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-[11px] font-bold text-amber-800 mb-3">How It Works</span>
@@ -495,8 +495,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── ATS PREVIEW (Cream Background #FFFDD0) ── */}
-      <section className="py-20 px-6 bg-[#FFFDD0] border-t border-slate-200">
+      {/* ── ATS PREVIEW (Plain White Background) ── */}
+      <section className="py-20 px-6 bg-white border-t border-slate-200">
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }}>
@@ -574,8 +574,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── TEMPLATES (Cream Background #FFFDD0) ── */}
-      <section id="templates" className="py-20 px-6 bg-[#FFFDD0] border-t border-slate-200">
+      {/* ── TEMPLATES (Plain White Background) ── */}
+      <section id="templates" className="py-20 px-6 bg-white border-t border-slate-200">
         <div className="max-w-7xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
             className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
@@ -617,8 +617,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── REAL PLATFORM HIGHLIGHTS (Cream Background #FFFDD0) ── */}
-      <section className="py-20 px-6 bg-[#FFFDD0] border-t border-slate-200">
+      {/* ── REAL PLATFORM HIGHLIGHTS (Plain White Background) ── */}
+      <section className="py-20 px-6 bg-white border-t border-slate-200">
         <div className="max-w-7xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 border border-purple-200 text-[11px] font-bold text-[#7C3AED] mb-3">Capabilities</span>
@@ -661,8 +661,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── FAQ (Cream Background #FFFDD0) ── */}
-      <section className="py-20 px-6 bg-[#FFFDD0] border-t border-slate-200">
+      {/* ── FAQ (Plain White Background) ── */}
+      <section className="py-20 px-6 bg-white border-t border-slate-200">
         <div className="max-w-3xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 border border-purple-200 text-[11px] font-bold text-[#7C3AED] mb-3">FAQ</span>

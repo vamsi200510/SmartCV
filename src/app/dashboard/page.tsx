@@ -557,7 +557,7 @@ export default function DashboardPage() {
   // ── RENDER ─────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-[#FFFDD0] text-[#0F172A]" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
+    <div className="min-h-screen bg-white text-[#0F172A]" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
 
       {/* ============================================================
           TOP NAVIGATION — Floating Liquid Glass Nav Bar

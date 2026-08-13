@@ -35,7 +35,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-full flex flex-col bg-[#FFFDD0] text-[#0F172A]">
+      <body className="min-h-full flex flex-col bg-white text-[#0F172A]">
 
         {/* Hidden SVG filters for liquid glass displacement distortion */}
         <svg

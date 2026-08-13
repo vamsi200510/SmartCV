@@ -195,7 +195,7 @@ export default function TemplatesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FFFDD0] flex flex-col justify-between text-[#0F172A] relative overflow-x-hidden" style={{ fontFamily: "'Inter', -apple-system, sans-serif" }}>
+    <div className="min-h-screen bg-white flex flex-col justify-between text-[#0F172A] relative overflow-x-hidden" style={{ fontFamily: "'Inter', -apple-system, sans-serif" }}>
 
       {/* Floating Liquid Glass Top Header */}
       <header className="fixed top-4 inset-x-0 z-40 px-4 sm:px-6 max-w-5xl mx-auto pointer-events-none">

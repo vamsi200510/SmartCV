@@ -212,7 +212,7 @@ export default function ProfilePage() {
   const initials = fullName ? fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : 'U';
 
   return (
-    <div className="min-h-screen bg-[#FFFDD0] text-[#0F172A]" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
+    <div className="min-h-screen bg-white text-[#0F172A]" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
       {/* Floating Liquid Glass Top Header */}
       <header className="fixed top-4 inset-x-0 z-50 px-4 sm:px-6 max-w-3xl mx-auto pointer-events-none">
         <div className="liquid-glass-surface rounded-[24px] px-5 py-2.5 flex items-center justify-between shadow-lg pointer-events-auto border border-white/70">

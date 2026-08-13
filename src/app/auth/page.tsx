@@ -40,7 +40,7 @@ function AuthLeftPanel() {
   return (
     <div className="hidden lg:flex flex-col relative overflow-hidden"
       style={{
-        background: '#F6F4C8'
+        background: '#F8FAFC'
       }}>
 
       {/* Grid texture */}
@@ -368,7 +368,7 @@ export default function AuthPage() {
   const labelCls = "block text-[11px] font-bold text-[#64748B] mb-1.5 uppercase tracking-wider";
 
   return (
-    <div className="min-h-screen bg-[#FFFDD0] text-[#0F172A] font-[Inter,sans-serif] overflow-hidden relative" style={{ fontFamily: "'Inter', -apple-system, sans-serif" }}>
+    <div className="min-h-screen bg-white text-[#0F172A] font-[Inter,sans-serif] overflow-hidden relative" style={{ fontFamily: "'Inter', -apple-system, sans-serif" }}>
       <MouseGlow />
       <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2">
         {/* LEFT: Branding */}

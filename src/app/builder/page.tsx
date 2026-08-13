@@ -663,7 +663,7 @@ export default function BuilderPage() {
   );
 
   return (
-    <div className="h-screen max-h-screen overflow-hidden flex flex-col font-[Inter,sans-serif] bg-[#FFFDD0] text-[#0F172A]">
+    <div className="h-screen max-h-screen overflow-hidden flex flex-col font-[Inter,sans-serif] bg-slate-50 text-[#0F172A]">
       {/* Subtle dot grid */}
       <div className="fixed inset-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #D5D2A0 0.8px, transparent 0.8px)', backgroundSize: '22px 22px', opacity: 0.35 }} />
 

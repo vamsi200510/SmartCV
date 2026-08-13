@@ -45,23 +45,23 @@
   --smart-slate: #1E1035;
   --smart-navy: #130826;
 
-  /* ── Clean Modern Application Environment Backgrounds (Cream #FFFDD0) ── */
-  --bg-dashboard: #FFFDD0;
-  --bg-templates: #FFFDD0;
-  --bg-builder: #FFFDD0;
-  --bg-profile: #FFFDD0;
-  --bg-settings: #FFFDD0;
-  --bg-landing-hero: #FFFDD0;
-  --bg-landing-features: #FFFDD0;
-  --bg-landing-steps: #FFFDD0;
-  --bg-landing-ats: #FFFDD0;
-  --bg-landing-templates: #FFFDD0;
-  --bg-landing-testimonials: #FFFDD0;
+  /* ── Clean Plain White Environment Backgrounds (#FFFFFF) ── */
+  --bg-dashboard: #FFFFFF;
+  --bg-templates: #FFFFFF;
+  --bg-builder: #FFFFFF;
+  --bg-profile: #FFFFFF;
+  --bg-settings: #FFFFFF;
+  --bg-landing-hero: #FFFFFF;
+  --bg-landing-features: #FFFFFF;
+  --bg-landing-steps: #FFFFFF;
+  --bg-landing-ats: #FFFFFF;
+  --bg-landing-templates: #FFFFFF;
+  --bg-landing-testimonials: #FFFFFF;
   --bg-dark-cta: #1E1035;
   --bg-dark-footer: #130826;
 
-  --bg: #FFFDD0;
-  --bg-secondary: #F6F4C8;
+  --bg: #FFFFFF;
+  --bg-secondary: #F8FAFC;
 
   /* ── Core Surface Tones (Thick Pure Solid White) ────────────── */
   --surface: #FFFFFF;
@@ -161,7 +161,7 @@ html {
 }
 
 body {
-  background: #FFFDD0;
+  background: #FFFFFF;
   color: var(--smart-ink);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   line-height: 1.6;
@@ -185,20 +185,20 @@ body {
    SOLID ENVIRONMENT SECTIONS (CLEAN MODERN APPLICATION ZONES)
    ============================================================ */
 
-.dashboard-environment { background-color: #FFFDD0; }
-.templates-environment { background-color: #FFFDD0; }
-.builder-environment { background-color: #FFFDD0; }
-.profile-environment { background-color: #FFFDD0; }
-.settings-environment { background-color: #FFFDD0; }
+.dashboard-environment { background-color: #FFFFFF; }
+.templates-environment { background-color: #FFFFFF; }
+.builder-environment { background-color: #FFFFFF; }
+.profile-environment { background-color: #FFFFFF; }
+.settings-environment { background-color: #FFFFFF; }
 
-.landing-environment-a { background-color: #FFFDD0; } /* Hero */
-.landing-environment-b { background-color: #FFFDD0; } /* Features */
-.landing-environment-c { background-color: #FFFDD0; } /* How It Works */
-.landing-environment-d { background-color: #FFFDD0; } /* ATS Section */
-.landing-environment-e { background-color: #FFFDD0; } /* Templates / Highlights */
+.landing-environment-a { background-color: #FFFFFF; } /* Hero */
+.landing-environment-b { background-color: #FFFFFF; } /* Features */
+.landing-environment-c { background-color: #FFFFFF; } /* How It Works */
+.landing-environment-d { background-color: #FFFFFF; } /* ATS Section */
+.landing-environment-e { background-color: #FFFFFF; } /* Templates / Highlights */
 
 .dark-cta-section { background-color: #1E1035; color: #FFFFFF; }
-.dark-footer-section { background-color: #130826; color: #FFFDD0; }
+.dark-footer-section { background-color: #130826; color: #FFFFFF; }
 
 /* ============================================================
    SOLID SURFACE & CARD CLASSES (THICK PURE SOLID WHITE)
