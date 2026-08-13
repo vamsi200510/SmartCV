@@ -111,25 +111,25 @@ function DraggableSectionRow({
       value={sectionId}
       dragListener={false}
       dragControls={controls}
-      className="flex items-center gap-2 bg-[#F9FAFB] border border-[#ECEDF3] rounded-xl px-3 py-2.5 cursor-default select-none"
+      className="flex items-center gap-2 liquid-glass-card-secondary rounded-xl px-3 py-2.5 cursor-default select-none shadow-xs"
       style={{ touchAction: 'none' }}
       whileDrag={{ scale: 1.02, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 50 }}
     >
       <button
         onPointerDown={(e) => controls.start(e)}
-        className="text-[#C4C7D4] hover:text-[#6B7280] transition-colors cursor-grab active:cursor-grabbing touch-none p-0.5 shrink-0"
+        className="text-[#94A3B8] hover:text-[#0F172A] transition-colors cursor-grab active:cursor-grabbing touch-none p-0.5 shrink-0"
         aria-label="Drag to reorder"
       >
         <GripVertical size={14} />
       </button>
-      <span className="flex-1 text-sm font-medium text-[#374151]">
+      <span className="flex-1 text-xs font-bold text-[#0F172A]">
         {SECTION_LABELS[sectionId] ?? sectionId}
       </span>
       <div className="flex items-center gap-0.5">
         <button
           onClick={onMoveUp}
           disabled={index === 0}
-          className="p-1 rounded-lg text-[#9CA3AF] hover:text-[#2563EB] hover:bg-white disabled:opacity-25 transition-colors"
+          className="p-1 rounded-lg text-[#64748B] hover:text-[#2563EB] hover:bg-white/60 disabled:opacity-25 transition-colors cursor-pointer"
           aria-label="Move section up"
         >
           <ArrowUp size={12} />
@@ -137,7 +137,7 @@ function DraggableSectionRow({
         <button
           onClick={onMoveDown}
           disabled={index === total - 1}
-          className="p-1 rounded-lg text-[#9CA3AF] hover:text-[#2563EB] hover:bg-white disabled:opacity-25 transition-colors"
+          className="p-1 rounded-lg text-[#64748B] hover:text-[#2563EB] hover:bg-white/60 disabled:opacity-25 transition-colors cursor-pointer"
           aria-label="Move section down"
         >
           <ArrowDown size={12} />
@@ -184,16 +184,16 @@ export default function DesignWorkspace({
   };
 
   return (
-    <div className="h-full flex flex-col bg-[#F9FAFB] rounded-2xl border border-[#ECEDF3] shadow-[0_2px_16px_rgba(0,0,0,0.04)] overflow-hidden">
+    <div className="h-full flex flex-col liquid-glass-card-primary rounded-2xl shadow-md overflow-hidden text-[#0F172A]">
       {/* Header */}
-      <div className="px-5 py-4 border-b border-[#ECEDF3] bg-white shrink-0">
+      <div className="px-5 py-4 border-b border-white/60 bg-white/40 shrink-0">
         <div className="flex items-center gap-2.5">
-          <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-[#6366F1] to-[#2563EB] flex items-center justify-center shrink-0">
+          <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-[#6366F1] to-[#2563EB] flex items-center justify-center shrink-0 shadow-xs">
             <Palette size={15} className="text-white" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-[#111827]">Design Workspace</h3>
-            <p className="text-[11px] text-[#9CA3AF]">All changes update the preview instantly</p>
+            <h3 className="text-sm font-bold text-[#0F172A]">Design Workspace</h3>
+            <p className="text-[11px] text-[#64748B]">All changes update the preview instantly</p>
           </div>
         </div>
       </div>

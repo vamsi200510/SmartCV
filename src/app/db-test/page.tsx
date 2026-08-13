@@ -54,11 +54,11 @@ export default function DbTestPage() {
       <header className="border-b border-slate-900 bg-slate-950/70 backdrop-blur-md sticky top-0 z-50 px-6 py-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-teal-500 to-indigo-600 flex items-center justify-center font-bold text-white shadow-lg shadow-teal-500/20">
+            <div className="h-9 w-9 rounded-xl bg-[#177A73] flex items-center justify-center font-bold text-white shadow-lg shadow-teal-500/20">
               S
             </div>
             <div>
-              <span className="font-bold text-lg tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
+              <span className="font-bold text-lg tracking-tight text-white">
                 SmartCV
               </span>
               <span className="text-xs block text-slate-500 font-medium tracking-wider uppercase">

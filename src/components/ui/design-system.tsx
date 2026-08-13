@@ -5,71 +5,76 @@ import { motion, AnimatePresence, MotionProps } from 'framer-motion';
 import { X, CheckCircle, AlertCircle, AlertTriangle, Info } from 'lucide-react';
 
 // ============================================================
-// 1. MOUSE GLOW — REMOVED (no-op export for compatibility)
+// 1. MOUSE GLOW & ANIMATED SHADER (Preserved for compatibility)
 // ============================================================
 export function MouseGlow() {
   return null;
 }
 
-// ============================================================
-// 2. ANIMATED SHADER — Simplified to subtle dot pattern
-// ============================================================
 export function AnimatedShader() {
-  return (
-    <div className="fixed inset-0 -z-50 bg-[#F7F8FC]" />
-  );
+  return null;
 }
 
 // ============================================================
-// 3. BUTTON — Clean, solid, no gradients
+// 2. BUTTON — Apple Liquid Glass Controls
 // ============================================================
-type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'glass' | 'gradient' | 'ghost' | 'danger' | 'success';
-type ButtonSize = 'xs' | 'sm' | 'md' | 'lg';
+export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'glass' | 'gradient' | 'ghost' | 'danger' | 'success';
+export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg';
 
-interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, keyof MotionProps> {
+export interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, keyof MotionProps> {
   variant?: ButtonVariant;
   size?: ButtonSize;
   loading?: boolean;
-  children: React.ReactNode;
+  icon?: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ variant = 'primary', size = 'md', className = '', children, loading, disabled, ...props }, ref) => {
-    const base = "relative inline-flex items-center justify-center font-semibold transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:pointer-events-none cursor-pointer select-none";
+  ({ variant = 'primary', size = 'md', className = '', children, icon, loading, disabled, ...props }, ref) => {
+    const base = "liquid-glass-interactive font-semibold focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-40 disabled:pointer-events-none cursor-pointer select-none";
 
     const sizes: Record<ButtonSize, string> = {
-      xs: "px-3 py-1.5 text-[11px] gap-1 rounded-lg",
-      sm: "px-4 py-2 text-xs gap-1.5 rounded-xl",
-      md: "px-5 py-2.5 text-sm gap-2 rounded-xl",
-      lg: "px-6 py-3 text-sm gap-2 rounded-xl",
+      xs: "px-3 py-1 text-[11px] gap-1 rounded-full",
+      sm: "px-3.5 py-1.5 text-xs gap-1.5 rounded-full",
+      md: "px-5 py-2.5 text-xs font-semibold gap-2 rounded-full",
+      lg: "px-6 py-3 text-sm font-semibold gap-2.5 rounded-full",
     };
 
     const variants: Record<ButtonVariant, string> = {
-      primary: "bg-[#2563EB] text-white hover:bg-[#1D4ED8] focus:ring-blue-500/30 shadow-xs",
-      secondary: "bg-white text-[#374151] border border-[#ECEDF3] hover:border-[#DDDEE8] hover:bg-[#FAFBFE] focus:ring-gray-200",
-      outline: "border border-[#2563EB] text-[#2563EB] bg-transparent hover:bg-blue-50 focus:ring-blue-500/30",
-      glass: "liquid-glass-interactive liquid-glass-pill text-[#1E293B] hover:text-[#0F172A]",
-      gradient: "bg-[#2563EB] text-white hover:bg-[#1D4ED8] focus:ring-blue-500/30 shadow-xs",
-      ghost: "text-[#6B7280] hover:text-[#111827] hover:bg-[#F0F1F8] focus:ring-gray-200",
-      danger: "bg-[#EF4444] text-white hover:bg-[#DC2626] focus:ring-red-500/30",
-      success: "bg-[#22C55E] text-white hover:bg-[#16A34A] focus:ring-green-500 shadow-sm",
+      primary: "rounded-full text-white bg-[#7650A8] hover:bg-[#623E94] shadow-sm border border-[#623E94]/30",
+      secondary: "rounded-full text-[#172B4D] bg-[#FFFFFF] border border-[#BFD5E8] hover:bg-slate-50 shadow-xs",
+      outline: "rounded-full text-[#7650A8] bg-white border border-[#7650A8]/40 hover:bg-[#E9DDF4]/40",
+      glass: "liquid-glass-pill text-[#172B4D] bg-white border-white/70 hover:bg-white shadow-xs",
+      gradient: "rounded-full text-white bg-[#7650A8] hover:bg-[#623E94] shadow-sm",
+      ghost: "text-[#405A73] hover:text-[#172B4D] rounded-full hover:bg-white/40 border border-transparent shadow-none",
+      danger: "rounded-full text-white bg-[#A84B55] hover:bg-[#8F3F48] shadow-xs border border-[#8F3F48]/30",
+      success: "rounded-full text-white bg-[#21877B] hover:bg-[#1D6E67] shadow-xs border border-[#1D6E67]/30",
     };
 
     return (
       <motion.button
         ref={ref}
-        whileTap={{ scale: 0.98 }}
+        whileHover={disabled || loading ? {} : { y: -1 }}
+        whileTap={disabled || loading ? {} : { scale: 0.985 }}
+        transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
         disabled={disabled || loading}
         className={`${base} ${sizes[size]} ${variants[variant]} ${className}`}
         {...(props as MotionProps & React.ButtonHTMLAttributes<HTMLButtonElement>)}
       >
-        {loading && (
-          <svg className="animate-spin h-3.5 w-3.5 mr-1 text-current" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-          </svg>
-        )}
-        {children}
+        <span className="liquid-glass-specular" aria-hidden="true" />
+        <span className="liquid-glass-refraction" aria-hidden="true" />
+
+        <span className="relative z-10 flex items-center justify-center gap-1.5 leading-none liquid-glass-content">
+          {loading ? (
+            <svg className="animate-spin h-3.5 w-3.5 text-current shrink-0" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+          ) : icon ? (
+            <span className="liquid-glass-icon-wrapper shrink-0">{icon}</span>
+          ) : null}
+          {children}
+        </span>
       </motion.button>
     );
   }
@@ -77,10 +82,11 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 Button.displayName = 'Button';
 
 // ============================================================
-// 4. CARD — Clean, minimal hover
+// 3. CARD — Apple Liquid Glass Layered Surfaces
 // ============================================================
-interface CardProps {
+export interface CardProps {
   className?: string;
+  variant?: 'primary' | 'secondary' | 'nested' | 'floating' | 'plain';
   hover?: boolean;
   glow?: boolean;
   padding?: boolean;
@@ -91,39 +97,57 @@ interface CardProps {
 
 export function Card({
   className = '',
+  variant = 'primary',
   hover = true,
   padding = false,
   children,
   onClick,
   style,
 }: CardProps) {
+  const getVariantClass = () => {
+    switch (variant) {
+      case 'secondary':
+        return 'liquid-glass-card-secondary';
+      case 'nested':
+        return 'liquid-glass-card-nested';
+      case 'floating':
+        return 'liquid-glass-card-floating';
+      case 'plain':
+        return 'bg-white rounded-2xl border border-[#ECEDF3]';
+      case 'primary':
+      default:
+        return 'liquid-glass-card-primary';
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-      whileHover={hover ? { y: -2, transition: { duration: 0.15 } } : undefined}
+      whileHover={hover && onClick ? { y: -2, scale: 1.008, transition: { duration: 0.16 } } : undefined}
       onClick={onClick}
       style={style}
       className={`
-        relative bg-white rounded-2xl border border-[#ECEDF3] overflow-hidden
-        shadow-[0_1px_3px_rgba(0,0,0,0.02)]
-        ${hover ? 'hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] hover:border-[#DDDEE8] transition-all duration-250 cursor-pointer' : ''}
+        overflow-hidden
+        ${getVariantClass()}
+        ${hover && onClick ? 'cursor-pointer' : ''}
         ${padding ? 'p-6' : ''}
         ${className}
       `}
     >
-      {children}
+      <span className="liquid-glass-specular" aria-hidden="true" style={{ opacity: 0.4 }} />
+      <div className="relative z-10">{children}</div>
     </motion.div>
   );
 }
 
 // ============================================================
-// 5. BADGE
+// 4. BADGE — Translucent Glass Capsule Badges
 // ============================================================
-type BadgeVariant = 'primary' | 'blue' | 'secondary' | 'success' | 'warning' | 'danger' | 'purple' | 'cyan' | 'amber';
+export type BadgeVariant = 'primary' | 'blue' | 'secondary' | 'success' | 'warning' | 'danger' | 'purple' | 'cyan' | 'amber';
 
-interface BadgeProps {
+export interface BadgeProps {
   variant?: BadgeVariant;
   size?: 'sm' | 'md';
   children: React.ReactNode;
@@ -133,38 +157,38 @@ interface BadgeProps {
 
 export function Badge({ variant = 'primary', size = 'sm', children, className = '', dot }: BadgeProps) {
   const styles: Record<BadgeVariant, string> = {
-    primary: 'bg-blue-50 text-blue-700 border border-blue-100',
-    blue: 'bg-blue-50 text-blue-700 border border-blue-100',
-    secondary: 'bg-gray-100 text-gray-600 border border-gray-200',
-    success: 'bg-emerald-50 text-emerald-700 border border-emerald-100',
-    warning: 'bg-amber-50 text-amber-700 border border-amber-100',
-    danger: 'bg-red-50 text-red-700 border border-red-100',
-    purple: 'bg-purple-50 text-purple-700 border border-purple-100',
-    cyan: 'bg-cyan-50 text-cyan-700 border border-cyan-100',
-    amber: 'bg-orange-50 text-orange-700 border border-orange-100',
+    primary: 'bg-blue-500/10 text-blue-700 border-blue-200/60',
+    blue: 'bg-blue-500/10 text-blue-700 border-blue-200/60',
+    secondary: 'bg-slate-500/10 text-slate-700 border-slate-200/60',
+    success: 'bg-emerald-500/10 text-emerald-700 border-emerald-200/60',
+    warning: 'bg-amber-500/10 text-amber-700 border-amber-200/60',
+    danger: 'bg-red-500/10 text-red-700 border-red-200/60',
+    purple: 'bg-purple-500/10 text-purple-700 border-purple-200/60',
+    cyan: 'bg-cyan-500/10 text-cyan-700 border-cyan-200/60',
+    amber: 'bg-orange-500/10 text-orange-700 border-orange-200/60',
   };
 
   const dotColors: Record<BadgeVariant, string> = {
-    primary: 'bg-blue-500', blue: 'bg-blue-500', secondary: 'bg-gray-400', success: 'bg-emerald-500',
+    primary: 'bg-blue-500', blue: 'bg-blue-500', secondary: 'bg-slate-400', success: 'bg-emerald-500',
     warning: 'bg-amber-500', danger: 'bg-red-500', purple: 'bg-purple-500',
     cyan: 'bg-cyan-500', amber: 'bg-orange-500'
   };
 
   const sizes = {
-    sm: 'px-2 py-0.5 text-[11px] gap-1.5',
-    md: 'px-2.5 py-1 text-xs gap-2',
+    sm: 'px-2.5 py-0.5 text-[11px] gap-1.5',
+    md: 'px-3 py-1 text-xs gap-2',
   };
 
   return (
-    <span className={`inline-flex items-center font-medium rounded-md ${sizes[size]} ${styles[variant]} ${className}`}>
-      {dot && <span className={`h-1.5 w-1.5 rounded-full ${dotColors[variant]}`} />}
+    <span className={`inline-flex items-center font-semibold rounded-full border backdrop-blur-md shadow-xs ${sizes[size]} ${styles[variant]} ${className}`}>
+      {dot && <span className={`h-1.5 w-1.5 rounded-full shrink-0 shadow-xs ${dotColors[variant]}`} />}
       {children}
     </span>
   );
 }
 
 // ============================================================
-// 6. PROGRESS BAR
+// 5. PROGRESS BAR
 // ============================================================
 export function ProgressBar({ value, max = 100, className = '', color = 'primary' }: {
   value: number;
@@ -174,26 +198,26 @@ export function ProgressBar({ value, max = 100, className = '', color = 'primary
 }) {
   const percent = Math.min(100, Math.max(0, (value / max) * 100));
   const colors = {
-    primary: 'bg-[#2563EB]',
-    gradient: 'bg-[#2563EB]',
-    success: 'bg-[#22C55E]',
-    warning: 'bg-[#F59E0B]',
+    primary: 'bg-[#315E9B]',
+    gradient: 'bg-[#69468C]',
+    success: 'bg-[#177A73]',
+    warning: 'bg-[#9A7134]',
   };
 
   return (
-    <div className={`w-full bg-gray-100 rounded-full h-1.5 overflow-hidden ${className}`}>
+    <div className={`w-full bg-slate-200/60 backdrop-blur-sm rounded-full h-2 overflow-hidden border border-white/60 p-0.5 ${className}`}>
       <motion.div
         initial={{ width: 0 }}
         animate={{ width: `${percent}%` }}
         transition={{ duration: 0.8, ease: 'easeOut', delay: 0.1 }}
-        className={`h-full rounded-full ${colors[color]}`}
+        className={`h-full rounded-full ${colors[color]} shadow-xs`}
       />
     </div>
   );
 }
 
 // ============================================================
-// 7. SECTION HEADER
+// 6. SECTION HEADER
 // ============================================================
 export function SectionHeader({ title, subtitle, action, className = '' }: {
   title: string;
@@ -204,8 +228,8 @@ export function SectionHeader({ title, subtitle, action, className = '' }: {
   return (
     <div className={`flex flex-col sm:flex-row justify-between sm:items-end gap-3 mb-6 ${className}`}>
       <div>
-        <h2 className="text-lg font-semibold tracking-tight text-[#111827]">{title}</h2>
-        {subtitle && <p className="mt-0.5 text-sm text-[#6B7280]">{subtitle}</p>}
+        <h2 className="text-lg font-bold tracking-tight text-[#0F172A]">{title}</h2>
+        {subtitle && <p className="mt-0.5 text-xs text-[#64748B]">{subtitle}</p>}
       </div>
       {action && <div className="flex items-center gap-2 shrink-0">{action}</div>}
     </div>
@@ -213,7 +237,7 @@ export function SectionHeader({ title, subtitle, action, className = '' }: {
 }
 
 // ============================================================
-// 8. STATS CARD
+// 7. STATS CARD — Liquid Glass Finish
 // ============================================================
 export function StatsCard({ title, value, subtitle, icon, trend, className = '' }: {
   title: string;
@@ -224,14 +248,14 @@ export function StatsCard({ title, value, subtitle, icon, trend, className = '' 
   className?: string;
 }) {
   return (
-    <Card padding className={className}>
+    <Card padding variant="primary" className={className}>
       <div className="flex justify-between items-start">
         <div>
-          <p className="text-xs font-medium text-[#6B7280] mb-1">{title}</p>
-          <p className="text-2xl font-semibold text-[#111827] tracking-tight">{value}</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-[#64748B] mb-1">{title}</p>
+          <p className="text-2xl font-black text-[#0F172A] tracking-tight">{value}</p>
         </div>
         {icon && (
-          <div className="w-9 h-9 rounded-lg bg-[#F3F4F6] flex items-center justify-center text-[#6B7280]">
+          <div className="w-10 h-10 rounded-2xl liquid-glass-circle flex items-center justify-center text-[#2563EB] shrink-0">
             {icon}
           </div>
         )}
@@ -239,9 +263,9 @@ export function StatsCard({ title, value, subtitle, icon, trend, className = '' 
       {(subtitle || trend) && (
         <div className="mt-3 flex items-center gap-2 text-xs">
           {trend && (
-            <span className={`font-medium ${trend.positive ? 'text-emerald-600' : 'text-red-500'}`}>{trend.value}</span>
+            <span className={`font-semibold ${trend.positive ? 'text-emerald-600' : 'text-rose-600'}`}>{trend.value}</span>
           )}
-          {subtitle && <span className="text-[#6B7280]">{subtitle}</span>}
+          {subtitle && <span className="text-[#64748B] font-medium">{subtitle}</span>}
         </div>
       )}
     </Card>
@@ -249,33 +273,33 @@ export function StatsCard({ title, value, subtitle, icon, trend, className = '' 
 }
 
 // ============================================================
-// 9. SKELETON LOADER
+// 8. SKELETON LOADER
 // ============================================================
 export function Skeleton({ className = '' }: { className?: string }) {
-  return <div className={`skeleton rounded-lg ${className}`} />;
+  return <div className={`skeleton ${className}`} />;
 }
 
 export function SkeletonCard() {
   return (
-    <div className="bg-white rounded-xl border border-[#E5E7EB] p-4 space-y-3">
+    <div className="liquid-glass-card-primary p-4 space-y-3">
       <div className="flex items-center gap-3">
-        <Skeleton className="w-9 h-9 rounded-lg" />
+        <Skeleton className="w-10 h-10 rounded-2xl" />
         <div className="flex-1 space-y-2">
-          <Skeleton className="h-3 w-3/4" />
-          <Skeleton className="h-2.5 w-1/2" />
+          <Skeleton className="h-3.5 w-3/4 rounded-full" />
+          <Skeleton className="h-2.5 w-1/2 rounded-full" />
         </div>
       </div>
-      <Skeleton className="h-20 w-full rounded-lg" />
+      <Skeleton className="h-20 w-full rounded-xl" />
       <div className="flex gap-2">
-        <Skeleton className="h-7 flex-1 rounded-md" />
-        <Skeleton className="h-7 flex-1 rounded-md" />
+        <Skeleton className="h-8 flex-1 rounded-full" />
+        <Skeleton className="h-8 flex-1 rounded-full" />
       </div>
     </div>
   );
 }
 
 // ============================================================
-// 10. MODAL CONTAINER
+// 9. MODAL CONTAINER — Floating Apple Glass Sheet
 // ============================================================
 export function ModalContainer({ isOpen, onClose, children, size = 'md' }: {
   isOpen: boolean;
@@ -313,14 +337,14 @@ export function ModalContainer({ isOpen, onClose, children, size = 'md' }: {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/20 backdrop-blur-sm"
+            className="fixed inset-0 bg-slate-900/30 backdrop-blur-md"
           />
           <motion.div
-            initial={{ opacity: 0, scale: 0.96, y: 8 }}
+            initial={{ opacity: 0, scale: 0.95, y: 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.96, y: 8 }}
-            transition={{ type: 'spring', duration: 0.3, bounce: 0.1 }}
-            className={`relative z-10 w-full ${sizes[size]} bg-white border border-[#E5E7EB] rounded-xl shadow-xl p-6`}
+            exit={{ opacity: 0, scale: 0.95, y: 12 }}
+            transition={{ type: 'spring', duration: 0.35, bounce: 0.1 }}
+            className={`relative z-10 w-full ${sizes[size]} liquid-glass-card-floating p-6`}
           >
             {children}
           </motion.div>
@@ -331,9 +355,9 @@ export function ModalContainer({ isOpen, onClose, children, size = 'md' }: {
 }
 
 // ============================================================
-// 11. CONFIRM DIALOG
+// 10. CONFIRM DIALOG
 // ============================================================
-interface ConfirmDialogProps {
+export interface ConfirmDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
@@ -354,10 +378,10 @@ export function ConfirmDialog({
     <ModalContainer isOpen={isOpen} onClose={onClose} size="sm">
       <div className="space-y-4">
         <div>
-          <h3 className="text-base font-semibold text-[#111827]">{title}</h3>
-          <p className="mt-1 text-sm text-[#6B7280] leading-relaxed">{description}</p>
+          <h3 className="text-base font-bold text-[#0F172A]">{title}</h3>
+          <p className="mt-1 text-xs text-[#64748B] leading-relaxed">{description}</p>
         </div>
-        <div className="flex items-center gap-3 justify-end pt-2">
+        <div className="flex items-center gap-2.5 justify-end pt-2">
           <Button variant="secondary" size="sm" onClick={onClose} disabled={loading}>
             {cancelLabel}
           </Button>
@@ -371,9 +395,9 @@ export function ConfirmDialog({
 }
 
 // ============================================================
-// 12. INLINE RENAME INPUT
+// 11. INLINE RENAME INPUT
 // ============================================================
-interface InlineRenameProps {
+export interface InlineRenameProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: (value: string) => void;
@@ -403,19 +427,19 @@ export function InlineRenameDialog({
   return (
     <ModalContainer isOpen={isOpen} onClose={onClose} size="sm">
       <form onSubmit={handleSubmit} className="space-y-4">
-        <h3 className="text-base font-semibold text-[#111827]">{title}</h3>
+        <h3 className="text-base font-bold text-[#0F172A]">{title}</h3>
         <div>
-          <label className="block text-xs font-medium text-[#6B7280] mb-1.5">{label}</label>
+          <label className="block text-xs font-semibold text-[#64748B] mb-1.5">{label}</label>
           <input
             type="text"
             value={value}
             onChange={e => setValue(e.target.value)}
             placeholder={placeholder}
             autoFocus
-            className="w-full h-10 px-3 rounded-lg border border-[#E5E7EB] text-sm text-[#111827] bg-white focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-50 transition shadow-sm"
+            className="w-full h-11 px-3.5 rounded-xl liquid-glass-input text-sm text-[#0F172A] placeholder:text-[#94A3B8]"
           />
         </div>
-        <div className="flex items-center gap-3 justify-end">
+        <div className="flex items-center gap-2.5 justify-end pt-2">
           <Button variant="secondary" size="sm" type="button" onClick={onClose} disabled={loading}>
             Cancel
           </Button>
@@ -429,7 +453,7 @@ export function InlineRenameDialog({
 }
 
 // ============================================================
-// 13. EMPTY STATE
+// 12. EMPTY STATE — Liquid Glass Container
 // ============================================================
 export function EmptyState({ icon, title, description, action }: {
   icon: React.ReactNode;
@@ -441,31 +465,31 @@ export function EmptyState({ icon, title, description, action }: {
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      className="flex flex-col items-center justify-center py-16 px-6 text-center"
+      className="flex flex-col items-center justify-center py-16 px-6 text-center liquid-glass-card-secondary my-4"
     >
-      <div className="w-12 h-12 rounded-xl bg-[#F3F4F6] border border-[#E5E7EB] flex items-center justify-center text-[#9CA3AF] mb-4">
+      <div className="w-14 h-14 rounded-2xl liquid-glass-circle flex items-center justify-center text-[#2563EB] mb-4 shadow-sm">
         {icon}
       </div>
-      <h3 className="text-sm font-semibold text-[#111827] mb-1">{title}</h3>
-      <p className="text-sm text-[#6B7280] max-w-sm mb-5 leading-relaxed">{description}</p>
+      <h3 className="text-sm font-bold text-[#0F172A] mb-1">{title}</h3>
+      <p className="text-xs text-[#64748B] max-w-sm mb-5 leading-relaxed">{description}</p>
       {action}
     </motion.div>
   );
 }
 
 // ============================================================
-// 14. ATS SCORE RING
+// 13. ATS SCORE RING — Liquid Glass Optical Gauge
 // ============================================================
 export function ATSRing({ score, size = 80 }: { score: number; size?: number }) {
-  const radius = (size - 8) / 2;
+  const radius = (size - 10) / 2;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (score / 100) * circumference;
-  const color = score >= 90 ? '#22C55E' : score >= 75 ? '#F59E0B' : '#EF4444';
+  const color = score >= 90 ? '#10B981' : score >= 75 ? '#F59E0B' : '#EF4444';
 
   return (
-    <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
+    <div className="relative inline-flex items-center justify-center liquid-glass-circle shadow-sm" style={{ width: size, height: size }}>
       <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
-        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="#E5E7EB" strokeWidth="4" />
+        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="rgba(203, 213, 225, 0.4)" strokeWidth="4" />
         <motion.circle
           cx={size / 2} cy={size / 2} r={radius} fill="none"
           stroke={color} strokeWidth="4" strokeLinecap="round"
@@ -475,27 +499,27 @@ export function ATSRing({ score, size = 80 }: { score: number; size?: number }) 
           transition={{ duration: 1, ease: 'easeOut', delay: 0.2 }}
         />
       </svg>
-      <div className="absolute flex flex-col items-center">
-        <span className="font-semibold" style={{ color, fontSize: size < 70 ? 12 : 15 }}>{score}</span>
-        <span className="text-[8px] font-medium text-[#9CA3AF] uppercase tracking-wider">ATS</span>
+      <div className="absolute flex flex-col items-center leading-none">
+        <span className="font-extrabold" style={{ color, fontSize: size < 70 ? 11 : 14 }}>{score}</span>
+        <span className="text-[7px] font-bold text-[#94A3B8] uppercase tracking-wider mt-0.5">ATS</span>
       </div>
     </div>
   );
 }
 
 // ============================================================
-// 15. TOAST SYSTEM
+// 14. TOAST SYSTEM — Floating Glass Pill Alerts
 // ============================================================
-type ToastVariant = 'success' | 'error' | 'warning' | 'info';
+export type ToastVariant = 'success' | 'error' | 'warning' | 'info';
 
-interface ToastItem {
+export interface ToastItem {
   id: string;
   message: string;
   variant: ToastVariant;
   duration?: number;
 }
 
-interface ToastContextValue {
+export interface ToastContextValue {
   toast: (message: string, variant?: ToastVariant, duration?: number) => void;
 }
 
@@ -517,7 +541,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={{ toast }}>
       {children}
-      <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none">
+      <div className="fixed bottom-5 right-5 z-[100] flex flex-col gap-2.5 pointer-events-none">
         <AnimatePresence>
           {toasts.map(t => (
             <ToastNotification key={t.id} item={t} onDismiss={() => dismiss(t.id)} />
@@ -538,17 +562,17 @@ function ToastNotification({ item, onDismiss }: { item: ToastItem; onDismiss: ()
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12, scale: 0.96 }}
+      initial={{ opacity: 0, y: 14, scale: 0.94 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 8, scale: 0.96 }}
-      transition={{ type: 'spring', duration: 0.3, bounce: 0.1 }}
-      className="pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-lg border border-[#E5E7EB] bg-white shadow-lg min-w-[240px] max-w-[340px]"
+      exit={{ opacity: 0, y: 8, scale: 0.94 }}
+      transition={{ type: 'spring', duration: 0.35, bounce: 0.1 }}
+      className="pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-2xl liquid-glass-surface shadow-lg min-w-[260px] max-w-[360px]"
     >
       {icons[item.variant]}
-      <span className="text-sm font-medium text-[#111827] flex-1 leading-snug">{item.message}</span>
+      <span className="text-xs font-semibold text-[#0F172A] flex-1 leading-snug">{item.message}</span>
       <button
         onClick={onDismiss}
-        className="text-[#9CA3AF] hover:text-[#6B7280] transition-colors cursor-pointer shrink-0"
+        className="text-[#94A3B8] hover:text-[#475569] transition-colors cursor-pointer shrink-0"
       >
         <X className="h-3.5 w-3.5" />
       </button>
@@ -561,30 +585,30 @@ export function useToast() {
 }
 
 // ============================================================
-// 16. PAGE LOADER — Skeleton + progress text
+// 15. PAGE LOADER
 // ============================================================
 export function PageLoader({ message = 'Loading...' }: { message?: string }) {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#F9FAFB] gap-3">
-      <div className="flex gap-1">
+    <div className="min-h-screen flex flex-col items-center justify-center gap-3">
+      <div className="flex gap-1.5 p-3 rounded-full liquid-glass-toolbar">
         {[0, 1, 2].map(i => (
           <motion.div
             key={i}
-            className="w-1.5 h-1.5 rounded-full bg-[#2563EB]"
-            animate={{ opacity: [0.3, 1, 0.3] }}
+            className="w-2 h-2 rounded-full bg-[#64748B]"
+            animate={{ opacity: [0.3, 1, 0.3], scale: [0.9, 1.1, 0.9] }}
             transition={{ duration: 1, repeat: Infinity, delay: i * 0.15 }}
           />
         ))}
       </div>
-      <span className="text-xs font-medium text-[#6B7280]">{message}</span>
+      <span className="text-xs font-semibold text-[#64748B]">{message}</span>
     </div>
   );
 }
 
 // ============================================================
-// 17. INPUT COMPONENT
+// 16. INPUT COMPONENT — Translucent Liquid Glass Fields
 // ============================================================
-interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
   hint?: string;
@@ -598,37 +622,33 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="space-y-1.5">
         {label && (
-          <label htmlFor={inputId} className="block text-xs font-medium text-[#6B7280]">
+          <label htmlFor={inputId} className="block text-xs font-semibold text-[#475569]">
             {label}
           </label>
         )}
         <div className="relative">
           {icon && (
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]">{icon}</div>
+            <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94A3B8]">{icon}</div>
           )}
           <input
             ref={ref}
             id={inputId}
             className={`
-              w-full h-10 px-3 rounded-lg border text-sm text-[#111827] bg-white
-              placeholder:text-[#9CA3AF] focus:outline-none transition-all duration-150
-              shadow-sm
-              ${error
-                ? 'border-red-300 focus:border-red-400 focus:ring-2 focus:ring-red-50'
-                : 'border-[#E5E7EB] focus:border-[#2563EB] focus:ring-2 focus:ring-blue-50'
-              }
-              ${icon ? 'pl-9' : ''}
-              ${rightIcon ? 'pr-9' : ''}
+              w-full h-11 px-3.5 rounded-xl liquid-glass-input text-xs font-medium text-[#0F172A]
+              placeholder:text-[#94A3B8] focus:outline-none transition-all duration-180
+              ${error ? '!border-rose-400 !focus:ring-rose-500/20' : ''}
+              ${icon ? 'pl-10' : ''}
+              ${rightIcon ? 'pr-10' : ''}
               ${className}
             `}
             {...props}
           />
           {rightIcon && (
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]">{rightIcon}</div>
+            <div className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#94A3B8]">{rightIcon}</div>
           )}
         </div>
-        {error && <p className="text-xs font-medium text-red-600">{error}</p>}
-        {hint && !error && <p className="text-xs text-[#9CA3AF]">{hint}</p>}
+        {error && <p className="text-[11px] font-semibold text-rose-600">{error}</p>}
+        {hint && !error && <p className="text-[11px] text-[#94A3B8]">{hint}</p>}
       </div>
     );
   }
@@ -636,7 +656,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
 Input.displayName = 'Input';
 
 // ============================================================
-// 18. SPINNER
+// 17. SPINNER
 // ============================================================
 export function Spinner({ size = 'md', className = '' }: { size?: 'sm' | 'md' | 'lg'; className?: string }) {
   const sizes = { sm: 'h-4 w-4', md: 'h-5 w-5', lg: 'h-6 w-6' };
@@ -649,7 +669,7 @@ export function Spinner({ size = 'md', className = '' }: { size?: 'sm' | 'md' | 
 }
 
 // ============================================================
-// 19. OTP INPUT
+// 18. OTP INPUT — Individual Liquid Glass Capsules
 // ============================================================
 export function OTPInput({ length = 6, value, onChange }: { length?: number; value: string; onChange: (val: string) => void }) {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -707,7 +727,7 @@ export function OTPInput({ length = 6, value, onChange }: { length?: number; val
           value={value[i] || ''}
           onChange={(e) => handleChange(e, i)}
           onKeyDown={(e) => handleKeyDown(e, i)}
-          className="w-10 h-12 sm:w-12 sm:h-14 bg-white border border-[#E5E7EB] rounded-lg text-center text-lg sm:text-xl font-semibold text-[#111827] focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-50 transition-all shadow-sm placeholder:text-[#D1D5DB]"
+          className="w-11 h-13 sm:w-13 sm:h-15 liquid-glass-otp-digit rounded-2xl text-center text-xl sm:text-2xl font-black text-[#0F172A] focus:outline-none"
         />
       ))}
     </div>
@@ -715,7 +735,7 @@ export function OTPInput({ length = 6, value, onChange }: { length?: number; val
 }
 
 // ============================================================
-// 20. MORPHING BUTTON
+// 19. MORPHING BUTTON — Liquid Glass Morphing CTA
 // ============================================================
 export function MorphingButton({ state, idleText, successText, onClick, className = '', type = 'button', disabled }: { 
   state: 'idle' | 'loading' | 'success'; 
@@ -731,30 +751,30 @@ export function MorphingButton({ state, idleText, successText, onClick, classNam
       type={type}
       onClick={onClick}
       disabled={state !== 'idle' || disabled}
-      whileTap={state === 'idle' ? { scale: 0.98 } : undefined}
-      animate={{ 
-        backgroundColor: state === 'success' ? '#22C55E' : '#2563EB',
-      }}
-      transition={{ duration: 0.2 }}
-      className={`relative inline-flex items-center justify-center h-10 px-4 rounded-lg font-semibold text-sm text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 overflow-hidden ${className}`}
+      whileHover={state === 'idle' ? { y: -1 } : undefined}
+      whileTap={state === 'idle' ? { scale: 0.985 } : undefined}
+      className={`relative inline-flex items-center justify-center h-12 px-6 rounded-full font-bold text-sm text-[#4169A8] liquid-glass-interactive liquid-glass-pill bg-[#D7E1EB]/50 border-white/60 shadow-xs ${className}`}
     >
+      <span className="liquid-glass-specular" aria-hidden="true" />
+      <span className="liquid-glass-refraction" aria-hidden="true" />
+
       <AnimatePresence mode="wait">
         {state === 'idle' && (
-          <motion.div key="idle" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="flex items-center gap-2">
+          <motion.div key="idle" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} className="relative z-10 flex items-center gap-2 liquid-glass-content">
             {idleText}
           </motion.div>
         )}
         {state === 'loading' && (
-          <motion.div key="loading" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}>
-            <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+          <motion.div key="loading" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }} className="relative z-10">
+            <svg className="animate-spin h-5 w-5 text-current" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
             </svg>
           </motion.div>
         )}
         {state === 'success' && (
-          <motion.div key="success" initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.5 }} className="flex items-center gap-2">
-            <CheckCircle className="h-4 w-4 text-white" />
+          <motion.div key="success" initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.5 }} className="relative z-10 flex items-center gap-2 text-emerald-700 font-bold liquid-glass-content">
+            <CheckCircle className="h-4 w-4 text-emerald-600" />
             {successText}
           </motion.div>
         )}
@@ -763,5 +783,5 @@ export function MorphingButton({ state, idleText, successText, onClick, classNam
   );
 }
 
-export { LiquidGlassButton } from './LiquidGlassButton';
-export type { LiquidGlassButtonProps, LiquidGlassVariant, LiquidGlassSize, LiquidGlassTheme } from './LiquidGlassButton';
+export { LiquidGlassButton, GlassIconButton } from './LiquidGlassButton';
+export type { LiquidGlassButtonProps, GlassIconButtonProps, LiquidGlassVariant, LiquidGlassSize, LiquidGlassTheme } from './LiquidGlassButton';

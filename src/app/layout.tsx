@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#2563EB",
+  themeColor: "#7C3AED",
 };
 
 export default function RootLayout({
@@ -35,13 +35,43 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-full flex flex-col bg-[#F7F8FC] text-[#111827]">
+      <body className="min-h-full flex flex-col bg-[#FFFDD0] text-[#0F172A]">
+
+        {/* Hidden SVG filters for liquid glass displacement distortion */}
+        <svg
+          aria-hidden="true"
+          style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden' }}
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <defs>
+            <filter id="liquid-glass-distortion" x="-10%" y="-10%" width="120%" height="120%">
+              <feTurbulence
+                type="fractalNoise"
+                baseFrequency="0.015 0.015"
+                numOctaves="2"
+                seed="3"
+                stitchTiles="stitch"
+                result="noise"
+              />
+              <feDisplacementMap
+                in="SourceGraphic"
+                in2="noise"
+                scale="2"
+                xChannelSelector="R"
+                yChannelSelector="G"
+              />
+            </filter>
+          </defs>
+        </svg>
         <AuthProvider>
           <ToastProvider>
-            {children}
+            <div className="relative z-10 flex flex-col min-h-full flex-1">
+              {children}
+            </div>
           </ToastProvider>
         </AuthProvider>
       </body>
     </html>
   );
 }
+

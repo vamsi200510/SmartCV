@@ -21,8 +21,8 @@ const EXP_LEVELS = [
   { value: 'Lead/Executive', label: 'Lead / Executive (8+ yrs)' },
 ];
 
-const INPUT_CLASS = "w-full h-11 px-4 rounded-xl border border-[#ECEDF3] bg-white text-sm text-[#111827] placeholder:text-[#9CA3AF] focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-blue-50 transition";
-const LABEL_CLASS = "text-xs font-medium text-[#6B7280] mb-1.5 block";
+const INPUT_CLASS = "w-full h-11 px-4 text-sm text-[#0F172A] placeholder:text-slate-400 font-medium bg-white border border-slate-300 rounded-xl focus:outline-none focus:border-[#7C3AED] focus:ring-2 focus:ring-[#7C3AED]/20 transition shadow-xs";
+const LABEL_CLASS = "text-[11px] font-bold text-slate-600 mb-1.5 block uppercase tracking-wide";
 
 export default function ProfilePage() {
   const { user, profile, logout, refreshProfile } = useAuth();
@@ -148,18 +148,14 @@ export default function ProfilePage() {
   };
 
   const handleRemovePhoto = async () => {
+    if (!user?.id) return;
     setUploading(true);
     try {
-      const res = await fetch('/api/auth/upload-avatar', {
-        method: 'DELETE',
-      });
+      const res = await fetch('/api/auth/remove-avatar', { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed to remove photo');
-      
+
       setProfileImage(null);
-      if (user?.id) {
-        localStorage.removeItem(`smartcv_profile_image_${user.id}`);
-      }
-      
+      localStorage.removeItem(`smartcv_profile_image_${user.id}`);
       await refreshProfile();
       toast("Profile photo removed.", "success");
     } catch (err: any) {
@@ -172,14 +168,11 @@ export default function ProfilePage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!fullName.trim()) return;
-
     setSaving(true);
     setSaveStatus('idle');
 
     try {
-      // Save standard fields to Supabase
-      const response = await fetch('/api/auth/update-profile', {
+      const res = await fetch('/api/auth/update-profile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -189,12 +182,14 @@ export default function ProfilePage() {
           experienceLevel,
         }),
       });
-      if (!response.ok) throw new Error('Failed to update profile');
 
-      // Save extended fields to localStorage
+      if (!res.ok) throw new Error('Update failed');
+
       if (user?.id) {
         localStorage.setItem(`smartcv_profile_${user.id}`, JSON.stringify({
-          college, course, phone,
+          college,
+          course,
+          phone,
           linkedin: linkedinUrl,
           github: githubUrl,
           portfolio: portfolioUrl,
@@ -217,36 +212,32 @@ export default function ProfilePage() {
   const initials = fullName ? fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : 'U';
 
   return (
-    <div className="min-h-screen bg-[#F7F8FC]" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
-      {/* Dot grid */}
-      <div className="fixed inset-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #C7C9D3 0.6px, transparent 0.6px)', backgroundSize: '24px 24px', opacity: 0.2 }} />
-
-      {/* Nav */}
-      <nav className="bg-white border-b border-[#ECEDF3] sticky top-0 z-50">
-        <div className="max-w-3xl mx-auto px-6 h-14 flex items-center justify-between">
+    <div className="min-h-screen bg-[#FFFDD0] text-[#0F172A]" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
+      {/* Floating Liquid Glass Top Header */}
+      <header className="fixed top-4 inset-x-0 z-50 px-4 sm:px-6 max-w-3xl mx-auto pointer-events-none">
+        <div className="liquid-glass-surface rounded-[24px] px-5 py-2.5 flex items-center justify-between shadow-lg pointer-events-auto border border-white/70">
           <div className="flex items-center gap-3">
-            <button onClick={() => router.push('/dashboard')} className="h-8 w-8 rounded-lg bg-[#F7F8FC] border border-[#ECEDF3] hover:bg-[#EFF6FF] flex items-center justify-center text-[#6B7280] transition cursor-pointer">
-              <ArrowLeft size={15} />
+            <button onClick={() => router.push('/dashboard')} className="h-8 w-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:text-[#0F172A] transition cursor-pointer shadow-xs">
+              <ArrowLeft size={14} />
             </button>
-            <span className="font-bold text-[15px] text-[#111827]">Profile</span>
+            <span className="font-extrabold text-sm text-[#0F172A]">Profile Settings</span>
           </div>
           {saveStatus === 'success' && (
-            <span className="flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-50 border border-emerald-100 px-3 py-1 rounded-xl">
+            <span className="flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
               <Check size={12} /> Saved
             </span>
           )}
         </div>
-      </nav>
+      </header>
 
-      <main className="max-w-3xl mx-auto px-6 py-10 relative z-10 space-y-6">
+      <main className="max-w-3xl mx-auto px-6 pt-24 pb-12 relative z-10 space-y-6">
 
         {/* Profile Header */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white border border-[#ECEDF3] rounded-3xl p-8 relative overflow-hidden"
+          className="bg-white border border-slate-200 rounded-3xl p-8 relative overflow-hidden shadow-sm"
         >
-          <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-blue-50 to-transparent rounded-full blur-3xl opacity-60 pointer-events-none" />
           <div className="relative z-10 flex flex-col sm:flex-row items-center gap-6">
             {/* Avatar with completion ring */}
             <div className="relative shrink-0 group">
@@ -258,10 +249,10 @@ export default function ProfilePage() {
                 className="hidden"
               />
               <svg width="96" height="96" viewBox="0 0 96 96" className="absolute -top-1 -left-1 pointer-events-none">
-                <circle cx="48" cy="48" r="44" fill="none" stroke="#ECEDF3" strokeWidth="3" />
+                <circle cx="48" cy="48" r="44" fill="none" stroke="#E2E8F0" strokeWidth="3" />
                 <circle
                   cx="48" cy="48" r="44" fill="none"
-                  stroke={completion >= 80 ? '#22C55E' : completion >= 50 ? '#2563EB' : '#F59E0B'}
+                  stroke={completion >= 80 ? '#10B981' : completion >= 50 ? '#7C3AED' : '#F59E0B'}
                   strokeWidth="3"
                   strokeDasharray={`${completion * 2.76} ${276 - completion * 2.76}`}
                   strokeDashoffset="69"
@@ -274,7 +265,7 @@ export default function ProfilePage() {
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
-                className="w-[88px] h-[88px] rounded-full bg-gradient-to-br from-[#2563EB] to-[#7C3AED] flex items-center justify-center text-white text-2xl font-extrabold shadow-lg shadow-blue-600/15 m-1 relative overflow-hidden group cursor-pointer"
+                className="w-[88px] h-[88px] rounded-full bg-[#7C3AED] flex items-center justify-center text-white text-2xl font-extrabold shadow-md m-1 relative overflow-hidden group cursor-pointer"
               >
                 {uploading ? (
                   <Loader2 className="h-6 w-6 animate-spin text-white" />
@@ -290,18 +281,18 @@ export default function ProfilePage() {
                 </div>
               </button>
 
-              <div className="absolute -bottom-1 -right-1 bg-white border border-[#ECEDF3] rounded-full px-2 py-0.5 text-[10px] font-bold text-[#374151] shadow-sm">
+              <div className="absolute -bottom-1 -right-1 bg-white border border-slate-200 rounded-full px-2 py-0.5 text-[10px] font-bold text-[#0F172A] shadow-xs">
                 {completion}%
               </div>
             </div>
             <div className="text-center sm:text-left flex-1">
-              <h1 className="text-xl font-bold text-[#111827]">{fullName || 'Your Name'}</h1>
-              <p className="text-sm text-[#6B7280] mt-0.5">{user.email}</p>
+              <h1 className="text-xl font-extrabold text-[#0F172A]">{fullName || 'Your Name'}</h1>
+              <p className="text-sm text-slate-500 mt-0.5 font-medium">{user.email}</p>
               <div className="flex flex-wrap items-center gap-2 mt-2 justify-center sm:justify-start">
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-[10px] font-bold text-blue-700">
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-purple-50 border border-purple-200 text-[10px] font-bold text-[#7C3AED]">
                   <Briefcase size={10} /> {experienceLevel}
                 </span>
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-violet-50 border border-violet-200 text-[10px] font-bold text-violet-700">
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-purple-50 border border-purple-200 text-[10px] font-bold text-[#7C3AED]">
                   <Building2 size={10} /> {department}
                 </span>
                 {profileImage && (
@@ -309,7 +300,7 @@ export default function ProfilePage() {
                     type="button"
                     onClick={handleRemovePhoto}
                     disabled={uploading}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-50 border border-red-200 text-[10px] font-bold text-red-700 hover:bg-red-100 transition cursor-pointer"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-50 border border-rose-200 text-[10px] font-bold text-rose-700 hover:bg-rose-100 transition cursor-pointer"
                   >
                     <Trash2 size={10} /> Remove Photo
                   </button>
@@ -327,13 +318,13 @@ export default function ProfilePage() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05 }}
-            className="bg-white border border-[#ECEDF3] rounded-2xl p-6"
+            className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm"
           >
-            <div className="flex items-center gap-2.5 mb-5 pb-4 border-b border-[#F0F1F8]">
-              <div className="h-8 w-8 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center">
-                <User size={14} className="text-[#2563EB]" />
+            <div className="flex items-center gap-2.5 mb-5 pb-4 border-b border-slate-100">
+              <div className="h-8 w-8 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-center">
+                <User size={14} className="text-[#7C3AED]" />
               </div>
-              <h2 className="text-sm font-semibold text-[#111827]">Personal Details</h2>
+              <h2 className="text-sm font-bold text-[#0F172A]">Personal Details</h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="sm:col-span-2">
@@ -371,7 +362,7 @@ export default function ProfilePage() {
               <div className="sm:col-span-2">
                 <label className={LABEL_CLASS}>Key Skills</label>
                 <input type="text" value={skills} onChange={e => setSkills(e.target.value)} placeholder="React, TypeScript, Node.js, Python" className={INPUT_CLASS} />
-                <p className="text-[10px] text-[#9CA3AF] mt-1">Comma-separated list of your top skills</p>
+                <p className="text-[10px] text-[#66788A] mt-1 font-medium">Comma-separated list of your top skills</p>
               </div>
             </div>
           </motion.div>
@@ -381,13 +372,13 @@ export default function ProfilePage() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-white border border-[#ECEDF3] rounded-2xl p-6"
+            className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm"
           >
-            <div className="flex items-center gap-2.5 mb-5 pb-4 border-b border-[#F0F1F8]">
-              <div className="h-8 w-8 rounded-xl bg-purple-50 border border-purple-100 flex items-center justify-center">
+            <div className="flex items-center gap-2.5 mb-5 pb-4 border-b border-slate-100">
+              <div className="h-8 w-8 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-center">
                 <Globe size={14} className="text-[#7C3AED]" />
               </div>
-              <h2 className="text-sm font-semibold text-[#111827]">Social Links</h2>
+              <h2 className="text-sm font-bold text-[#0F172A]">Social Links</h2>
             </div>
             <div className="space-y-4">
               <div>
@@ -414,10 +405,10 @@ export default function ProfilePage() {
             <button
               type="submit"
               disabled={saving || !fullName.trim()}
-              className="w-full h-12 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold rounded-xl text-sm transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              className="w-full h-12 bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-bold rounded-full text-sm transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shadow-md hover:shadow-lg active:scale-95"
             >
               {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-              {saving ? 'Saving...' : saveStatus === 'success' ? 'Saved!' : 'Save Changes'}
+              <span>{saving ? 'Saving...' : saveStatus === 'success' ? 'Saved!' : 'Save Changes'}</span>
             </button>
           </motion.div>
         </form>
@@ -427,31 +418,31 @@ export default function ProfilePage() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-white border border-[#ECEDF3] rounded-2xl p-6"
+          className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm"
         >
-          <div className="flex items-center gap-2.5 mb-5 pb-4 border-b border-[#F0F1F8]">
-            <div className="h-8 w-8 rounded-xl bg-red-50 border border-red-100 flex items-center justify-center">
-              <Shield size={14} className="text-red-500" />
+          <div className="flex items-center gap-2.5 mb-5 pb-4 border-b border-slate-100">
+            <div className="h-8 w-8 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center">
+              <Shield size={14} className="text-rose-600" />
             </div>
-            <h2 className="text-sm font-semibold text-[#111827]">Account</h2>
+            <h2 className="text-sm font-bold text-[#0F172A]">Account</h2>
           </div>
           <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 rounded-xl hover:bg-[#F7F8FC] transition">
+            <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl">
               <div className="flex items-center gap-3">
-                <Mail size={14} className="text-[#9CA3AF]" />
+                <Mail size={14} className="text-slate-500" />
                 <div>
-                  <p className="text-sm font-medium text-[#111827]">Email</p>
-                  <p className="text-xs text-[#9CA3AF]">{user.email}</p>
+                  <p className="text-xs font-bold text-[#0F172A]">Email</p>
+                  <p className="text-[11px] text-slate-500 font-medium">{user.email}</p>
                 </div>
               </div>
-              <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full">Verified</span>
+              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">Verified</span>
             </div>
             <button
               onClick={logout}
-              className="w-full flex items-center gap-3 p-3 rounded-xl text-red-500 hover:bg-red-50 transition cursor-pointer text-left"
+              className="w-full flex items-center gap-3 p-3 rounded-xl text-rose-600 hover:bg-rose-50 transition cursor-pointer text-left font-bold text-xs"
             >
               <LogOut size={14} />
-              <span className="text-sm font-medium">Log Out</span>
+              <span>Log Out</span>
             </button>
           </div>
         </motion.div>

@@ -40,18 +40,16 @@ function AuthLeftPanel() {
   return (
     <div className="hidden lg:flex flex-col relative overflow-hidden"
       style={{
-        background: 'radial-gradient(ellipse 80% 60% at 30% 40%, rgba(37,99,235,0.18) 0%, transparent 60%), radial-gradient(ellipse 60% 60% at 80% 80%, rgba(124,58,237,0.12) 0%, transparent 60%), linear-gradient(135deg, #EFF6FF 0%, #F5F3FF 60%, #ECFEFF 100%)'
+        background: '#F6F4C8'
       }}>
 
       {/* Grid texture */}
-      <div className="absolute inset-0 opacity-30"
-        style={{ backgroundImage: 'linear-gradient(rgba(37,99,235,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(37,99,235,0.12) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+      <div className="absolute inset-0 opacity-20"
+        style={{ backgroundImage: 'repeating-linear-gradient(0deg, rgba(49,94,155,0.08) 0px, rgba(49,94,155,0.08) 1px, transparent 1px, transparent 40px), repeating-linear-gradient(90deg, rgba(49,94,155,0.08) 0px, rgba(49,94,155,0.08) 1px, transparent 1px, transparent 40px)' }} />
 
       {/* Floating blobs */}
-      <div className="absolute top-[-10%] right-[-10%] h-80 w-80 rounded-full opacity-40 animate-blob"
-        style={{ background: 'radial-gradient(circle, rgba(37,99,235,0.2) 0%, transparent 70%)' }} />
-      <div className="absolute bottom-[10%] left-[-10%] h-64 w-64 rounded-full opacity-30 animate-blob delay-300"
-        style={{ background: 'radial-gradient(circle, rgba(124,58,237,0.18) 0%, transparent 70%)' }} />
+      <div className="absolute top-[-10%] right-[-10%] h-80 w-80 rounded-full opacity-30 animate-blob bg-[#DCE7F2]" />
+      <div className="absolute bottom-[10%] left-[-10%] h-64 w-64 rounded-full opacity-25 animate-blob delay-300 bg-[#ECE5F2]" />
 
       {/* Content */}
       <div className="relative z-10 flex flex-col h-full px-12 py-10">
@@ -68,7 +66,7 @@ function AuthLeftPanel() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
             <h1 className="text-4xl font-extrabold text-[#0F172A] leading-tight tracking-tight mb-4">
               Your career,{' '}
-              <span style={{ background: 'linear-gradient(135deg, #2563EB, #7C3AED)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              <span className="text-[#315E9B]">
                 supercharged
               </span>{' '}
               by AI.
@@ -118,11 +116,11 @@ function AuthLeftPanel() {
             </div>
             <div className="mt-3 flex gap-1.5">
               {['React', 'TypeScript', 'AWS'].map(t => (
-                <span key={t} className="text-[9px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-semibold border border-blue-100">{t}</span>
+                <span key={t} className="text-[9px] text-slate-600 bg-slate-100/80 px-2 py-0.5 rounded-full font-semibold border border-slate-200/60">{t}</span>
               ))}
             </div>
             {/* AI badge */}
-            <div className="absolute -top-3 -right-3 bg-[#2563EB] text-white text-[9px] font-bold px-2.5 py-1 rounded-full shadow-md flex items-center gap-1">
+            <div className="absolute -top-3 -right-3 liquid-glass-pill text-[#1E40AF] text-[9px] font-bold px-2.5 py-1 shadow-md flex items-center gap-1 bg-blue-500/10 border-blue-200/30">
               <Sparkles className="h-2.5 w-2.5" /> AI Enhanced
             </div>
           </motion.div>
@@ -366,11 +364,11 @@ export default function AuthPage() {
   };
 
   // Shared input classes
-  const inputCls = "w-full h-11 px-4 bg-white border border-[#E2E8F0] rounded-xl text-sm text-[#0F172A] placeholder-[#94A3B8] focus:outline-none focus:border-[#2563EB] focus:ring-3 focus:ring-blue-50 transition-all duration-200 font-medium shadow-[0_1px_2px_rgba(15,23,42,0.04)]";
-  const labelCls = "block text-xs font-semibold text-[#64748B] mb-1.5 uppercase tracking-wide";
+  const inputCls = "liquid-glass-input w-full h-11 px-4 text-sm text-[#0F172A] placeholder-[#94A3B8] font-medium shadow-xs";
+  const labelCls = "block text-[11px] font-bold text-[#64748B] mb-1.5 uppercase tracking-wider";
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] font-[Inter,sans-serif] overflow-hidden">
+    <div className="min-h-screen bg-[#FFFDD0] text-[#0F172A] font-[Inter,sans-serif] overflow-hidden relative" style={{ fontFamily: "'Inter', -apple-system, sans-serif" }}>
       <MouseGlow />
       <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2">
         {/* LEFT: Branding */}
@@ -379,14 +377,14 @@ export default function AuthPage() {
         {/* RIGHT: Auth Form */}
         <div className="flex flex-col justify-center px-6 py-10 lg:px-16 relative">
           {/* Mobile brand */}
-          <div className="flex lg:hidden items-center gap-2.5 mb-10">
-            <div className="w-8 h-8 rounded-xl bg-white border border-[#ECEDF3] flex items-center justify-center shadow-sm">
+          <div className="flex lg:hidden items-center gap-2.5 mb-8">
+            <div className="w-8 h-8 rounded-xl liquid-glass-square flex items-center justify-center shadow-xs">
               <img src="/SmartCV_logo.png" alt="Logo" className="h-5 w-5 object-contain" />
             </div>
-            <span className="text-lg font-extrabold tracking-tight text-[#0F172A]">SmartCV</span>
+            <span className="text-lg font-black tracking-tight text-[#0F172A]">SmartCV</span>
           </div>
 
-          <div className="max-w-[420px] w-full mx-auto lg:mx-0 lg:ml-auto">
+          <div className="max-w-[420px] w-full mx-auto lg:mx-0 lg:ml-auto liquid-glass-card-primary p-7 sm:p-8 rounded-3xl shadow-xl">
             <AnimatePresence mode="wait">
               <motion.div key={step}
                 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}

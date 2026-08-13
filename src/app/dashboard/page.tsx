@@ -9,12 +9,19 @@ import {
   Plus, Trash2, Clock, Check, AlertCircle, FileText,
   Settings, Sparkles, ArrowRight, ArrowLeft,
   Copy, Loader2, Grid, Home, Search, Bell, X,
-  LogOut, ChevronRight, Lightbulb, TrendingUp, Info,
+  LogOut, ChevronRight, Lightbulb, Info,
   Shield, Upload, Eye, BadgeCheck, LayoutTemplate,
   PenTool, Paperclip, ClipboardCheck, Bookmark, Star,
   Zap, User, Heart, GraduationCap, Briefcase, Compass,
   BookOpen, CheckCircle2
 } from 'lucide-react';
+import TemplateRenderer from '@/components/TemplateRenderer';
+import A4ResumePreview from '@/components/A4ResumePreview';
+import TemplateDetailsDrawer from '@/components/TemplateDetailsDrawer';
+import TemplatePreviewModal from '@/components/TemplatePreviewModal';
+import { ResumeTemplate } from '@/types/database.types';
+import { Button, Badge, ATSRing } from '@/components/ui/design-system';
+import { getTemplatePreviewData } from '@/lib/templatePreviewData';
 
 // ── Decorative SVG Micro-Illustrations ─────────────────────────
 const ResumeSheetSVG = ({ className = '' }: { className?: string }) => (
@@ -57,13 +64,6 @@ const EmptyStateIllustration = () => (
     <path d="M22 25 L23.5 28 L27 28.5 L24.5 31 L25 34.5 L22 33 L19 34.5 L19.5 31 L17 28.5 L20.5 28 Z" fill="#FDE68A" stroke="#F59E0B" strokeWidth="0.5" />
   </svg>
 );
-
-import TemplateRenderer from '@/components/TemplateRenderer';
-import TemplateDetailsDrawer from '@/components/TemplateDetailsDrawer';
-import TemplatePreviewModal from '@/components/TemplatePreviewModal';
-import { ResumeTemplate } from '@/types/database.types';
-import { Button, Badge, ATSRing } from '@/components/ui/design-system';
-import { getTemplatePreviewData } from '@/lib/templatePreviewData';
 
 // ── Data (UNCHANGED) ────────────────────────────────────────────
 const TEMPLATE_METADATA: ResumeTemplate[] = [
@@ -557,24 +557,24 @@ export default function DashboardPage() {
   // ── RENDER ─────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-[#F7F8FC]" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
+    <div className="min-h-screen bg-[#FFFDD0] text-[#0F172A]" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
 
       {/* ============================================================
-          TOP NAVIGATION — Like Resumind reference (screenshot 3)
-          Centered nav pills, logo left, user right
+          TOP NAVIGATION — Floating Liquid Glass Nav Bar
+          Centered nav items, logo left, user right
           ============================================================ */}
-      <nav className="bg-white border-b border-[#ECEDF3] sticky top-0 z-50">
-        <div className="max-w-[1320px] mx-auto px-6 h-16 flex items-center justify-between">
+      <header className="fixed top-4 inset-x-0 z-50 px-4 sm:px-6 max-w-[1320px] mx-auto pointer-events-none">
+        <div className="liquid-glass-surface rounded-[24px] px-5 py-2.5 flex items-center justify-between shadow-md pointer-events-auto border border-white/70">
           {/* Logo */}
           <div className="flex items-center gap-2.5 shrink-0">
-            <div className="h-8 w-8 rounded-xl bg-white border border-[#ECEDF3] flex items-center justify-center shadow-sm">
+            <div className="h-8 w-8 rounded-xl bg-white/40 border border-white/60 flex items-center justify-center shadow-xs">
               <img src="/SmartCV_logo.png" alt="Logo" className="h-5 w-5 object-contain" />
             </div>
-            <span className="font-bold text-[15px] text-[#111827] tracking-tight">SmartCV</span>
+            <span className="font-black text-[15px] text-[#172B4D] tracking-tight">SmartCV</span>
           </div>
 
-          {/* Center Nav Pills — Liquid Glass pill container */}
-          <div className="hidden md:flex items-center liquid-glass-toolbar p-1 rounded-full gap-1">
+          {/* Center Nav Items — Clean single-layer capsule */}
+          <div className="hidden md:flex items-center gap-1 bg-white/25 p-1 rounded-full border border-white/40">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -582,18 +582,14 @@ export default function DashboardPage() {
                 <button
                   key={item.id}
                   onClick={() => { setActiveTab(item.id as any); setStep('dashboard'); }}
-                  className={`liquid-glass-interactive flex items-center gap-2 px-4 py-2 rounded-full text-[13px] font-semibold transition-all duration-150 cursor-pointer ${
+                  className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-150 cursor-pointer ${
                     isActive
-                      ? 'liquid-glass-active text-[#2563EB]'
-                      : 'text-[#6B7280] hover:text-[#111827]'
+                      ? 'liquid-glass-active text-[#7C3AED] shadow-xs'
+                      : 'text-slate-600 hover:text-[#0F172A] hover:bg-white/30'
                   }`}
                 >
-                  <span className="liquid-glass-specular" aria-hidden="true" />
-                  <span className="liquid-glass-refraction" aria-hidden="true" />
-                  <span className="relative z-10 flex items-center gap-2 liquid-glass-content">
-                    <Icon size={15} />
-                    <span>{item.label}</span>
-                  </span>
+                  <Icon size={14} />
+                  <span>{item.label}</span>
                 </button>
               );
             })}
@@ -603,42 +599,38 @@ export default function DashboardPage() {
           <div className="flex items-center gap-2.5">
             <button
               onClick={() => setSearchOpen(true)}
-              className="liquid-glass-interactive liquid-glass-square h-9 w-9 text-[#64748B] hover:text-[#0F172A] transition cursor-pointer shadow-xs"
+              className="h-9 w-9 rounded-full bg-white/40 hover:bg-white/60 border border-white/50 text-slate-600 hover:text-[#0F172A] flex items-center justify-center transition cursor-pointer shadow-xs"
               title="Search resumes and templates"
             >
-              <span className="liquid-glass-specular" aria-hidden="true" />
-              <span className="liquid-glass-refraction" aria-hidden="true" />
-              <Search size={15} className="relative z-10 liquid-glass-content" />
+              <Search size={14} />
             </button>
             <div className="relative">
               <button
                 onClick={() => { setNotifOpen(o => !o); setProfileMenuOpen(false); }}
-                className="liquid-glass-interactive liquid-glass-square h-9 w-9 text-[#64748B] hover:text-[#0F172A] transition cursor-pointer relative shadow-xs"
+                className="h-9 w-9 rounded-full bg-white/40 hover:bg-white/60 border border-white/50 text-slate-600 hover:text-[#0F172A] flex items-center justify-center transition cursor-pointer relative shadow-xs"
                 title="Notifications"
               >
-                <span className="liquid-glass-specular" aria-hidden="true" />
-                <span className="liquid-glass-refraction" aria-hidden="true" />
-                <Bell size={15} className="relative z-10 liquid-glass-content" />
-                <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-[#2563EB] shadow-xs border border-white z-20" />
+                <Bell size={14} />
+                <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-[#7C3AED] shadow-xs border border-white z-20" />
               </button>
               {notifOpen && (
-                <div className="absolute right-0 mt-2 w-72 bg-white/95 backdrop-blur-xl rounded-2xl border border-white/80 shadow-[0_12px_32px_rgba(0,0,0,0.12)] py-2 z-50 animate-fade-in-down">
-                  <div className="px-4 py-2.5 border-b border-[#F0F1F8] flex items-center justify-between">
-                    <h4 className="text-sm font-semibold text-[#111827]">Notifications</h4>
-                    <button onClick={() => setNotifOpen(false)} className="text-[#9CA3AF] hover:text-[#6B7280]"><X size={13} /></button>
+                <div className="absolute right-0 mt-2 w-72 bg-white rounded-[20px] border border-slate-200 shadow-xl py-2 z-50 animate-fade-in-down">
+                  <div className="px-4 py-2.5 border-b border-slate-100 flex items-center justify-between">
+                    <h4 className="text-xs font-bold text-[#0F172A]">Notifications</h4>
+                    <button onClick={() => setNotifOpen(false)} className="text-slate-400 hover:text-[#0F172A] transition-colors cursor-pointer"><X size={13} /></button>
                   </div>
-                  <div className="px-4 py-3 space-y-3">
-                    {[{ icon: Check, color: 'text-emerald-500 bg-emerald-50', text: 'Resume autosaved successfully', time: 'Just now' },
-                    { icon: Zap, color: 'text-[#2563EB] bg-blue-50', text: 'ATS Analyzer coming soon — stay tuned!', time: '1 day ago' },
-                    { icon: Star, color: 'text-amber-500 bg-amber-50', text: '12 new templates available in the gallery', time: '3 days ago' },
+                  <div className="px-4 py-3 space-y-2.5">
+                    {[{ icon: Check, color: 'text-emerald-700 bg-emerald-100', text: 'Resume autosaved successfully', time: 'Just now' },
+                    { icon: Zap, color: 'text-[#7C3AED] bg-purple-100', text: 'ATS Analyzer active — check your score', time: '1 day ago' },
+                    { icon: Star, color: 'text-amber-800 bg-amber-100', text: '12 new templates available in the gallery', time: '3 days ago' },
                     ].map((n, i) => (
                       <div key={i} className="flex items-start gap-2.5">
                         <div className={`h-7 w-7 rounded-xl flex items-center justify-center shrink-0 ${n.color}`}>
                           <n.icon size={12} />
                         </div>
                         <div>
-                          <p className="text-xs text-[#374151] leading-relaxed">{n.text}</p>
-                          <p className="text-[10px] text-[#9CA3AF] mt-0.5">{n.time}</p>
+                          <p className="text-xs text-[#0F172A] leading-relaxed font-semibold">{n.text}</p>
+                          <p className="text-[10px] text-slate-400 mt-0.5">{n.time}</p>
                         </div>
                       </div>
                     ))}
@@ -646,35 +638,31 @@ export default function DashboardPage() {
                 </div>
               )}
             </div>
-            {/* User Avatar + Click-based Menu */}
+              {/* User Avatar + Click-based Menu */}
             <div className="relative" ref={profileMenuRef}>
               <button
                 onClick={() => { setProfileMenuOpen(o => !o); setNotifOpen(false); }}
-                className="liquid-glass-interactive liquid-glass-circle h-9 w-9 text-white text-xs font-bold cursor-pointer shadow-sm overflow-hidden"
+                className="h-9 w-9 rounded-full bg-[#7C3AED] text-white text-xs font-bold flex items-center justify-center cursor-pointer shadow-sm border border-white/50 overflow-hidden"
               >
-                <span className="liquid-glass-specular" aria-hidden="true" />
-                <span className="liquid-glass-refraction" aria-hidden="true" />
-                <span className="relative z-10 flex items-center justify-center w-full h-full liquid-glass-content bg-[#2563EB]/90">
-                  {profile?.profile_image ? (
-                    <img src={profile.profile_image} alt={profile?.full_name || 'User'} className="h-full w-full object-cover" />
-                  ) : (
-                    firstName ? firstName[0].toUpperCase() : 'U'
-                  )}
-                </span>
+                {profile?.profile_image ? (
+                  <img src={profile.profile_image} alt={profile?.full_name || 'User'} className="h-full w-full object-cover" />
+                ) : (
+                  firstName ? firstName[0].toUpperCase() : 'U'
+                )}
               </button>
               {profileMenuOpen && (
-                <div className="absolute right-0 mt-2 w-52 bg-white/95 backdrop-blur-xl rounded-2xl border border-white/80 shadow-[0_12px_32px_rgba(0,0,0,0.12)] py-2 z-50 animate-fade-in-down">
-                  <div className="px-4 py-2.5 border-b border-[#F0F1F8]">
-                    <p className="text-sm font-semibold text-[#111827] truncate">{profile?.full_name || 'User'}</p>
-                    <p className="text-[11px] text-[#9CA3AF] truncate">{user?.email}</p>
+                <div className="absolute right-0 mt-2 w-52 bg-white rounded-2xl border border-slate-200 shadow-xl py-2 z-50 animate-fade-in-down">
+                  <div className="px-4 py-2.5 border-b border-slate-100">
+                    <p className="text-xs font-bold text-[#0F172A] truncate">{profile?.full_name || 'User'}</p>
+                    <p className="text-[10px] text-slate-500 truncate">{user?.email}</p>
                   </div>
-                  <button onClick={() => { router.push('/profile'); setProfileMenuOpen(false); }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-[#4B5563] hover:bg-[#F7F8FC] cursor-pointer transition-colors">
+                  <button onClick={() => { router.push('/profile'); setProfileMenuOpen(false); }} className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-purple-50 hover:text-[#7C3AED] cursor-pointer transition-colors">
                     <User size={14} /> Profile
                   </button>
-                  <button onClick={() => { setActiveTab('settings'); setStep('dashboard'); setProfileMenuOpen(false); }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-[#4B5563] hover:bg-[#F7F8FC] cursor-pointer transition-colors">
+                  <button onClick={() => { setActiveTab('settings'); setStep('dashboard'); setProfileMenuOpen(false); }} className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-purple-50 hover:text-[#7C3AED] cursor-pointer transition-colors">
                     <Settings size={14} /> Settings
                   </button>
-                  <button onClick={logout} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-[#EF4444] hover:bg-[#FEF2F2] cursor-pointer transition-colors">
+                  <button onClick={logout} className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 cursor-pointer transition-colors">
                     <LogOut size={14} /> Log Out
                   </button>
                 </div>
@@ -682,33 +670,33 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
-      </nav>
+      </header>
 
       {/* ============================================================
           MAIN CONTENT
           ============================================================ */}
-      <main className="max-w-[1320px] mx-auto px-6 py-8">
+      <main className="max-w-[1320px] mx-auto px-6 pt-24 pb-12">
 
         {/* Migration warning */}
         {migrationRequired && (
-          <div className="mb-6 border border-red-200 rounded-2xl p-5 bg-red-50">
+          <div className="mb-6 border border-rose-300/60 rounded-2xl p-5 bg-white shadow-xs">
             <div className="flex items-start gap-3">
-              <AlertCircle size={18} className="text-red-500 shrink-0 mt-0.5" />
+              <AlertCircle size={18} className="text-rose-500 shrink-0 mt-0.5" />
               <div className="flex-1">
-                <h3 className="text-sm font-semibold text-red-800">Database Setup Required</h3>
-                <p className="text-xs text-red-700 mt-1">
-                  Execute the SQL migration in your Supabase SQL Editor to align the <code className="font-mono bg-red-100 px-1 rounded text-xs">resumes</code> table schema.
+                <h3 className="text-sm font-bold text-rose-800">Database Setup Required</h3>
+                <p className="text-xs text-rose-700 mt-1">
+                  Execute the SQL migration in your Supabase SQL Editor to align the <code className="font-mono bg-rose-100 px-1 rounded text-xs">resumes</code> table schema.
                 </p>
                 {migrationSql && (
                   <div className="mt-3">
                     <div className="flex justify-between items-center mb-1.5">
-                      <span className="text-[10px] font-semibold text-red-600 uppercase">Migration Script</span>
+                      <span className="text-[10px] font-semibold text-rose-600 uppercase">Migration Script</span>
                       <button onClick={() => { navigator.clipboard.writeText(migrationSql); alert('Copied!'); }}
-                        className="text-[11px] font-medium text-red-600 hover:text-red-800 flex items-center gap-1 cursor-pointer">
+                        className="text-[11px] font-medium text-rose-600 hover:text-rose-800 flex items-center gap-1 cursor-pointer">
                         <Copy size={11} /> Copy
                       </button>
                     </div>
-                    <pre className="p-3 rounded-xl bg-white border border-red-100 font-mono text-[11px] text-red-800 max-h-40 overflow-auto whitespace-pre">{migrationSql}</pre>
+                    <pre className="p-3 rounded-xl bg-white border border-rose-100 font-mono text-[11px] text-rose-800 max-h-40 overflow-auto whitespace-pre">{migrationSql}</pre>
                   </div>
                 )}
               </div>
@@ -727,61 +715,54 @@ export default function DashboardPage() {
               {activeTab === 'home' && (
                 <div className="space-y-8">
 
-                  {/* ── HERO SECTION ─ Large, asymmetric, with subtle decorative graphics ── */}
-                  <div className="bg-white rounded-3xl border border-[#ECEDF3] shadow-[0_1px_3px_rgba(0,0,0,0.02)] p-8 md:p-10 relative overflow-hidden">
-                    {/* Subtle decorative elements — floating resume sheets, pen, paperclip */}
-                    <div className="absolute top-6 right-[340px] opacity-[0.04] pointer-events-none hidden lg:block">
+                  {/* ── HERO SECTION ─ Thick Solid Pure White Surface ── */}
+                  <div className="bg-white border border-slate-200 rounded-3xl p-8 md:p-10 relative overflow-hidden shadow-sm">
+                    {/* Subtle decorative elements */}
+                    <div className="absolute top-6 right-[340px] opacity-[0.03] pointer-events-none hidden lg:block">
                       <ResumeSheetSVG className="w-14 h-auto rotate-[-8deg]" />
                     </div>
-                    <div className="absolute bottom-4 left-16 opacity-[0.04] pointer-events-none hidden lg:block">
-                      <Paperclip size={32} className="text-[#6B7280] rotate-[25deg]" />
+                    <div className="absolute bottom-4 left-16 opacity-[0.03] pointer-events-none hidden lg:block">
+                      <Paperclip size={32} className="text-slate-400 rotate-[25deg]" />
                     </div>
-                    <div className="absolute top-8 left-[45%] opacity-[0.04] pointer-events-none hidden lg:block">
-                      <PenTool size={24} className="text-[#6B7280] rotate-[-15deg]" />
+                    <div className="absolute top-8 left-[45%] opacity-[0.03] pointer-events-none hidden lg:block">
+                      <PenTool size={24} className="text-slate-400 rotate-[-15deg]" />
                     </div>
-                    <div className="absolute bottom-8 right-[360px] opacity-[0.04] pointer-events-none hidden lg:block">
-                      <Bookmark size={20} className="text-[#6B7280]" />
-                    </div>
-                    {/* Subtle dot pattern in hero background */}
-                    <div className="absolute inset-0 opacity-[0.025] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #6B7280 0.7px, transparent 0.7px)', backgroundSize: '20px 20px' }} />
 
                     <div className="flex flex-col lg:flex-row lg:items-center gap-8 relative z-10">
                       {/* Left: Welcome */}
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-semibold text-[#2563EB] uppercase tracking-wider mb-3">Personal Workspace</p>
-                        <h1 className="text-3xl md:text-[36px] font-bold text-[#111827] tracking-tight leading-tight">
+                        <p className="text-xs font-bold text-[#7C3AED] uppercase tracking-wider mb-3">Personal Workspace</p>
+                        <h1 className="text-3xl md:text-[36px] font-black text-[#0F172A] tracking-tight leading-tight">
                           Welcome back, {firstName}
                         </h1>
-                        <p className="text-[15px] text-[#6B7280] mt-3 leading-relaxed max-w-lg">
+                        <p className="text-[15px] text-slate-600 mt-3 leading-relaxed max-w-lg font-medium">
                           Build and optimize ATS-friendly resumes. Continue where you left off or start something new.
                         </p>
                         <div className="flex items-center gap-3 mt-6">
-                          <Button onClick={handleCreateResumeStart} size="lg">
+                          <Button onClick={handleCreateResumeStart} size="lg" className="bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-bold shadow-md">
                             <Plus size={16} /> Create Resume
                           </Button>
-                          <Button onClick={() => setStep('import-resume')} variant="secondary" size="lg">
+                          <Button onClick={() => setStep('import-resume')} variant="secondary" size="lg" className="bg-white border-slate-200 text-slate-800 hover:bg-slate-50 font-bold">
                             <Upload size={15} /> Import Resume
                           </Button>
                         </div>
                       </div>
 
-                      {/* Right: ATS Score Widget — large, visual */}
+                      {/* Right: ATS Score Widget — Thick Solid Pure White Card with Emerald Accent */}
                       <div className="lg:w-[320px] shrink-0">
-                        <div className="bg-[#F7F8FC] rounded-2xl p-6 flex flex-col items-center text-center relative">
-                          {/* Subtle grid in ATS widget */}
-                          <div className="absolute inset-0 opacity-[0.03] pointer-events-none rounded-2xl overflow-hidden" style={{ backgroundImage: 'linear-gradient(#D1D5DB 1px, transparent 1px), linear-gradient(90deg, #D1D5DB 1px, transparent 1px)', backgroundSize: '16px 16px' }} />
+                        <div className="bg-white border-2 border-emerald-300 rounded-2xl p-6 flex flex-col items-center text-center relative shadow-sm">
                           <ATSRing score={completionRate} size={110} />
-                          <h3 className="text-base font-semibold text-[#111827] mt-4">Resume Health</h3>
-                          <p className="text-sm text-[#6B7280] mt-1">{totalResumes} resume{totalResumes !== 1 ? 's' : ''} in workspace</p>
-                          <div className="flex items-center gap-4 mt-4 text-xs text-[#6B7280]">
+                          <h3 className="text-base font-bold text-emerald-900 mt-4">Resume Health</h3>
+                          <p className="text-sm text-emerald-700 mt-1 font-medium">{totalResumes} resume{totalResumes !== 1 ? 's' : ''} in workspace</p>
+                          <div className="flex items-center gap-4 mt-4 text-xs text-emerald-700">
                             <div className="text-center">
-                              <p className="text-lg font-semibold text-[#111827]">{templatesUsed}</p>
-                              <p>Templates</p>
+                              <p className="text-lg font-bold text-emerald-900">{templatesUsed}</p>
+                              <p className="font-semibold">Templates</p>
                             </div>
-                            <div className="h-8 w-px bg-[#ECEDF3]" />
+                            <div className="h-8 w-px bg-emerald-200" />
                             <div className="text-center">
-                              <p className="text-lg font-semibold text-[#111827]">{lastUpdatedText}</p>
-                              <p>Last Edit</p>
+                              <p className="text-lg font-bold text-emerald-900">{lastUpdatedText}</p>
+                              <p className="font-semibold">Last Edit</p>
                             </div>
                           </div>
                         </div>
@@ -789,53 +770,15 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
-                  {/* ── RECOMMENDED FOR YOU ──────────────────── */}
-                  {profile && (profile.department || profile.experience_level) && (
-                    <div>
-                      <div className="flex items-center gap-2.5 mb-4">
-                        <div className="h-7 w-7 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center">
-                          <Zap size={13} className="text-amber-500" />
-                        </div>
-                        <h2 className="text-base font-semibold text-[#111827]">Recommended For You</h2>
-                        <span className="text-xs text-[#9CA3AF]">Based on your profile</span>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        {recommendedTemplates.map((tmpl) => (
-                          <button
-                            key={tmpl.id}
-                            onClick={() => handleCardClick(tmpl)}
-                            className="bg-white border border-[#ECEDF3] rounded-2xl overflow-hidden hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] hover:border-[#DDDEE8] transition-all group cursor-pointer text-left"
-                          >
-                            <div className="bg-[#F7F8FC] h-[180px] overflow-hidden relative flex justify-center border-b border-[#ECEDF3]">
-                              <div className="scale-[0.20] origin-top pointer-events-none" style={{ width: '900px', height: '1200px', position: 'relative', top: '12px' }}>
-                                <TemplateRenderer templateId={tmpl.id} zoom={100} />
-                              </div>
-                              <div className="absolute top-2 left-2">
-                                <span className="bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Recommended</span>
-                              </div>
-                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 gap-2">
-                                <span className="bg-white shadow-lg text-[#111827] px-3 py-1.5 rounded-xl text-xs font-medium">Preview</span>
-                              </div>
-                            </div>
-                            <div className="p-3">
-                              <p className="text-[13px] font-semibold text-[#111827]">{tmpl.name}</p>
-                              <p className="text-[11px] text-[#9CA3AF] mt-0.5">ATS {tmpl.ats_score}% · {tmpl.layout_type}</p>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* ── QUICK ACTIONS ─ Large feature tiles like Resumind ── */}
+                  {/* ── QUICK ACTIONS ─ 4 Thick Solid Pure White Boxes with Vibrant Actual Color Badges ── */}
                   <div>
-                    <h2 className="text-lg font-semibold text-[#111827] mb-4">Quick Actions</h2>
+                    <h2 className="text-base font-extrabold text-[#0F172A] mb-4">Quick Actions</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                       {[
-                        { label: 'New Resume', desc: 'Start fresh and build a professional resume in minutes.', icon: PenTool, color: 'bg-blue-50 text-[#2563EB]', decoIcon: FileText, decoColor: 'text-blue-100', onClick: () => handleCreateResumeStart() },
-                        { label: 'Browse Templates', desc: 'Explore 12+ ATS-optimized templates for every career stage.', icon: LayoutTemplate, color: 'bg-purple-50 text-[#7C3AED]', decoIcon: Grid, decoColor: 'text-purple-100', onClick: () => setActiveTab('templates') },
-                        { label: 'Import Resume', desc: 'Upload your existing resume and we will extract details.', icon: Upload, color: 'bg-orange-50 text-[#EA580C]', decoIcon: ClipboardCheck, decoColor: 'text-orange-100', onClick: () => setStep('import-resume') },
-                        { label: 'ATS Checker', desc: 'See how your resume performs against ATS algorithms.', icon: BadgeCheck, color: 'bg-emerald-50 text-[#10B981]', decoIcon: Shield, decoColor: 'text-emerald-100', onClick: () => setActiveTab('ats') },
+                        { label: 'New Resume', desc: 'Start fresh and build a professional resume in minutes.', icon: PenTool, iconBg: 'bg-[#7C3AED] text-white', arrowColor: 'text-[#7C3AED]', onClick: () => handleCreateResumeStart() },
+                        { label: 'Browse Templates', desc: 'Explore 12+ ATS-optimized templates for every career stage.', icon: LayoutTemplate, iconBg: 'bg-[#8B5CF6] text-white', arrowColor: 'text-[#8B5CF6]', onClick: () => setActiveTab('templates') },
+                        { label: 'Import Resume', desc: 'Upload your existing resume and we will extract details.', icon: Upload, iconBg: 'bg-[#F59E0B] text-white', arrowColor: 'text-[#F59E0B]', onClick: () => setStep('import-resume') },
+                        { label: 'ATS Checker', desc: 'See how your resume performs against ATS algorithms.', icon: BadgeCheck, iconBg: 'bg-[#10B981] text-white', arrowColor: 'text-[#10B981]', onClick: () => setActiveTab('ats') },
                       ].map((action, i) => (
                         <motion.button
                           key={action.label}
@@ -843,16 +786,14 @@ export default function DashboardPage() {
                           initial={{ opacity: 0, y: 12 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.3, delay: i * 0.05, ease: [0.16, 1, 0.3, 1] }}
-                          className="flex flex-col items-start bg-white border border-[#ECEDF3] rounded-2xl p-6 hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] hover:border-[#DDDEE8] transition-all duration-250 group cursor-pointer text-left relative overflow-hidden"
+                          className="flex flex-col items-start bg-white border border-slate-200 rounded-2xl p-6 hover:shadow-lg hover:border-purple-300 transition-all duration-200 group cursor-pointer text-left relative overflow-hidden shadow-sm"
                         >
-                          {/* Decorative large icon in background */}
-                          <action.decoIcon size={64} className={`absolute -bottom-3 -right-3 ${action.decoColor} opacity-60 pointer-events-none transition-transform group-hover:scale-110 group-hover:rotate-[-3deg]`} />
-                          <div className={`h-12 w-12 rounded-2xl ${action.color} flex items-center justify-center mb-4 relative z-10`}>
-                            <action.icon size={20} />
+                          <div className={`h-11 w-11 rounded-2xl ${action.iconBg} flex items-center justify-center mb-4 relative z-10 shadow-sm`}>
+                            <action.icon size={19} />
                           </div>
-                          <h3 className="text-sm font-semibold text-[#111827] group-hover:text-[#2563EB] transition-colors relative z-10">{action.label}</h3>
-                          <p className="text-xs text-[#9CA3AF] mt-1 leading-relaxed relative z-10">{action.desc}</p>
-                          <ArrowRight size={14} className="mt-3 text-[#D1D5DB] group-hover:text-[#2563EB] group-hover:translate-x-1 transition-all relative z-10" />
+                          <h3 className="text-sm font-bold text-[#0F172A] relative z-10">{action.label}</h3>
+                          <p className="text-xs text-slate-500 mt-1.5 leading-relaxed relative z-10 font-medium">{action.desc}</p>
+                          <ArrowRight size={14} className={`mt-3.5 ${action.arrowColor} group-hover:translate-x-1 transition-all relative z-10`} />
                         </motion.button>
                       ))}
                     </div>
@@ -864,9 +805,9 @@ export default function DashboardPage() {
                     {/* Left Column — Recent Drafts (65%) */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-lg font-semibold text-[#111827]">Recent Drafts</h2>
+                        <h2 className="text-base font-extrabold text-[#172B4D]">Recent Drafts</h2>
                         {resumes.length > 3 && (
-                          <button onClick={() => setActiveTab('resumes')} className="text-xs font-medium text-[#2563EB] hover:underline cursor-pointer flex items-center gap-1">
+                          <button onClick={() => setActiveTab('resumes')} className="text-xs font-bold text-[#7C3AED] hover:underline cursor-pointer flex items-center gap-1">
                             View All <ArrowRight size={12} />
                           </button>
                         )}
@@ -875,7 +816,7 @@ export default function DashboardPage() {
                       {loadingResumes ? (
                         <div className="space-y-3">
                           {[...Array(2)].map((_, i) => (
-                            <div key={i} className="bg-white border border-[#ECEDF3] rounded-2xl p-5 h-36 animate-pulse">
+                            <div key={i} className="bg-white rounded-2xl p-5 h-36 border border-[#D0DEE8] animate-pulse">
                               <div className="flex gap-4">
                                 <div className="w-24 h-[120px] rounded-xl skeleton" />
                                 <div className="flex-1 space-y-2 pt-1">
@@ -899,73 +840,74 @@ export default function DashboardPage() {
                                 initial={{ opacity: 0, y: 8 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: i * 0.05 }}
-                                className="bg-white border border-[#ECEDF3] rounded-2xl p-5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] hover:border-[#DDDEE8] transition-all duration-250 group"
+                                className="bg-white border border-slate-200 rounded-2xl p-5 hover:shadow-md hover:border-[#7C3AED]/50 transition-all duration-200 group shadow-xs"
                               >
                                 <div className="flex items-start gap-4">
-                                  {/* Mini Resume Preview — 96x128, real template render */}
-                                  <div className="w-24 h-[128px] rounded-xl bg-[#F7F8FC] border border-[#ECEDF3] shrink-0 overflow-hidden relative group/thumb">
-                                    {resume.template_id ? (
-                                      <>
-                                        <div className="scale-[0.10] origin-top-left pointer-events-none" style={{ width: '900px', height: '1200px', position: 'relative', left: '3px', top: '3px' }}>
-                                          <TemplateRenderer templateId={resume.template_id} zoom={100} data={resume.resume_data} />
+                                  {/* Mini Resume Preview — Exact A4 Portrait Box */}
+                                  <div className="w-20 aspect-[210/297] rounded-lg bg-white border border-slate-200 shrink-0 overflow-hidden relative group/thumb shadow-xs flex items-center justify-center">
+                                    <div className="resume-paper rounded-md w-full h-full overflow-hidden relative">
+                                      {resume.template_id ? (
+                                        <>
+                                          <div className="scale-[0.10] origin-top-left pointer-events-none" style={{ width: '794px', height: '1123px', position: 'relative', left: '0px', top: '0px' }}>
+                                            <TemplateRenderer templateId={resume.template_id} zoom={100} data={resume.resume_data} />
+                                          </div>
+                                          <div className="absolute inset-0 bg-[#7C3AED]/0 group-hover/thumb:bg-[#7C3AED]/10 transition-colors" />
+                                        </>
+                                      ) : (
+                                        <div className="w-full h-full flex flex-col items-center justify-center gap-1 bg-slate-50">
+                                          <ResumeSheetSVG className="w-8 h-auto opacity-40" />
+                                          <span className="text-[7px] text-slate-400 font-medium">No template</span>
                                         </div>
-                                        {/* Subtle hover overlay on thumbnail */}
-                                        <div className="absolute inset-0 bg-[#2563EB]/0 group-hover/thumb:bg-[#2563EB]/5 transition-colors rounded-xl" />
-                                      </>
-                                    ) : (
-                                      <div className="w-full h-full flex flex-col items-center justify-center gap-1">
-                                        <ResumeSheetSVG className="w-10 h-auto opacity-40" />
-                                        <span className="text-[8px] text-[#9CA3AF] font-medium">No template</span>
-                                      </div>
-                                    )}
+                                      )}
+                                    </div>
                                   </div>
 
                                   {/* Info */}
                                   <div className="flex-1 min-w-0">
                                     <div className="flex items-start justify-between gap-2">
                                       <div className="min-w-0">
-                                        <h4 className="text-sm font-medium text-[#111827] truncate">{resume.title}</h4>
-                                        <p className="text-xs text-[#9CA3AF] mt-0.5">Target: {resume.role}</p>
+                                        <h4 className="text-sm font-bold text-[#0F172A] truncate">{resume.title}</h4>
+                                        <p className="text-xs text-slate-500 mt-0.5 font-medium">Target: {resume.role}</p>
                                       </div>
                                       <div className="flex items-center gap-1.5 shrink-0">
-                                        {ats && <Badge variant="success" className="text-[10px]">ATS {ats}%</Badge>}
-                                        <Badge variant="secondary" className="text-[10px]">{resume.category}</Badge>
+                                        {ats && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">ATS {ats}%</span>}
+                                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-50 text-[#7C3AED] border border-purple-200">{resume.category}</span>
                                       </div>
                                     </div>
 
                                     {/* Progress */}
                                     <div className="mt-3 flex items-center gap-3">
                                       <div className="flex-1">
-                                        <div className="w-full h-1.5 rounded-full bg-[#F0F1F8] overflow-hidden">
+                                        <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden p-0.5 border border-slate-200">
                                           <motion.div
                                             initial={{ width: 0 }}
                                             animate={{ width: `${completion}%` }}
                                             transition={{ duration: 0.6, ease: 'easeOut' }}
-                                            className="h-full bg-[#2563EB] rounded-full"
+                                            className="h-full bg-[#7C3AED] rounded-full"
                                           />
                                         </div>
                                       </div>
-                                      <span className="text-[11px] font-medium text-[#4B5563] shrink-0">{completion}%</span>
+                                      <span className="text-[11px] font-bold text-slate-600 shrink-0">{completion}%</span>
                                     </div>
 
                                     {/* Footer */}
                                     <div className="mt-3 flex items-center justify-between">
-                                      <span className="text-[11px] text-[#9CA3AF] flex items-center gap-1">
+                                      <span className="text-[11px] text-slate-500 font-medium flex items-center gap-1">
                                         <Clock size={11} /> {getRelativeLastUpdated([resume])}
-                                        {templateName && <span className="ml-2 text-[#6B7280]">Template: {templateName}</span>}
+                                        {templateName && <span className="ml-2 text-slate-600">Template: {templateName}</span>}
                                       </span>
                                       <div className="flex items-center gap-1">
                                         <button onClick={(e) => { e.stopPropagation(); toggleFavorite(resume.id); }}
-                                          className={`h-7 w-7 rounded-lg flex items-center justify-center transition cursor-pointer ${favorites.includes(resume.id) ? 'text-amber-400 bg-amber-50 hover:bg-amber-100' : 'text-[#D1D5DB] hover:text-amber-400 hover:bg-amber-50 opacity-0 group-hover:opacity-100'}`} title="Favorite">
-                                          <Star size={13} className={favorites.includes(resume.id) ? 'fill-amber-400' : ''} />
+                                          className={`h-8 w-8 rounded-full bg-white hover:bg-slate-50 border border-slate-200 flex items-center justify-center transition cursor-pointer ${favorites.includes(resume.id) ? 'text-amber-500' : 'text-slate-400 hover:text-amber-500 opacity-0 group-hover:opacity-100'}`} title="Favorite">
+                                          <Star size={13} className={favorites.includes(resume.id) ? 'fill-amber-500' : ''} />
                                         </button>
                                         <button onClick={(e) => { e.stopPropagation(); setDeleteConfirmId(resume.id); }}
-                                          className="h-7 w-7 rounded-lg text-[#D1D5DB] hover:text-red-500 hover:bg-red-50 flex items-center justify-center transition cursor-pointer opacity-0 group-hover:opacity-100" title="Delete">
+                                          className="h-8 w-8 rounded-full bg-white hover:bg-rose-50 border border-slate-200 text-slate-400 hover:text-rose-600 flex items-center justify-center transition cursor-pointer opacity-0 group-hover:opacity-100" title="Delete">
                                           <Trash2 size={13} />
                                         </button>
                                         <button onClick={() => router.push(`/builder?resumeId=${resume.id}`)}
-                                          className="h-7 px-3 rounded-lg bg-[#EFF6FF] text-[#2563EB] text-[11px] font-medium flex items-center gap-1 hover:bg-[#DBEAFE] transition cursor-pointer">
-                                          Continue <ArrowRight size={10} />
+                                          className="h-8 px-3.5 rounded-full text-white text-[11px] font-bold flex items-center gap-1 bg-[#7C3AED] hover:bg-[#6D28D9] transition cursor-pointer shadow-sm">
+                                          Continue <ArrowRight size={11} />
                                         </button>
                                       </div>
                                     </div>
@@ -976,100 +918,78 @@ export default function DashboardPage() {
                           })}
                         </div>
                       ) : (
-                        <div className="bg-white border border-dashed border-[#DDDEE8] rounded-2xl py-14 px-6 text-center relative overflow-hidden">
-                          {/* Subtle dot pattern background */}
-                          <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #6B7280 0.7px, transparent 0.7px)', backgroundSize: '16px 16px' }} />
-                          {/* SVG illustration instead of generic icon */}
-                          <div className="mx-auto mb-5">
-                            <EmptyStateIllustration />
-                          </div>
-                          <h4 className="text-base font-semibold text-[#111827]">No resumes yet</h4>
-                          <p className="text-sm text-[#6B7280] max-w-xs mx-auto mt-1.5 mb-5">
-                            Create your first ATS-optimized resume and start landing interviews.
-                          </p>
-                          <div className="flex items-center justify-center gap-3">
-                            <Button onClick={handleCreateResumeStart}>
-                              <Plus size={14} /> Create Resume
-                            </Button>
-                            <Button onClick={() => setStep('import-resume')} variant="secondary">
-                              Import Resume
-                            </Button>
-                          </div>
+                        <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center shadow-xs">
+                          <p className="text-sm text-slate-500 font-medium">No drafts yet. Click &ldquo;Create New Resume&rdquo; to start!</p>
                         </div>
                       )}
                     </div>
 
-                    {/* Right Column — Insights (35%) */}
-                    <div className="lg:w-[340px] shrink-0 space-y-4">
-                      {/* Recruiter Approved Layouts */}
-                      <div className="bg-white border border-[#ECEDF3] rounded-2xl p-5">
-                        <div className="flex items-center justify-between mb-4">
-                          <div>
-                            <h3 className="text-sm font-semibold text-[#111827]">Recruiter Approved</h3>
-                            <p className="text-[11px] text-[#9CA3AF]">Highest rated by hiring managers</p>
+                    {/* Right Column — Sidebar (35%) */}
+                    <div className="w-full lg:w-80 shrink-0 space-y-6">
+
+                      {/* Recruiter Approved Layouts — Thick White Card with exact A4 portrait thumbnails */}
+                      <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <Star size={14} className="text-[#F59E0B]" />
+                            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">Recruiter Approved</h3>
                           </div>
-                          <button onClick={() => setActiveTab('templates')} className="text-[11px] font-medium text-[#2563EB] hover:underline cursor-pointer flex items-center gap-0.5">
+                          <button onClick={() => setActiveTab('templates')} className="text-[11px] font-bold text-[#7C3AED] hover:underline cursor-pointer flex items-center gap-0.5">
                             All <ArrowRight size={10} />
                           </button>
                         </div>
                         <div className="space-y-2">
                           {TEMPLATE_METADATA.filter(t => t.recruiter_rating === 5).slice(0, 4).map((tmpl) => (
                             <button key={tmpl.id} onClick={() => handleCardClick(tmpl)}
-                              className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-[#F7F8FC] transition cursor-pointer text-left group">
-                              <div className="w-12 h-[60px] rounded-lg bg-[#F7F8FC] border border-[#ECEDF3] shrink-0 overflow-hidden relative">
-                                <div className="scale-[0.055] origin-top-left pointer-events-none" style={{ width: '900px', height: '1200px', position: 'relative', left: '2px', top: '2px' }}>
-                                  <TemplateRenderer templateId={tmpl.id} zoom={100} />
-                                </div>
+                              className="w-full flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 border border-slate-200 hover:bg-white hover:border-[#7C3AED]/50 transition cursor-pointer text-left group">
+                              <div className="w-10 aspect-[210/297] rounded-md border border-slate-200 shrink-0 overflow-hidden relative shadow-xs">
+                                <A4ResumePreview templateId={tmpl.id} />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-[12px] font-semibold text-[#111827] truncate">{tmpl.name}</p>
-                                <p className="text-[10px] text-[#9CA3AF]">ATS {tmpl.ats_score}% · ★ {tmpl.recruiter_rating}/5</p>
+                                <p className="text-xs font-bold text-[#0F172A] truncate">{tmpl.name}</p>
+                                <p className="text-[10px] text-slate-500 font-medium">ATS {tmpl.ats_score}% · ★ {tmpl.recruiter_rating}/5</p>
                               </div>
-                              <ChevronRight size={13} className="text-[#D1D5DB] group-hover:text-[#9CA3AF] transition shrink-0" />
+                              <ChevronRight size={13} className="text-slate-400 group-hover:text-[#7C3AED] transition shrink-0" />
                             </button>
                           ))}
                         </div>
                       </div>
 
-                      {/* Career Tip — with subtle illustration */}
-                      <div className="bg-white border border-[#ECEDF3] rounded-2xl p-5 relative overflow-hidden">
-                        {/* Subtle decorative graphic */}
-                        <div className="absolute -bottom-2 -right-2 opacity-[0.05] pointer-events-none">
-                          <TrendingUp size={56} className="text-[#6B7280]" />
-                        </div>
+                      {/* Career Tip — Thick White Card with Vibrant Amber Badge */}
+                      <div className="bg-white border border-amber-200 rounded-2xl p-5 relative overflow-hidden shadow-xs">
                         <div className="flex items-center gap-2.5 mb-3 relative z-10">
-                          <div className="h-8 w-8 rounded-xl bg-[#FFFBEB] border border-amber-100 flex items-center justify-center">
-                            <Lightbulb size={14} className="text-amber-500" />
+                          <div className="h-8 w-8 rounded-xl bg-[#F59E0B] text-white flex items-center justify-center shadow-xs">
+                            <Lightbulb size={14} />
                           </div>
-                          <h3 className="text-sm font-semibold text-[#111827]">Career Tip</h3>
+                          <h3 className="text-xs font-bold uppercase tracking-wider text-amber-900">Career Tip</h3>
                         </div>
                         <AnimatePresence mode="wait">
                           <motion.div key={tipIndex} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.2 }} className="relative z-10">
-                            <h4 className="text-xs font-semibold text-[#4B5563]">{CAREER_TIPS[tipIndex].title}</h4>
-                            <p className="text-xs text-[#6B7280] mt-1 leading-relaxed">{CAREER_TIPS[tipIndex].text}</p>
+                            <h4 className="text-xs font-bold text-[#0F172A]">{CAREER_TIPS[tipIndex].title}</h4>
+                            <p className="text-xs text-slate-600 mt-1 leading-relaxed font-medium">{CAREER_TIPS[tipIndex].text}</p>
                           </motion.div>
                         </AnimatePresence>
                       </div>
 
                       {/* Recent Activity */}
-                      <div className="bg-white border border-[#ECEDF3] rounded-2xl p-5">
-                        <h3 className="text-sm font-semibold text-[#111827] mb-3">Recent Activity</h3>
+                      <div className="bg-[#FFFFFF] border border-[#BFD5E8] rounded-2xl p-5 shadow-xs">
+                        <h3 className="text-sm font-bold text-[#172B4D] mb-3">Recent Activity</h3>
                         {resumes.length > 0 ? (
                           <div className="space-y-3">
                             {resumes.slice(0, 3).map((r) => (
                               <div key={r.id} className="flex items-start gap-2.5">
-                                <div className="h-2 w-2 rounded-full bg-[#2563EB] mt-1.5 shrink-0" />
+                                <div className="h-2 w-2 rounded-full bg-[#7C3AED] mt-1.5 shrink-0" />
                                 <div>
-                                  <p className="text-xs text-[#4B5563]">
-                                    Edited <span className="font-medium text-[#111827]">{r.title}</span>
+                                  <p className="text-xs text-[#405A73]">
+                                    Edited <span className="font-semibold text-[#172B4D]">{r.title}</span>
                                   </p>
-                                  <p className="text-[10px] text-[#9CA3AF]">{getRelativeLastUpdated([r])}</p>
+                                  <p className="text-[10px] text-[#66788A]">{getRelativeLastUpdated([r])}</p>
                                 </div>
                               </div>
                             ))}
                           </div>
                         ) : (
-                          <p className="text-xs text-[#9CA3AF]">No recent activity. Create your first resume to get started.</p>
+                          <p className="text-xs text-[#66788A]">No recent activity. Create your first resume to get started.</p>
                         )}
                       </div>
                     </div>
@@ -1081,21 +1001,10 @@ export default function DashboardPage() {
           ============================================================ */}
               {activeTab === 'resumes' && (
                 <div className="space-y-6">
-                  {/* Header */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div>
-                      <h1 className="text-2xl font-bold text-[#111827]">My Resumes</h1>
-                      <p className="text-sm text-[#6B7280] mt-0.5">{totalResumes} resume{totalResumes !== 1 ? 's' : ''} in your workspace</p>
-                    </div>
-                    <Button onClick={handleCreateResumeStart}>
-                      <Plus size={15} /> New Resume
-                    </Button>
-                  </div>
-
                   {loadingResumes ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                       {[...Array(3)].map((_, i) => (
-                        <div key={i} className="bg-white border border-[#ECEDF3] rounded-2xl overflow-hidden">
+                        <div key={i} className="bg-white border border-[#D0DEE8] rounded-2xl overflow-hidden shadow-xs">
                           <div className="h-60 skeleton" />
                           <div className="p-4 space-y-2">
                             <div className="h-4 w-2/3 skeleton rounded-lg" />
@@ -1110,25 +1019,22 @@ export default function DashboardPage() {
                         const completion = calculateResumeCompletion(resume.resume_data);
                         const tmpl = TEMPLATE_METADATA.find(t => t.id === resume.template_id);
                         return (
-                          <div key={resume.id} className="bg-white border border-[#ECEDF3] rounded-2xl overflow-hidden hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] hover:border-[#DDDEE8] transition-all duration-250 group">
-                            {/* Large Preview Area */}
-                            {/* LARGE Resume Preview — ~70% of card, real template render */}
-                            <div className="bg-[#F7F8FC] border-b border-[#ECEDF3] h-60 relative flex justify-center overflow-hidden">
+                          <div key={resume.id} className="bg-white border border-slate-200 rounded-2xl overflow-hidden hover:shadow-md hover:border-[#7C3AED]/50 transition-all duration-200 group shadow-xs">
+                            {/* Large A4 Portrait Preview Box */}
+                            <div className="w-full aspect-[210/297] bg-white border-b border-slate-200 relative overflow-hidden">
                               {resume.template_id ? (
-                                <div className="scale-[0.20] origin-top pointer-events-none" style={{ width: '900px', height: '1200px', position: 'relative', top: '24px' }}>
-                                  <TemplateRenderer templateId={resume.template_id} zoom={100} data={resume.resume_data} />
-                                </div>
+                                <A4ResumePreview templateId={resume.template_id} data={resume.resume_data} />
                               ) : (
-                                <div className="flex flex-col items-center gap-2">
+                                <div className="w-full h-full flex flex-col items-center justify-center gap-2">
                                   <ResumeSheetSVG className="w-16 h-auto opacity-30" />
-                                  <span className="text-[10px] text-[#9CA3AF] font-medium">No template selected</span>
+                                  <span className="text-[10px] text-slate-500 font-medium">No template selected</span>
                                 </div>
                               )}
                               {/* Hover Overlay with actions */}
-                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+                              <div className="absolute inset-0 bg-slate-900/30 backdrop-blur-xs transition-opacity flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
                                 <button onClick={() => router.push(`/builder?resumeId=${resume.id}`)}
-                                  className="bg-white shadow-md text-[#111827] px-4 py-2 rounded-xl text-xs font-medium flex items-center gap-1.5 cursor-pointer hover:bg-[#F7F8FC] transition">
-                                  <Eye size={13} /> Edit
+                                  className="bg-white shadow-md text-[#0F172A] px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer hover:bg-slate-50 transition">
+                                  <Eye size={13} /> Edit Resume
                                 </button>
                               </div>
                             </div>
@@ -1136,26 +1042,26 @@ export default function DashboardPage() {
                             <div className="p-4">
                               <div className="flex items-start justify-between gap-2">
                                 <div className="min-w-0">
-                                  <h4 className="text-sm font-medium text-[#111827] truncate">{resume.title}</h4>
-                                  <p className="text-[11px] text-[#9CA3AF] mt-0.5">{resume.role}</p>
+                                  <h4 className="text-sm font-bold text-[#0F172A] truncate">{resume.title}</h4>
+                                  <p className="text-[11px] text-slate-500 mt-0.5">{resume.role}</p>
                                 </div>
                                 <button onClick={(e) => { e.stopPropagation(); handleDeleteResume(resume.id); }}
-                                  className="h-7 w-7 rounded-lg text-[#D1D5DB] hover:text-red-500 hover:bg-red-50 flex items-center justify-center transition cursor-pointer opacity-0 group-hover:opacity-100 shrink-0" title="Delete">
+                                  className="h-7 w-7 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center transition cursor-pointer opacity-0 group-hover:opacity-100 shrink-0" title="Delete">
                                   <Trash2 size={13} />
                                 </button>
                               </div>
                               <div className="mt-3 flex items-center gap-3">
-                                <div className="flex-1 h-1.5 rounded-full bg-[#F0F1F8] overflow-hidden">
-                                  <div className="h-full bg-[#2563EB] rounded-full" style={{ width: `${completion}%` }} />
+                                <div className="flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden border border-slate-200">
+                                  <div className="h-full bg-[#7C3AED] rounded-full" style={{ width: `${completion}%` }} />
                                 </div>
-                                <span className="text-[11px] font-medium text-[#4B5563]">{completion}%</span>
+                                <span className="text-[11px] font-semibold text-slate-600">{completion}%</span>
                               </div>
                               <div className="mt-3 flex items-center justify-between">
                                 <div className="flex items-center gap-1.5">
-                                  <Badge variant="secondary" className="text-[10px]">{resume.category}</Badge>
-                                  {tmpl && <Badge variant="success" className="text-[10px]">ATS {tmpl.ats_score}%</Badge>}
+                                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-50 text-[#7C3AED] border border-purple-200">{resume.category}</span>
+                                  {tmpl && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">ATS {tmpl.ats_score}%</span>}
                                 </div>
-                                <span className="text-[10px] text-[#9CA3AF]">{getRelativeLastUpdated([resume])}</span>
+                                <span className="text-[10px] text-slate-500">{getRelativeLastUpdated([resume])}</span>
                               </div>
                             </div>
                           </div>
@@ -1163,14 +1069,13 @@ export default function DashboardPage() {
                       })}
                     </div>
                   ) : (
-                    <div className="bg-white border border-dashed border-[#DDDEE8] rounded-2xl py-14 text-center relative overflow-hidden">
-                      <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #6B7280 0.7px, transparent 0.7px)', backgroundSize: '16px 16px' }} />
+                    <div className="bg-white border border-dashed border-slate-300 rounded-2xl py-14 text-center relative overflow-hidden shadow-xs">
                       <div className="mx-auto mb-4">
                         <EmptyStateIllustration />
                       </div>
-                      <h4 className="text-base font-semibold text-[#111827]">No resumes yet</h4>
-                      <p className="text-sm text-[#6B7280] mt-1 max-w-xs mx-auto mb-5">Start by creating your first resume or importing an existing one.</p>
-                      <Button onClick={handleCreateResumeStart}><Plus size={14} /> Create Resume</Button>
+                      <h4 className="text-base font-bold text-[#0F172A]">No resumes yet</h4>
+                      <p className="text-sm text-slate-500 mt-1 max-w-xs mx-auto mb-5 font-medium">Start by creating your first resume or importing an existing one.</p>
+                      <Button onClick={handleCreateResumeStart} className="bg-[#7C3AED] hover:bg-[#6D28D9] text-white"><Plus size={14} /> Create Resume</Button>
                     </div>
                   )}
                 </div>
@@ -1186,22 +1091,20 @@ export default function DashboardPage() {
                       <button
                         onClick={() => {
                           if (targetResumeId) {
-                            // Flow B: Came from Builder — return to Builder
                             router.replace(`/builder?resumeId=${targetResumeId}`);
                           } else {
-                            // Flow A: Browsing from Dashboard — return to Home tab directly (never mounts Builder)
                             setTargetResumeId(null);
                             setActiveTab('home');
                           }
                         }}
-                        className="h-8 w-8 rounded-xl bg-[#F7F8FC] border border-[#ECEDF3] flex items-center justify-center text-[#9CA3AF] hover:text-[#6B7280] hover:border-[#DDDEE8] transition cursor-pointer"
+                        className="h-8 w-8 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:text-[#0F172A] transition cursor-pointer"
                         title={targetResumeId ? 'Back to Builder' : 'Back to Home'}
                       >
                         <ArrowLeft className="h-4 w-4" />
                       </button>
                       <div>
-                        <h1 className="text-2xl font-bold text-[#111827]">Templates</h1>
-                        <p className="text-sm text-[#6B7280] mt-0.5">
+                        <h1 className="text-2xl font-extrabold text-[#0F172A]">Templates</h1>
+                        <p className="text-sm text-slate-500 mt-0.5">
                           {targetResumeId
                             ? 'Select a new template for your resume. Your content will be preserved.'
                             : 'Explore ATS-optimized templates designed for every career stage.'}
@@ -1209,21 +1112,21 @@ export default function DashboardPage() {
                       </div>
                     </div>
                     {targetResumeId && (
-                      <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-purple-200 bg-purple-50 text-[11px] font-bold text-purple-700">
+                      <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-purple-200 bg-purple-50 text-[11px] font-bold text-[#7C3AED]">
                         Change Template
                       </span>
                     )}
                   </div>
 
-                  {/* Filter pills */}
-                  <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+                  {/* Filter toolbar — Liquid Glass Translucent Pill */}
+                  <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 liquid-glass-toolbar p-1.5 rounded-full border border-white/60">
                     {FILTER_CATEGORIES.map((filter) => (
                       <button
                         key={filter}
                         onClick={() => setActiveFilter(filter)}
-                        className={`px-4 py-2 rounded-xl text-xs font-medium transition-all whitespace-nowrap cursor-pointer ${activeFilter === filter
-                            ? 'bg-[#2563EB] text-white'
-                            : 'bg-white border border-[#ECEDF3] text-[#6B7280] hover:border-[#DDDEE8] hover:text-[#374151]'
+                        className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-150 whitespace-nowrap cursor-pointer ${activeFilter === filter
+                            ? 'bg-[#7C3AED] text-white shadow-sm'
+                            : 'text-slate-600 hover:text-[#0F172A]'
                           }`}
                       >
                         {filter}
@@ -1231,7 +1134,7 @@ export default function DashboardPage() {
                     ))}
                   </div>
 
-                  {/* Template Grid — 3 columns, LARGE cards */}
+                  {/* Template Grid — 3 columns with A4 portrait preview boxes */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {filteredTemplates.map((tmpl, i) => (
                       <motion.div
@@ -1240,24 +1143,22 @@ export default function DashboardPage() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.04 }}
                         onClick={() => handleCardClick(tmpl)}
-                        className="bg-white border border-[#ECEDF3] rounded-2xl overflow-hidden cursor-pointer hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] hover:border-[#DDDEE8] transition-all duration-250 group"
+                        className="bg-white border border-slate-200 rounded-2xl overflow-hidden cursor-pointer hover:shadow-lg hover:border-[#7C3AED]/60 transition-all duration-200 group shadow-xs"
                       >
-                        {/* Template Preview — LARGE: ~420px */}
-                        <div className="bg-[#F7F8FC] border-b border-[#ECEDF3] h-[420px] overflow-hidden relative flex justify-center">
-                          <div className="scale-[0.32] origin-top transition-transform duration-250 group-hover:scale-[0.34] pointer-events-none" style={{ position: 'relative', top: '0px' }}>
-                            <TemplateRenderer templateId={tmpl.id} zoom={100} data={templatePreviewData} />
-                          </div>
-                          {/* Hover controls — real buttons */}
-                          <div className="absolute inset-0 flex items-end justify-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200 bg-gradient-to-t from-black/20 to-transparent pb-4">
+                        {/* Exact A4 Portrait Preview Box */}
+                        <div className="w-full aspect-[210/297] bg-white border-b border-slate-200 overflow-hidden relative">
+                          <A4ResumePreview templateId={tmpl.id} data={templatePreviewData} />
+                          {/* Hover controls */}
+                          <div className="absolute inset-0 flex items-end justify-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200 bg-slate-900/30 backdrop-blur-xs pb-6">
                             <button
                               onClick={(e) => { e.stopPropagation(); setSelectedTemplate(tmpl); setIsPreviewModalOpen(true); }}
-                              className="bg-white shadow-lg text-[#111827] px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 hover:bg-[#F9FAFB] transition cursor-pointer"
+                              className="bg-white text-[#0F172A] px-4 py-2 text-xs font-bold rounded-full flex items-center gap-1.5 hover:bg-slate-100 transition cursor-pointer shadow-md"
                             >
                               <Eye size={13} /> Preview
                             </button>
                             <button
                               onClick={(e) => { e.stopPropagation(); handleSelectTemplate(tmpl.id); }}
-                              className="bg-[#2563EB] shadow-lg text-white px-4 py-2 rounded-xl text-xs font-semibold hover:bg-[#1D4ED8] transition cursor-pointer"
+                              className="bg-[#7C3AED] text-white px-4 py-2 text-xs font-bold rounded-full hover:bg-[#6D28D9] transition cursor-pointer shadow-md"
                             >
                               Use Template
                             </button>
@@ -1266,13 +1167,13 @@ export default function DashboardPage() {
                         {/* Info */}
                         <div className="p-4 flex items-center justify-between">
                           <div>
-                            <h4 className="text-[13px] font-semibold text-[#111827]">{tmpl.name}</h4>
+                            <h4 className="text-[13px] font-bold text-[#0F172A]">{tmpl.name}</h4>
                             <div className="flex items-center gap-2 mt-1">
-                              <Badge variant="success" className="text-[10px]">ATS {tmpl.ats_score}%</Badge>
-                              <span className="text-[11px] text-[#9CA3AF]">{tmpl.layout_type} &middot; {tmpl.page_length}</span>
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">ATS {tmpl.ats_score}%</span>
+                              <span className="text-[11px] text-slate-500">{tmpl.layout_type} &middot; {tmpl.page_length}</span>
                             </div>
                           </div>
-                          <ChevronRight size={14} className="text-[#D1D5DB] group-hover:text-[#9CA3AF] transition" />
+                          <ChevronRight size={14} className="text-slate-400 group-hover:text-[#7C3AED] transition" />
                         </div>
                       </motion.div>
                     ))}
@@ -1285,28 +1186,28 @@ export default function DashboardPage() {
               {activeTab === 'ats' && (
                 <div className="max-w-3xl mx-auto space-y-6">
                   <div>
-                    <h1 className="text-2xl font-bold text-[#111827]">ATS Analyzer</h1>
-                    <p className="text-sm text-[#6B7280] mt-0.5">Check how your resume matches a job description.</p>
+                    <h1 className="text-2xl font-bold text-[#202936]">ATS Analyzer</h1>
+                    <p className="text-sm text-[#56616D] mt-0.5">Check how your resume matches a job description.</p>
                   </div>
 
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <div className="bg-white border border-[#ECEDF3] rounded-2xl p-5">
-                      <label className="text-xs font-medium text-[#6B7280] mb-2 block">Select Resume</label>
+                    <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs">
+                      <label className="text-xs font-bold text-slate-600 mb-2 block">Select Resume</label>
                       {resumes.length === 0 ? (
-                        <p className="text-sm text-[#9CA3AF]">No resumes yet.</p>
+                        <p className="text-sm text-slate-400">No resumes yet.</p>
                       ) : (
                         <select value={atsSelectedResumeId || ''} onChange={e => setAtsSelectedResumeId(e.target.value || null)}
-                          className="w-full h-11 px-4 rounded-xl border border-[#ECEDF3] bg-white text-sm text-[#111827] focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-blue-50 transition">
+                          className="w-full h-11 px-4 rounded-xl border border-slate-300 bg-white text-sm text-[#0F172A] focus:border-[#7C3AED] focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/20 transition">
                           <option value="">Choose a resume…</option>
                           {resumes.map(r => <option key={r.id} value={r.id}>{r.title} — {r.role}</option>)}
                         </select>
                       )}
                     </div>
-                    <div className="bg-white border border-[#ECEDF3] rounded-2xl p-5">
-                      <label className="text-xs font-medium text-[#6B7280] mb-2 block">Job Description</label>
+                    <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs">
+                      <label className="text-xs font-bold text-slate-600 mb-2 block">Job Description</label>
                       <textarea value={atsJobDescription} onChange={e => setAtsJobDescription(e.target.value)}
                         placeholder="Paste the full job description here…" rows={4}
-                        className="w-full px-4 py-3 rounded-xl border border-[#ECEDF3] bg-white text-sm text-[#111827] placeholder:text-[#9CA3AF] focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-blue-50 transition resize-none" />
+                        className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-white text-sm text-[#0F172A] placeholder:text-slate-400 focus:border-[#7C3AED] focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/20 transition resize-none" />
                     </div>
                   </div>
 
@@ -1331,52 +1232,52 @@ export default function DashboardPage() {
                       setAtsAnalyzing(false);
                     }
                   }} disabled={atsAnalyzing || !atsSelectedResumeId}
-                    className="w-full h-12 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold rounded-xl text-sm transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50">
+                    className="w-full h-12 rounded-full bg-[#10B981] hover:bg-[#059669] text-white font-bold text-sm transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shadow-sm">
                     {atsAnalyzing ? <><Loader2 size={16} className="animate-spin" /> Performing Real-Time ATS Analysis…</> : <><Shield size={16} /> Run Real-Time ATS Analysis</>}
                   </button>
 
                   {atsResults && (
-                    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="bg-white border border-[#ECEDF3] rounded-2xl p-6 space-y-6">
+                    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="bg-white border border-slate-200 rounded-2xl p-6 space-y-6 shadow-xs">
                       <div className="flex items-center gap-6">
                         <div className="relative shrink-0">
                           <svg width="80" height="80" viewBox="0 0 80 80">
-                            <circle cx="40" cy="40" r="36" fill="none" stroke="#ECEDF3" strokeWidth="4" />
-                            <circle cx="40" cy="40" r="36" fill="none" stroke={atsResults.score >= 75 ? '#22C55E' : atsResults.score >= 50 ? '#F59E0B' : '#EF4444'}
+                            <circle cx="40" cy="40" r="36" fill="none" stroke="#E2E8F0" strokeWidth="4" />
+                            <circle cx="40" cy="40" r="36" fill="none" stroke={atsResults.score >= 75 ? '#10B981' : atsResults.score >= 50 ? '#F59E0B' : '#EF4444'}
                               strokeWidth="4" strokeDasharray={`${atsResults.score * 2.26} ${226 - atsResults.score * 2.26}`} strokeDashoffset="56.5" strokeLinecap="round" />
                           </svg>
                           <div className="absolute inset-0 flex items-center justify-center">
-                            <span className={`text-lg font-bold ${atsResults.score >= 75 ? 'text-emerald-600' : atsResults.score >= 50 ? 'text-amber-600' : 'text-red-500'}`}>{atsResults.score}%</span>
+                            <span className={`text-lg font-bold ${atsResults.score >= 75 ? 'text-[#10B981]' : atsResults.score >= 50 ? 'text-[#F59E0B]' : 'text-[#EF4444]'}`}>{atsResults.score}%</span>
                           </div>
                         </div>
                         <div>
-                          <h3 className="text-lg font-semibold text-[#111827]">{atsResults.jobRoleMatch || (atsResults.score >= 75 ? 'Strong Match' : atsResults.score >= 50 ? 'Moderate Match' : 'Needs Improvement')}</h3>
-                          <p className="text-xs text-[#6B7280] mt-0.5">Role Evaluated: <span className="font-semibold text-[#111827]">{atsResults.evaluatedRole || 'Target Role'}</span></p>
-                          <p className="text-xs text-[#9CA3AF] mt-0.5">Keyword Match: {atsResults.keywordMatchScore}% · Formatting: {atsResults.formattingScore}% · Impact: {atsResults.impactScore}%</p>
+                          <h3 className="text-lg font-bold text-[#0F172A]">{atsResults.jobRoleMatch || (atsResults.score >= 75 ? 'Strong Match' : atsResults.score >= 50 ? 'Moderate Match' : 'Needs Improvement')}</h3>
+                          <p className="text-xs text-slate-500 mt-0.5">Role Evaluated: <span className="font-semibold text-[#0F172A]">{atsResults.evaluatedRole || 'Target Role'}</span></p>
+                          <p className="text-xs text-slate-500 mt-0.5">Keyword Match: {atsResults.keywordMatchScore}% · Formatting: {atsResults.formattingScore}% · Impact: {atsResults.impactScore}%</p>
                         </div>
                       </div>
 
                       {Array.isArray(atsResults.matchedKeywords) && atsResults.matchedKeywords.length > 0 && (
                         <div>
-                          <h4 className="text-xs font-semibold text-[#111827] mb-2 flex items-center gap-1.5"><Check size={12} className="text-emerald-500" /> Matched Keywords ({atsResults.matchedKeywords.length})</h4>
+                          <h4 className="text-xs font-bold text-[#0F172A] mb-2 flex items-center gap-1.5"><Check size={12} className="text-[#10B981]" /> Matched Keywords ({atsResults.matchedKeywords.length})</h4>
                           <div className="flex flex-wrap gap-1.5">
-                            {atsResults.matchedKeywords.map((kw: string) => <span key={kw} className="px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-[10px] font-semibold text-emerald-700">{kw}</span>)}
+                            {atsResults.matchedKeywords.map((kw: string) => <span key={kw} className="px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-[10px] font-bold text-emerald-800">{kw}</span>)}
                           </div>
                         </div>
                       )}
 
                       {Array.isArray(atsResults.missingKeywords) && atsResults.missingKeywords.length > 0 && (
                         <div>
-                          <h4 className="text-xs font-semibold text-[#111827] mb-2 flex items-center gap-1.5"><AlertCircle size={12} className="text-amber-500" /> Missing Required Keywords ({atsResults.missingKeywords.length})</h4>
+                          <h4 className="text-xs font-bold text-[#0F172A] mb-2 flex items-center gap-1.5"><AlertCircle size={12} className="text-[#F59E0B]" /> Missing Required Keywords ({atsResults.missingKeywords.length})</h4>
                           <div className="flex flex-wrap gap-1.5">
-                            {atsResults.missingKeywords.map((kw: string) => <span key={kw} className="px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-200 text-[10px] font-semibold text-amber-700">{kw}</span>)}
+                            {atsResults.missingKeywords.map((kw: string) => <span key={kw} className="px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-200 text-[10px] font-bold text-amber-800">{kw}</span>)}
                           </div>
                         </div>
                       )}
 
                       {Array.isArray(atsResults.actionableSuggestions) && atsResults.actionableSuggestions.length > 0 && (
-                        <div className="bg-[#F7F8FC] rounded-xl p-4 border border-[#ECEDF3]">
-                          <h4 className="text-xs font-semibold text-[#111827] mb-2 flex items-center gap-1.5"><Lightbulb size={12} className="text-blue-500" /> Actionable Improvement Tips</h4>
-                          <ul className="space-y-1.5 text-xs text-[#6B7280]">
+                        <div className="bg-purple-50 rounded-xl p-4 border border-purple-200">
+                          <h4 className="text-xs font-bold text-[#7C3AED] mb-2 flex items-center gap-1.5"><Lightbulb size={12} className="text-[#7C3AED]" /> Actionable Improvement Tips</h4>
+                          <ul className="space-y-1.5 text-xs text-[#0F172A]">
                             {atsResults.actionableSuggestions.map((tip: string, idx: number) => (
                               <li key={idx}>• {tip}</li>
                             ))}
@@ -1391,26 +1292,26 @@ export default function DashboardPage() {
               {/* · AI TAB
           ============================================================ */}
               {activeTab === 'ai' && (
-                <div className="max-w-2xl mx-auto bg-white border border-[#ECEDF3] rounded-2xl overflow-hidden flex flex-col h-[520px]">
-                  <div className="p-4 border-b border-[#ECEDF3] flex items-center gap-2.5">
-                    <div className="h-8 w-8 rounded-xl bg-[#EFF6FF] flex items-center justify-center">
-                      <Sparkles size={14} className="text-[#2563EB]" />
+                <div className="max-w-2xl mx-auto bg-slate-100 border border-slate-200 rounded-2xl overflow-hidden flex flex-col h-[520px] shadow-sm">
+                  <div className="p-4 border-b border-purple-950 bg-[#2E1065] text-white flex items-center gap-2.5">
+                    <div className="h-8 w-8 rounded-xl bg-[#1E1035] border border-white/20 flex items-center justify-center">
+                      <Sparkles size={14} className="text-purple-300" />
                     </div>
                     <div>
-                      <h3 className="text-sm font-medium text-[#111827]">AI Assistant</h3>
-                      <span className="text-[10px] text-[#9CA3AF]">ATS optimization suggestions</span>
+                      <h3 className="text-sm font-bold text-white">AI Assistant</h3>
+                      <span className="text-[10px] text-purple-200">ATS optimization suggestions</span>
                     </div>
                   </div>
 
-                  <div className="flex-grow overflow-y-auto p-4 space-y-3">
+                  <div className="flex-grow overflow-y-auto p-4 space-y-3 bg-slate-50">
                     {aiChat.map((msg, idx) => (
                       <div key={idx} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                         <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${msg.sender === 'user'
-                            ? 'bg-[#2563EB] text-white'
-                            : 'bg-[#F7F8FC] text-[#374151]'
+                            ? 'bg-[#7C3AED] text-white'
+                            : 'bg-white text-[#0F172A] border border-slate-200 shadow-xs'
                           }`}>
                           {msg.text.split('\n').map((para, pIdx) => (
-                            <p key={pIdx} className={pIdx > 0 ? 'mt-2 font-mono text-xs bg-[#111827] text-gray-200 p-3 rounded-xl' : ''}>
+                            <p key={pIdx} className={pIdx > 0 ? 'mt-2 font-mono text-xs bg-[#1E1035] text-white p-3 rounded-xl' : ''}>
                               {para}
                             </p>
                           ))}
@@ -1419,18 +1320,18 @@ export default function DashboardPage() {
                     ))}
                     {aiLoading && (
                       <div className="flex justify-start">
-                        <div className="bg-[#F7F8FC] rounded-2xl px-4 py-3 flex items-center gap-2 text-xs text-[#6B7280]">
-                          <Loader2 size={13} className="animate-spin text-[#2563EB]" /> Optimizing...
+                        <div className="bg-white border border-slate-200 rounded-2xl px-4 py-3 flex items-center gap-2 text-xs text-slate-500 shadow-xs">
+                          <Loader2 size={13} className="animate-spin text-[#7C3AED]" /> Optimizing...
                         </div>
                       </div>
                     )}
                   </div>
 
-                  <div className="p-4 border-t border-[#ECEDF3] space-y-2.5">
+                  <div className="p-4 border-t border-slate-200 bg-slate-100 space-y-2.5">
                     <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
                       {['Optimize Summary', 'Suggest Skills', 'Refine Bullet'].map((label) => (
                         <button key={label} onClick={() => handleAiOptimize(label)}
-                          className="px-3 py-1.5 bg-white border border-[#ECEDF3] rounded-xl text-[11px] font-medium text-[#6B7280] hover:border-[#DDDEE8] whitespace-nowrap cursor-pointer">
+                          className="px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-[11px] font-semibold text-slate-600 hover:border-[#7C3AED] hover:text-[#7C3AED] whitespace-nowrap cursor-pointer shadow-xs">
                           {label}
                         </button>
                       ))}
@@ -1438,8 +1339,8 @@ export default function DashboardPage() {
                     <div className="flex gap-2">
                       <input type="text" placeholder="Ask AI to optimize your resume content..." value={aiPrompt}
                         onChange={(e) => setAiPrompt(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAiOptimize()}
-                        className="flex-grow h-10 px-4 rounded-xl border border-[#ECEDF3] bg-white text-sm text-[#111827] placeholder:text-[#9CA3AF] focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-blue-50" />
-                      <Button onClick={() => handleAiOptimize()}>Send</Button>
+                        className="flex-grow h-10 px-4 rounded-xl border border-slate-300 bg-white text-sm text-[#0F172A] placeholder:text-slate-400 focus:border-[#7C3AED] focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/20 shadow-xs" />
+                      <Button onClick={() => handleAiOptimize()} className="bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-bold">Send</Button>
                     </div>
                   </div>
                 </div>
@@ -1450,14 +1351,14 @@ export default function DashboardPage() {
               {activeTab === 'settings' && (
                 <div className="max-w-xl mx-auto space-y-6">
                   <div>
-                    <h1 className="text-2xl font-bold text-[#111827]">Settings</h1>
-                    <p className="text-sm text-[#6B7280] mt-0.5">Manage your profile and workspace preferences.</p>
+                    <h1 className="text-2xl font-extrabold text-[#0F172A]">Settings</h1>
+                    <p className="text-sm text-slate-500 mt-0.5">Manage your profile and workspace preferences.</p>
                   </div>
 
                   {/* Profile Card */}
-                  <div className="bg-white border border-[#ECEDF3] rounded-2xl p-6">
-                    <div className="flex items-center gap-4 mb-6 pb-5 border-b border-[#F0F1F8]">
-                      <div className="h-14 w-14 rounded-2xl bg-[#2563EB] flex items-center justify-center text-white text-xl font-bold overflow-hidden">
+                  <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs">
+                    <div className="flex items-center gap-4 mb-6 pb-5 border-b border-slate-100">
+                      <div className="h-14 w-14 rounded-2xl bg-[#7C3AED] flex items-center justify-center text-white text-xl font-bold overflow-hidden shadow-xs">
                         {profile?.profile_image ? (
                           <img src={profile.profile_image} alt={profile?.full_name || 'User'} className="h-full w-full object-cover" />
                         ) : (
@@ -1465,11 +1366,11 @@ export default function DashboardPage() {
                         )}
                       </div>
                       <div>
-                        <h3 className="text-base font-semibold text-[#111827]">{profile?.full_name || 'User'}</h3>
-                        <p className="text-sm text-[#9CA3AF]">{user?.email}</p>
+                        <h3 className="text-base font-bold text-[#0F172A]">{profile?.full_name || 'User'}</h3>
+                        <p className="text-sm text-slate-500">{user?.email}</p>
                       </div>
                       {saveSettingsStatus === 'success' && (
-                        <span className="ml-auto flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-50 border border-emerald-100 px-3 py-1 rounded-xl">
+                        <span className="ml-auto flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-xl">
                           <Check size={12} /> Saved
                         </span>
                       )}
@@ -1478,21 +1379,21 @@ export default function DashboardPage() {
                     <form onSubmit={handleSaveSettings} className="space-y-5">
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1.5 col-span-2">
-                          <label className="text-xs font-medium text-[#6B7280]">Full Name</label>
+                          <label className="text-xs font-bold text-slate-600">Full Name</label>
                           <input type="text" value={profileName} onChange={(e) => setProfileName(e.target.value)} placeholder="e.g. Vamsi Krishna"
-                            className="w-full h-11 px-4 rounded-xl border border-[#ECEDF3] bg-white text-sm text-[#111827] focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-blue-50 transition" />
+                            className="w-full h-11 px-4 rounded-xl border border-slate-300 bg-white text-sm text-[#0F172A] focus:border-[#7C3AED] focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/20 transition" />
                         </div>
                         <div className="space-y-1.5">
-                          <label className="text-xs font-medium text-[#6B7280]">Department</label>
+                          <label className="text-xs font-bold text-slate-600">Department</label>
                           <select value={profileDept} onChange={(e) => setProfileDept(e.target.value)}
-                            className="w-full h-11 px-4 rounded-xl border border-[#ECEDF3] bg-white text-sm text-[#111827] focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-blue-50 transition">
+                            className="w-full h-11 px-4 rounded-xl border border-slate-300 bg-white text-sm text-[#0F172A] focus:border-[#7C3AED] focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/20 transition">
                             {Object.keys(CATEGORY_ROLES).map(dept => (<option key={dept} value={dept}>{dept}</option>))}
                           </select>
                         </div>
                         <div className="space-y-1.5">
-                          <label className="text-xs font-medium text-[#6B7280]">Experience Level</label>
+                          <label className="text-xs font-bold text-slate-600">Experience Level</label>
                           <select value={profileExp} onChange={(e) => setProfileExp(e.target.value)}
-                            className="w-full h-11 px-4 rounded-xl border border-[#ECEDF3] bg-white text-sm text-[#111827] focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-blue-50 transition">
+                            className="w-full h-11 px-4 rounded-xl border border-slate-300 bg-white text-sm text-[#0F172A] focus:border-[#7C3AED] focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/20 transition">
                             <option value="Fresher">Fresher (0-1 yrs)</option>
                             <option value="Junior">Junior (1-3 yrs)</option>
                             <option value="Mid-Level">Mid-Level (3-5 yrs)</option>
@@ -1501,14 +1402,14 @@ export default function DashboardPage() {
                           </select>
                         </div>
                         <div className="space-y-1.5 col-span-2">
-                          <label className="text-xs font-medium text-[#6B7280]">Career Goal</label>
+                          <label className="text-xs font-bold text-slate-600">Career Goal</label>
                           <textarea value={profileGoal} onChange={(e) => setProfileGoal(e.target.value)} placeholder="Your professional goals..."
-                            className="w-full h-24 p-4 rounded-xl border border-[#ECEDF3] bg-white text-sm text-[#111827] focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-blue-50 transition resize-none" />
+                            className="w-full h-24 p-4 rounded-xl border border-slate-300 bg-white text-sm text-[#0F172A] focus:border-[#7C3AED] focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/20 transition resize-none" />
                         </div>
                       </div>
 
                       <button type="submit" disabled={savingSettings}
-                        className="w-full h-11 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold rounded-xl text-sm transition flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50">
+                        className="w-full h-11 rounded-full bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-bold text-sm transition flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-sm">
                         {savingSettings ? <Loader2 size={15} className="animate-spin" /> : <><Check size={15} /> Save Changes</>}
                       </button>
                     </form>
@@ -1535,7 +1436,7 @@ export default function DashboardPage() {
 
               <div className="space-y-3">
                 <button onClick={() => setStep('type-selection')} className="w-full flex items-start gap-4 bg-white border border-[#ECEDF3] rounded-2xl p-6 hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] hover:border-[#DDDEE8] transition cursor-pointer text-left group">
-                  <div className="h-12 w-12 rounded-2xl bg-blue-50 text-[#2563EB] flex items-center justify-center shrink-0">
+                  <div className="h-12 w-12 rounded-2xl liquid-glass-circle text-[#2563EB] flex items-center justify-center shrink-0">
                     <Plus size={20} />
                   </div>
                   <div className="flex-1">
@@ -1574,7 +1475,7 @@ export default function DashboardPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[
-                  { id: 'Fresher', name: 'Fresher Resume', desc: 'Highlights education, projects, and core skills. For recent graduates.', icon: GraduationCap, color: 'bg-blue-50 text-[#2563EB]' },
+                  { id: 'Fresher', name: 'Fresher Resume', desc: 'Highlights education, projects, and core skills. For recent graduates.', icon: GraduationCap, color: 'liquid-glass-circle text-[#2563EB]' },
                   { id: 'Experienced', name: 'Experienced Resume', desc: 'Highlights work history, achievements, and leadership.', icon: Briefcase, color: 'bg-emerald-50 text-[#10B981]' },
                   { id: 'Internship', name: 'Internship Resume', desc: 'Tailored for coursework, academic projects, and applications.', icon: Compass, color: 'bg-purple-50 text-[#7C3AED]' },
                   { id: 'Academic', name: 'Academic Resume', desc: 'Showcases publications, research, and academic credentials.', icon: BookOpen, color: 'bg-orange-50 text-[#EA580C]' },
@@ -1603,7 +1504,7 @@ export default function DashboardPage() {
                   Back
                 </button>
                 <button onClick={() => handleCreateResumeSubmit(selectedType)} disabled={isCreatingResume || !selectedType}
-                  className="flex-[2] h-11 bg-[#2563EB] hover:bg-[#1D4ED8] disabled:opacity-50 text-white font-semibold rounded-xl text-sm flex items-center justify-center gap-1.5 transition cursor-pointer">
+                  className="flex-[2] h-11 liquid-glass-interactive liquid-glass-pill bg-blue-500/10 border-blue-200/30 text-[#1E40AF] font-semibold text-sm flex items-center justify-center gap-1.5 transition cursor-pointer disabled:opacity-50 hover:text-[#1D4ED8]">
                   {isCreatingResume ? <Loader2 size={15} className="animate-spin" /> : <>Continue <ArrowRight size={15} /></>}
                 </button>
               </div>
@@ -1735,7 +1636,7 @@ export default function DashboardPage() {
                   Back
                 </button>
                 <button onClick={handleReviewAndContinue}
-                  className="flex-[2] h-11 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold rounded-xl text-sm flex items-center justify-center gap-1.5 transition cursor-pointer">
+                  className="flex-[2] h-11 liquid-glass-interactive liquid-glass-pill bg-blue-500/10 border-blue-200/30 text-[#1E40AF] font-semibold text-sm flex items-center justify-center gap-1.5 transition cursor-pointer hover:text-[#1D4ED8]">
                   Review & Continue <ArrowRight size={15} />
                 </button>
               </div>
@@ -1802,7 +1703,7 @@ export default function DashboardPage() {
                   matches.push({ label: 'Go to Profile Settings', action: () => router.push('/profile'), icon: User, color: 'text-emerald-500 bg-emerald-50' });
                 }
                 if (q.includes('create') || q.includes('new') || q.includes('builder')) {
-                  matches.push({ label: 'Start New Resume Builder', action: () => handleCreateResumeStart(), icon: Plus, color: 'text-blue-500 bg-blue-50' });
+                  matches.push({ label: 'Start New Resume Builder', action: () => handleCreateResumeStart(), icon: Plus, color: 'text-blue-500 liquid-glass-circle' });
                 }
                 if (q.includes('resume') || q.includes('dashboard') || q.includes('my')) {
                   matches.push({ label: 'View My Resumes Dashboard', action: () => { setActiveTab('home'); setStep('dashboard'); }, icon: FileText, color: 'text-indigo-500 bg-indigo-50' });

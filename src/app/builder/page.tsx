@@ -636,7 +636,7 @@ export default function BuilderPage() {
   ];
 
   const PreviewPane = () => (
-    <section className={`flex flex-col relative rounded-2xl bg-[#E8EAF0]/50 border border-[#ECEDF3] h-full min-h-0 overflow-hidden ${viewMode === 'preview' ? 'flex-1' : 'w-full lg:flex-1'}`}>
+    <section className={`flex flex-col relative rounded-2xl bg-white/60 border border-slate-300/80 h-full min-h-0 overflow-hidden ${viewMode === 'preview' ? 'flex-1' : 'w-full lg:flex-1'}`}>
       {/* Right Preview container is fixed; inside, it has its own independent scrollbar */}
       <div className="flex-1 overflow-y-auto p-4 pb-24 flex justify-center items-start custom-scrollbar min-h-0">
         {selectedTemplate ? (
@@ -653,8 +653,8 @@ export default function BuilderPage() {
             <TemplateRenderer templateId={selectedTemplate.id} data={previewData} zoom={100} />
           </div>
         ) : (
-          <div className="h-full flex flex-col items-center justify-center text-[#9CA3AF] gap-3">
-            <Loader2 size={24} className="animate-spin text-[#D1D5DB]" />
+          <div className="h-full flex flex-col items-center justify-center text-slate-500 gap-3">
+            <Loader2 size={24} className="animate-spin text-[#7C3AED]" />
             <span className="text-xs font-medium">Preparing canvas…</span>
           </div>
         )}
@@ -663,22 +663,20 @@ export default function BuilderPage() {
   );
 
   return (
-    <div className="h-screen max-h-screen overflow-hidden flex flex-col font-[Inter,sans-serif] bg-[#F7F8FC] text-[#111827]">
+    <div className="h-screen max-h-screen overflow-hidden flex flex-col font-[Inter,sans-serif] bg-[#FFFDD0] text-[#0F172A]">
       {/* Subtle dot grid */}
-      <div className="fixed inset-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #C7C9D3 0.8px, transparent 0.8px)', backgroundSize: '22px 22px', opacity: 0.25 }} />
+      <div className="fixed inset-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #D5D2A0 0.8px, transparent 0.8px)', backgroundSize: '22px 22px', opacity: 0.35 }} />
 
-      {/* ── TOP BAR (Header matching reference screenshot) ─────────────── */}
-      <header className="h-[52px] border-b border-[#ECEDF3] bg-white/80 backdrop-blur-md px-5 flex items-center justify-between sticky top-0 z-40 shrink-0 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+      {/* ── TOP BAR ─────────────── */}
+      <header className="h-[52px] border-b border-slate-200 bg-white/95 backdrop-blur-md px-5 flex items-center justify-between sticky top-0 z-40 shrink-0 shadow-xs">
         {/* Left: Back button + Title & ATS Sub-metadata */}
         <div className="flex items-center gap-3 min-w-0">
           <button
             onClick={() => router.replace('/dashboard')}
-            className="liquid-glass-interactive liquid-glass-square h-8 w-8 text-[#475569] hover:text-[#0F172A] flex items-center justify-center transition-all cursor-pointer shadow-xs"
+            className="h-8 w-8 rounded-xl bg-white border border-slate-200 text-slate-600 hover:text-[#0F172A] flex items-center justify-center transition-all cursor-pointer shadow-xs"
             title="Back to Dashboard"
           >
-            <span className="liquid-glass-specular" aria-hidden="true" />
-            <span className="liquid-glass-refraction" aria-hidden="true" />
-            <ArrowLeft size={15} className="relative z-10 liquid-glass-content" />
+            <ArrowLeft size={15} />
           </button>
 
           <div className="flex flex-col leading-tight min-w-0">
@@ -694,7 +692,7 @@ export default function BuilderPage() {
                     if (e.key === 'Escape') setIsEditingTitle(false);
                   }}
                   autoFocus
-                  className="h-6 px-1.5 py-0.5 rounded-md border border-[#2563EB] bg-white text-[13px] font-extrabold text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 max-w-[240px]"
+                  className="h-6 px-1.5 py-0.5 rounded-md border border-[#7C3AED] bg-white text-[13px] font-extrabold text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/20 max-w-[240px]"
                 />
               ) : (
                 <div
@@ -708,16 +706,16 @@ export default function BuilderPage() {
                   <span className="text-[13px] font-extrabold text-[#0F172A] truncate max-w-[220px]">
                     {resumeDetails?.title || 'My Resume'}
                   </span>
-                  <span title="Edit Resume Title"><Pencil size={12} className="text-[#94A3B8] group-hover:text-[#0F172A] transition-colors" /></span>
+                  <span title="Edit Resume Title"><Pencil size={12} className="text-slate-400 group-hover:text-[#0F172A] transition-colors" /></span>
                 </div>
               )}
             </div>
             <div className="flex items-center gap-2 text-[11px] font-medium mt-0.5">
-              <span className="text-emerald-600 font-semibold flex items-center gap-1">
+              <span className="text-[#10B981] font-bold flex items-center gap-1">
                 <Check size={11} /> Saved just now
               </span>
-              <span className="text-slate-300">·</span>
-              <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold text-[10px] border border-emerald-200/80 leading-none">
+              <span className="text-slate-400">·</span>
+              <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 font-bold text-[10px] border border-emerald-200 leading-none">
                 ATS Score {selectedTemplate?.ats_score || 98}%
               </span>
             </div>
@@ -725,22 +723,18 @@ export default function BuilderPage() {
         </div>
 
         {/* Center: Floating Pill Tabs (Form | Design | Split | Preview) */}
-        <div className="hidden lg:flex items-center liquid-glass-toolbar p-1 rounded-full gap-1 shadow-sm">
+        <div className="hidden lg:flex items-center gap-1 bg-slate-100 p-1 rounded-full border border-slate-200 shadow-xs">
           {viewModes.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
               onClick={() => setViewMode(id)}
-              className={`liquid-glass-interactive px-3.5 py-1 rounded-full text-[11px] font-bold transition-all duration-150 cursor-pointer ${
+              className={`px-3.5 py-1 rounded-full text-[11px] font-bold transition-all duration-150 cursor-pointer ${
                 viewMode === id
-                  ? id === 'design'
-                    ? 'liquid-glass-active bg-gradient-to-r from-[#6366F1] to-[#2563EB] text-white shadow-md'
-                    : 'liquid-glass-active text-[#0F172A]'
-                  : 'text-[#64748B] hover:text-[#0F172A]'
+                  ? 'liquid-glass-active text-[#7C3AED] shadow-xs'
+                  : 'text-slate-600 hover:text-[#0F172A] hover:bg-white/50'
               }`}
             >
-              <span className="liquid-glass-specular" aria-hidden="true" />
-              <span className="liquid-glass-refraction" aria-hidden="true" />
-              <span className="relative z-10 flex items-center gap-1.5 liquid-glass-content">
+              <span className="flex items-center gap-1.5">
                 <Icon size={13} />
                 {label}
               </span>
@@ -750,8 +744,8 @@ export default function BuilderPage() {
 
         {/* Right: Saved Status + Profile Dropdown Menu */}
         <div className="flex items-center gap-3 shrink-0">
-          <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50/80 backdrop-blur-sm text-emerald-700 font-semibold text-[11px] border border-emerald-200/80 shadow-xs">
-            <Check size={12} className="text-emerald-600" /> Saved
+          <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 font-bold text-[11px] border border-emerald-200 shadow-xs">
+            <Check size={12} className="text-[#10B981]" /> Saved
           </span>
 
           <div className="relative" ref={profileMenuRef}>
@@ -760,10 +754,8 @@ export default function BuilderPage() {
               className="flex items-center gap-1.5 cursor-pointer group select-none"
               title="User Profile & Account Menu"
             >
-              <div className="liquid-glass-interactive liquid-glass-circle h-8 w-8 text-[#6366F1] font-bold text-[10px] flex items-center justify-center shadow-inner group-hover:border-[#6366F1] transition-colors overflow-hidden">
-                <span className="liquid-glass-specular" aria-hidden="true" />
-                <span className="liquid-glass-refraction" aria-hidden="true" />
-                <span className="relative z-10 liquid-glass-content flex items-center justify-center w-full h-full">
+              <div className="h-8 w-8 rounded-full text-white bg-[#7C3AED] font-bold text-[10px] flex items-center justify-center shadow-xs overflow-hidden border border-white/60">
+                <span className="flex items-center justify-center w-full h-full">
                   {profile?.profile_image ? (
                     <img src={profile.profile_image} alt={profile?.full_name || 'User'} className="w-full h-full object-cover" />
                   ) : (
@@ -771,45 +763,45 @@ export default function BuilderPage() {
                   )}
                 </span>
               </div>
-              <ChevronDown size={14} className="text-[#64748B] group-hover:text-[#0F172A] transition-colors" />
+              <ChevronDown size={14} className="text-slate-500 group-hover:text-[#0F172A] transition-colors" />
             </div>
 
             {profileMenuOpen && (
-              <div className="absolute right-0 mt-2 w-56 bg-white/95 backdrop-blur-xl rounded-2xl border border-white/80 shadow-[0_12px_32px_rgba(0,0,0,0.12)] py-2 z-50 animate-in fade-in slide-in-from-top-2">
-                <div className="px-4 py-2.5 border-b border-[#F1F5F9]">
-                  <p className="text-xs font-bold text-[#0F172A] truncate">{profile?.full_name || user?.user_metadata?.full_name || 'User'}</p>
-                  <p className="text-[11px] text-[#64748B] truncate mt-0.5">{user?.email}</p>
+              <div className="absolute right-0 mt-2 w-56 bg-white rounded-[20px] border border-slate-200 shadow-xl py-2 z-50 animate-in fade-in slide-in-from-top-2">
+                <div className="px-4 py-2.5 border-b border-[#DECFC0]">
+                  <p className="text-xs font-bold text-[#172B4D] truncate">{profile?.full_name || user?.user_metadata?.full_name || 'User'}</p>
+                  <p className="text-[11px] text-[#66788A] truncate mt-0.5">{user?.email}</p>
                 </div>
 
                 <button
                   onClick={() => { router.push('/profile'); setProfileMenuOpen(false); }}
-                  className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-[#334155] hover:bg-[#F8FAFC] hover:text-[#0F172A] cursor-pointer transition-colors"
+                  className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-[#405A73] hover:bg-[#F5EADB] hover:text-[#172B4D] cursor-pointer transition-colors"
                 >
-                  <UserIcon size={14} className="text-[#64748B]" /> Profile
+                  <UserIcon size={14} className="text-[#66788A]" /> Profile
                 </button>
 
                 <button
                   onClick={() => { router.push('/dashboard?tab=settings'); setProfileMenuOpen(false); }}
-                  className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-[#334155] hover:bg-[#F8FAFC] hover:text-[#0F172A] cursor-pointer transition-colors"
+                  className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-[#405A73] hover:bg-[#F5EADB] hover:text-[#172B4D] cursor-pointer transition-colors"
                 >
-                  <Settings size={14} className="text-[#64748B]" /> Settings
+                  <Settings size={14} className="text-[#66788A]" /> Settings
                 </button>
 
                 <button
                   onClick={() => { router.replace('/dashboard'); setProfileMenuOpen(false); }}
-                  className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-[#334155] hover:bg-[#F8FAFC] hover:text-[#0F172A] cursor-pointer transition-colors"
+                  className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-[#405A73] hover:bg-[#F5EADB] hover:text-[#172B4D] cursor-pointer transition-colors"
                 >
-                  <Home size={14} className="text-[#64748B]" /> Dashboard
+                  <Home size={14} className="text-[#66788A]" /> Dashboard
                 </button>
 
-                <div className="my-1 border-t border-[#F1F5F9]" />
+                <div className="my-1 border-t border-[#DECFC0]" />
 
                 <button
                   onClick={async () => {
                     setProfileMenuOpen(false);
                     await logout();
                   }}
-                  className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 cursor-pointer transition-colors"
+                  className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-[#A84B55] hover:bg-[#F6DFE2] cursor-pointer transition-colors"
                 >
                   <LogOut size={14} /> Log Out
                 </button>
@@ -819,98 +811,78 @@ export default function BuilderPage() {
         </div>
       </header>
 
-      {/* ── RIGHT FLOATING ACTION PANEL (3 Vertical Stacked Cards) ───── */}
-      <aside className="fixed right-4 top-[68px] z-30 hidden xl:flex flex-col gap-2.5 p-2 rounded-2xl liquid-glass-toolbar items-center transition-all">
-        {/* Card 1: ATS Analysis */}
+      {/* ── RIGHT FLOATING ACTION CONTROL RAIL (Solid Semantic Dock) ───── */}
+      <aside className="fixed right-4 top-[68px] z-30 hidden xl:flex flex-col rounded-[22px] bg-[#FFFFFF] border border-[#B8CBD8] shadow-lg p-2 items-center gap-2">
+        {/* Section 1: ATS Analysis — Teal Family (#D3EAE5 / #168477 / #155A52) */}
         <button
           onClick={() => {
             setAtsModalOpen(true);
             if (!atsResults) runAtsAnalysis();
           }}
-          className="liquid-glass-interactive liquid-glass-square w-[62px] h-[70px] flex flex-col items-center justify-center p-2 text-center gap-0.5 transition-all cursor-pointer shadow-xs group"
+          className="w-[62px] py-2.5 flex flex-col items-center justify-center text-center gap-1 rounded-xl bg-[#D3EAE5] border border-[#B5D9D2] hover:bg-[#C2E3DC] transition-all cursor-pointer group shadow-xs"
           title="Run Real-Time ATS Analysis"
         >
-          <span className="liquid-glass-specular" aria-hidden="true" />
-          <span className="liquid-glass-refraction" aria-hidden="true" />
-          <span className="relative z-10 flex flex-col items-center gap-0.5 liquid-glass-content">
-            <Shield size={16} className="text-emerald-600 group-hover:scale-110 transition-transform" />
-            <span className="font-bold text-[10px] text-emerald-800 leading-tight">ATS</span>
-            <span className="px-1.5 py-px rounded-full bg-emerald-600 text-white font-extrabold text-[9px] shadow-xs">
-              {selectedTemplate?.ats_score || 98}%
-            </span>
+          <Shield size={16} className="text-[#168477] group-hover:scale-105 transition-transform" />
+          <span className="font-bold text-[10px] text-[#155A52] leading-tight">ATS</span>
+          <span className="px-1.5 py-px rounded-md bg-[#168477] text-white font-extrabold text-[9px] shadow-xs">
+            {selectedTemplate?.ats_score || 98}%
           </span>
         </button>
 
-        {/* Card 2: Change Template */}
+        {/* Section 2: Change Template — Purple Family (#E9DDF3 / #7650A8 / #49316A) */}
         <button
           onClick={() => router.push(resumeId ? `/dashboard?tab=templates&source=builder&resumeId=${resumeId}` : '/dashboard?tab=templates')}
-          className="liquid-glass-interactive liquid-glass-square w-[62px] h-[70px] flex flex-col items-center justify-center p-2 text-center gap-1 transition-all cursor-pointer shadow-xs group"
+          className="w-[62px] py-2.5 flex flex-col items-center justify-center text-center gap-1 rounded-xl bg-[#E9DDF3] border border-[#D8C5E8] hover:bg-[#DDD0EA] transition-all cursor-pointer group shadow-xs"
           title="Switch template"
         >
-          <span className="liquid-glass-specular" aria-hidden="true" />
-          <span className="liquid-glass-refraction" aria-hidden="true" />
-          <span className="relative z-10 flex flex-col items-center gap-1 liquid-glass-content">
-            <LayoutTemplate size={16} className="text-purple-600 group-hover:scale-110 transition-transform" />
-            <span className="font-bold text-[10px] text-purple-800 leading-tight">Template</span>
-          </span>
+          <LayoutTemplate size={16} className="text-[#7650A8] group-hover:scale-105 transition-transform" />
+          <span className="font-bold text-[10px] text-[#49316A] leading-tight">Template</span>
         </button>
 
-        {/* Card 3: Export PDF */}
+        {/* Section 3: Export PDF — Orange Family (#F5DFC8 / #C47720 / #70430F) */}
         <button
           onClick={handleExportPdf}
           disabled={pdfExporting}
-          className="liquid-glass-interactive liquid-glass-square w-[62px] h-[70px] flex flex-col items-center justify-center p-2 text-center gap-1 transition-all cursor-pointer shadow-sm group disabled:opacity-50"
+          className="w-[62px] py-2.5 flex flex-col items-center justify-center text-center gap-1 rounded-xl bg-[#F5DFC8] border border-[#E4C59E] hover:bg-[#ECD0B5] transition-all cursor-pointer group disabled:opacity-50 shadow-xs"
           title="Download PDF Resume"
         >
-          <span className="liquid-glass-specular" aria-hidden="true" />
-          <span className="liquid-glass-refraction" aria-hidden="true" />
-          <span className="relative z-10 flex flex-col items-center gap-1 liquid-glass-content">
-            {pdfExporting ? <Loader2 size={16} className="animate-spin text-slate-800" /> : <Download size={16} className="text-slate-800 group-hover:scale-110 transition-transform" />}
-            <span className="font-bold text-[10px] text-slate-800 leading-tight">Export</span>
-          </span>
+          {pdfExporting ? <Loader2 size={16} className="animate-spin text-[#C47720]" /> : <Download size={16} className="text-[#C47720] group-hover:scale-105 transition-transform" />}
+          <span className="font-bold text-[10px] text-[#70430F] leading-tight">Export</span>
         </button>
       </aside>
 
       {/* ── BOTTOM FLOATING ACTION TOOLBAR ─────────────────────────── */}
-      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 liquid-glass-toolbar px-4 py-2">
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 rounded-full liquid-glass-surface px-4 py-1.5 border border-white/70 shadow-xl">
         {/* Undo / Redo */}
-        <div className="flex items-center gap-1 liquid-glass-pill p-1 shadow-inner">
+        <div className="flex items-center gap-1 bg-white/40 p-1 rounded-full border border-white/50">
           <button
             onClick={handleUndo}
             disabled={historyIndex <= 0}
-            className="liquid-glass-interactive h-7 px-2.5 rounded-full flex items-center gap-1 text-[11px] font-bold text-[#475569] hover:text-[#0F172A] disabled:opacity-30 disabled:pointer-events-none transition cursor-pointer"
+            className="h-7 px-3 rounded-full flex items-center gap-1 text-[11px] font-bold text-[#405A73] hover:text-[#172B4D] hover:bg-white/60 disabled:opacity-30 disabled:pointer-events-none transition cursor-pointer"
             title="Undo (Ctrl+Z)"
           >
-            <span className="liquid-glass-specular" aria-hidden="true" />
-            <span className="liquid-glass-refraction" aria-hidden="true" />
-            <span className="relative z-10 flex items-center gap-1 liquid-glass-content">
-              <RotateCcw size={12} /> Undo
-            </span>
+            <RotateCcw size={12} /> Undo
           </button>
           <button
             onClick={handleRedo}
             disabled={historyIndex >= history.length - 1}
-            className="liquid-glass-interactive h-7 px-2.5 rounded-full flex items-center gap-1 text-[11px] font-bold text-[#475569] hover:text-[#0F172A] disabled:opacity-30 disabled:pointer-events-none transition cursor-pointer"
+            className="h-7 px-3 rounded-full flex items-center gap-1 text-[11px] font-bold text-[#405A73] hover:text-[#172B4D] hover:bg-white/60 disabled:opacity-30 disabled:pointer-events-none transition cursor-pointer"
             title="Redo (Ctrl+Y)"
           >
-            <span className="liquid-glass-specular" aria-hidden="true" />
-            <span className="liquid-glass-refraction" aria-hidden="true" />
-            <span className="relative z-10 flex items-center gap-1 liquid-glass-content">
-              <RotateCw size={12} /> Redo
-            </span>
+            <RotateCw size={12} /> Redo
           </button>
         </div>
 
         {/* Zoom Controls */}
-        <div className="flex items-center gap-1.5 liquid-glass-pill px-3 py-1 text-[11px] font-bold text-[#0F172A]">
-          <button onClick={() => setZoom(p => Math.max(p - 10, 30))} className="h-5 w-5 rounded-full hover:bg-white/60 flex items-center justify-center text-[#64748B] hover:text-[#0F172A] transition-colors cursor-pointer" title="Zoom out">
+        <div className="flex items-center gap-1.5 bg-white/40 px-3 py-1 rounded-full border border-white/50 text-[11px] font-bold text-[#172B4D]">
+          <button onClick={() => setZoom(p => Math.max(p - 10, 30))} className="h-5 w-5 rounded-full hover:bg-white/60 flex items-center justify-center text-[#405A73] hover:text-[#172B4D] transition-colors cursor-pointer" title="Zoom out">
             <Minus size={12} />
           </button>
-          <span className="min-w-[34px] text-center select-none font-mono text-xs">{zoom}%</span>
-          <button onClick={() => setZoom(p => Math.min(p + 10, 150))} className="h-5 w-5 rounded-full hover:bg-white/60 flex items-center justify-center text-[#64748B] hover:text-[#0F172A] transition-colors cursor-pointer" title="Zoom in">
+          <span className="min-w-[34px] text-center select-none font-mono text-xs font-bold">{zoom}%</span>
+          <button onClick={() => setZoom(p => Math.min(p + 10, 150))} className="h-5 w-5 rounded-full hover:bg-white/60 flex items-center justify-center text-[#405A73] hover:text-[#172B4D] transition-colors cursor-pointer" title="Zoom in">
             <Plus size={12} />
           </button>
-          <button onClick={() => setZoom(65)} className="h-5 w-5 rounded-full hover:bg-white/60 flex items-center justify-center text-[#64748B] hover:text-[#0F172A] transition-colors cursor-pointer" title="Reset zoom">
+          <button onClick={() => setZoom(65)} className="h-5 w-5 rounded-full hover:bg-white/60 flex items-center justify-center text-[#405A73] hover:text-[#172B4D] transition-colors cursor-pointer" title="Reset zoom">
             <Maximize2 size={11} />
           </button>
         </div>
@@ -918,52 +890,36 @@ export default function BuilderPage() {
         {/* Action buttons */}
         <button
           onClick={() => router.push(resumeId ? `/dashboard?tab=templates&source=builder&resumeId=${resumeId}` : '/dashboard?tab=templates')}
-          className="liquid-glass-interactive liquid-glass-pill h-8 px-3.5 text-[11px] font-bold text-purple-700 shadow-sm flex items-center gap-1.5 cursor-pointer"
+          className="h-8 px-3.5 rounded-full text-[11px] font-bold text-[#7650A8] bg-[#E9DDF3] border border-[#D8C5E8] hover:bg-[#DDD0EA] shadow-xs flex items-center gap-1.5 cursor-pointer transition"
           title="Change template layout"
         >
-          <span className="liquid-glass-specular" aria-hidden="true" />
-          <span className="liquid-glass-refraction" aria-hidden="true" />
-          <span className="relative z-10 flex items-center gap-1.5 liquid-glass-content">
-            <LayoutTemplate size={13} className="text-purple-600" />
-            <span>Template</span>
-          </span>
+          <LayoutTemplate size={13} className="text-[#7650A8]" />
+          <span>Template</span>
         </button>
 
         <button
           onClick={() => setIsPreviewingPdf(true)}
-          className="liquid-glass-interactive liquid-glass-pill h-8 px-3.5 text-[11px] font-bold text-[#0F172A] shadow-sm flex items-center gap-1.5 cursor-pointer"
+          className="h-8 px-3.5 rounded-full text-[11px] font-bold text-[#0F172A] bg-white border border-slate-300 hover:bg-slate-50 shadow-xs flex items-center gap-1.5 cursor-pointer transition"
         >
-          <span className="liquid-glass-specular" aria-hidden="true" />
-          <span className="liquid-glass-refraction" aria-hidden="true" />
-          <span className="relative z-10 flex items-center gap-1.5 liquid-glass-content">
-            <Eye size={13} /> Preview
-          </span>
+          <Eye size={13} className="text-slate-600" /> Preview
         </button>
 
         <button
           onClick={handleExportPdf}
           disabled={pdfExporting}
-          className="liquid-glass-interactive liquid-glass-pill h-8 px-4 text-white text-[11px] font-bold flex items-center gap-1.5 shadow-md disabled:opacity-50 cursor-pointer"
-          style={{
-            background: 'linear-gradient(145deg, rgba(15, 23, 42, 0.90) 0%, rgba(30, 41, 59, 0.85) 100%)',
-            borderColor: 'rgba(255, 255, 255, 0.40)',
-          }}
+          className="h-8 px-4 rounded-full text-white text-[11px] font-bold flex items-center gap-1.5 shadow-md bg-[#7C3AED] hover:bg-[#6D28D9] disabled:opacity-50 cursor-pointer transition"
         >
-          <span className="liquid-glass-specular" aria-hidden="true" />
-          <span className="liquid-glass-refraction" aria-hidden="true" />
-          <span className="relative z-10 flex items-center gap-1.5 liquid-glass-content">
-            {pdfExporting ? <Loader2 size={13} className="animate-spin" /> : <Download size={13} />}
-            <span>{pdfExporting ? 'Exporting…' : 'Export PDF'}</span>
-          </span>
+          {pdfExporting ? <Loader2 size={13} className="animate-spin" /> : <Download size={13} />}
+          <span>{pdfExporting ? 'Exporting…' : 'Export PDF'}</span>
         </button>
       </div>
 
       {/* ── Main Workspace ───────────────────────────────────── */}
       <main className="flex-1 flex flex-col overflow-hidden" style={{ height: 'calc(100vh - 52px)' }}>
         {loading ? (
-          <div className="flex-1 flex flex-col items-center justify-center gap-3 text-[#6B7280]">
-            <Loader2 size={28} className="animate-spin text-[#2563EB]" />
-            <span className="text-sm font-medium">Loading resume…</span>
+          <div className="flex-1 flex flex-col items-center justify-center gap-3 text-slate-500">
+            <Loader2 size={28} className="animate-spin text-[#7C3AED]" />
+            <span className="text-sm font-bold">Loading resume…</span>
           </div>
         ) : (
           <div
@@ -1019,10 +975,9 @@ export default function BuilderPage() {
                 className="hidden lg:flex w-2.5 relative items-center justify-center shrink-0 cursor-col-resize group select-none py-2"
                 title="Drag to resize workspace panels"
               >
-                {/* 1px clean vertical line: light gray by default (#E2E8F0), darkens on hover/drag (#94A3B8 / #475569) */}
                 <div
                   className={`w-px h-full transition-colors duration-150 ${
-                    isDragging ? 'bg-[#475569]' : 'bg-[#E2E8F0] group-hover:bg-[#94A3B8]'
+                    isDragging ? 'bg-[#7C3AED]' : 'bg-slate-300 group-hover:bg-[#7C3AED]'
                   }`}
                 />
               </div>
@@ -1039,23 +994,23 @@ export default function BuilderPage() {
       {isPreviewingPdf && (
         <div className="fixed inset-0 bg-slate-900/85 backdrop-blur-sm z-50 flex flex-col items-center overflow-y-auto" onClick={(e) => e.target === e.currentTarget && setIsPreviewingPdf(false)}>
           {/* Toolbar */}
-          <div className="w-full max-w-[860px] flex items-center justify-between bg-[#111827] text-white px-6 py-3.5 rounded-t-2xl mt-6 shadow-2xl shrink-0">
+          <div className="w-full max-w-[860px] flex items-center justify-between bg-[#1E1035] text-white px-6 py-3.5 rounded-t-2xl mt-6 shadow-2xl shrink-0">
             <div>
               <h3 className="text-sm font-bold">PDF Preview</h3>
-              <p className="text-[11px] text-slate-400 mt-0.5">This is how your resume will look when exported.</p>
+              <p className="text-[11px] text-purple-200 mt-0.5">This is how your resume will look when exported.</p>
             </div>
             <div className="flex items-center gap-2.5">
               <button
                 onClick={handleExportPdf}
                 disabled={pdfExporting}
-                className="h-9 px-4 rounded-xl bg-white text-[#111827] text-xs font-semibold hover:bg-slate-100 transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                className="h-9 px-4 rounded-xl bg-white text-[#0F172A] text-xs font-bold hover:bg-slate-100 transition-colors flex items-center gap-1.5 disabled:opacity-50"
               >
                 {pdfExporting ? <Loader2 size={13} className="animate-spin" /> : <Download size={13} />}
                 {pdfExporting ? 'Downloading…' : 'Download PDF'}
               </button>
               <button
                 onClick={() => setIsPreviewingPdf(false)}
-                className="h-9 px-4 rounded-xl border border-slate-700 bg-slate-800 text-white text-xs font-medium hover:bg-slate-700 transition-colors"
+                className="h-9 px-4 rounded-xl border border-purple-800 bg-[#2E1065] text-white text-xs font-bold hover:bg-[#3B137E] transition-colors"
               >
                 Close
               </button>
@@ -1102,18 +1057,18 @@ export default function BuilderPage() {
       {/* Real-Time ATS Analysis Modal */}
       {atsModalOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={() => setAtsModalOpen(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl border border-[#ECEDF3] w-full max-w-xl max-h-[85vh] flex flex-col overflow-hidden animate-scale-in" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-6 py-4 border-b border-[#ECEDF3] bg-[#F7F8FC]">
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-xl max-h-[85vh] flex flex-col overflow-hidden animate-scale-in" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50">
               <div className="flex items-center gap-2.5">
-                <div className="h-8 w-8 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600">
+                <div className="h-8 w-8 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-800">
                   <Shield size={16} />
                 </div>
                 <div>
-                  <h3 className="text-base font-semibold text-[#111827]">Real-Time ATS Analysis</h3>
-                  <p className="text-xs text-[#6B7280]">Live analysis based on active resume content & target role</p>
+                  <h3 className="text-base font-bold text-[#0F172A]">Real-Time ATS Analysis</h3>
+                  <p className="text-xs text-slate-500">Live analysis based on active resume content & target role</p>
                 </div>
               </div>
-              <button onClick={() => setAtsModalOpen(false)} className="text-[#9CA3AF] hover:text-[#6B7280] p-1 rounded-lg hover:bg-white transition cursor-pointer">
+              <button onClick={() => setAtsModalOpen(false)} className="text-slate-400 hover:text-[#0F172A] p-1 rounded-lg hover:bg-slate-100 transition cursor-pointer">
                 <X size={16} />
               </button>
             </div>
@@ -1121,23 +1076,23 @@ export default function BuilderPage() {
             <div className="p-6 overflow-y-auto space-y-5">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-[#64748B] mb-1 uppercase tracking-wide">Target Role</label>
+                  <label className="block text-xs font-bold text-slate-600 mb-1 uppercase tracking-wide">Target Role</label>
                   <input
                     type="text"
                     value={atsJobRole}
                     onChange={e => setAtsJobRole(e.target.value)}
                     placeholder={resumeDetails?.role || activeResumeData?.personalInfo?.title || 'e.g. Software Engineer'}
-                    className="w-full h-10 px-3 rounded-xl border border-[#E2E8F0] text-xs text-[#0F172A] bg-white focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-50 transition"
+                    className="w-full h-10 px-3 rounded-xl border border-slate-300 text-xs text-[#0F172A] bg-white focus:outline-none focus:border-[#7C3AED] focus:ring-2 focus:ring-[#7C3AED]/20 transition"
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-[#64748B] mb-1 uppercase tracking-wide">Target Job Description (Optional)</label>
+                  <label className="block text-xs font-bold text-slate-600 mb-1 uppercase tracking-wide">Target Job Description (Optional)</label>
                   <textarea
                     rows={3}
                     value={atsJobDescription}
                     onChange={e => setAtsJobDescription(e.target.value)}
                     placeholder="Paste job description keywords, requirements, or tech stack..."
-                    className="w-full p-3 rounded-xl border border-[#E2E8F0] text-xs text-[#0F172A] bg-white focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-50 transition resize-none"
+                    className="w-full p-3 rounded-xl border border-slate-300 text-xs text-[#0F172A] bg-white focus:outline-none focus:border-[#7C3AED] focus:ring-2 focus:ring-[#7C3AED]/20 transition resize-none"
                   />
                 </div>
               </div>
@@ -1145,41 +1100,41 @@ export default function BuilderPage() {
               <button
                 onClick={runAtsAnalysis}
                 disabled={atsAnalyzing}
-                className="w-full h-10 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-semibold flex items-center justify-center gap-2 transition cursor-pointer disabled:opacity-50"
+                className="w-full h-10 rounded-full bg-[#10B981] hover:bg-[#059669] text-white text-xs font-bold flex items-center justify-center gap-2 transition cursor-pointer disabled:opacity-50 shadow-sm"
               >
                 {atsAnalyzing ? <><Loader2 size={14} className="animate-spin" /> Analyzing Real-Time Content...</> : <><Shield size={14} /> Re-run Real-Time ATS Analysis</>}
               </button>
 
               {atsResults && (
                 <div className="space-y-5 pt-2">
-                  <div className="flex items-center gap-5 p-4 rounded-xl bg-[#F7F8FC] border border-[#ECEDF3]">
+                  <div className="flex items-center gap-5 p-4 rounded-xl bg-slate-50 border border-slate-200 shadow-xs">
                     <div className="relative shrink-0">
                       <svg width="70" height="70" viewBox="0 0 80 80">
-                        <circle cx="40" cy="40" r="36" fill="none" stroke="#ECEDF3" strokeWidth="4" />
-                        <circle cx="40" cy="40" r="36" fill="none" stroke={atsResults.score >= 75 ? '#22C55E' : atsResults.score >= 50 ? '#F59E0B' : '#EF4444'}
+                        <circle cx="40" cy="40" r="36" fill="none" stroke="#E2E8F0" strokeWidth="4" />
+                        <circle cx="40" cy="40" r="36" fill="none" stroke={atsResults.score >= 75 ? '#10B981' : atsResults.score >= 50 ? '#F59E0B' : '#EF4444'}
                           strokeWidth="4" strokeDasharray={`${atsResults.score * 2.26} ${226 - atsResults.score * 2.26}`} strokeDashoffset="56.5" strokeLinecap="round" />
                       </svg>
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <span className={`text-base font-bold ${atsResults.score >= 75 ? 'text-emerald-600' : atsResults.score >= 50 ? 'text-amber-600' : 'text-red-500'}`}>{atsResults.score}%</span>
+                        <span className={`text-base font-bold ${atsResults.score >= 75 ? 'text-[#10B981]' : atsResults.score >= 50 ? 'text-[#F59E0B]' : 'text-[#EF4444]'}`}>{atsResults.score}%</span>
                       </div>
                     </div>
                     <div>
-                      <h4 className="text-sm font-bold text-[#111827]">{atsResults.jobRoleMatch || 'ATS Role Match'}</h4>
-                      <p className="text-xs text-[#6B7280] mt-0.5">Role: <span className="font-semibold text-[#111827]">{atsResults.evaluatedRole}</span></p>
-                      <div className="flex flex-wrap gap-2 mt-2 text-[10px] font-semibold text-[#4B5563]">
-                        <span className="px-2 py-0.5 rounded bg-white border border-[#E2E8F0]">Keywords: {atsResults.keywordMatchScore}%</span>
-                        <span className="px-2 py-0.5 rounded bg-white border border-[#E2E8F0]">Format: {atsResults.formattingScore}%</span>
-                        <span className="px-2 py-0.5 rounded bg-white border border-[#E2E8F0]">Impact: {atsResults.impactScore}%</span>
+                      <h4 className="text-sm font-bold text-[#0F172A]">{atsResults.jobRoleMatch || 'ATS Role Match'}</h4>
+                      <p className="text-xs text-slate-500 mt-0.5">Role: <span className="font-semibold text-[#0F172A]">{atsResults.evaluatedRole}</span></p>
+                      <div className="flex flex-wrap gap-2 mt-2 text-[10px] font-bold text-slate-500">
+                        <span className="px-2 py-0.5 rounded bg-white border border-slate-200">Keywords: {atsResults.keywordMatchScore}%</span>
+                        <span className="px-2 py-0.5 rounded bg-white border border-slate-200">Format: {atsResults.formattingScore}%</span>
+                        <span className="px-2 py-0.5 rounded bg-white border border-slate-200">Impact: {atsResults.impactScore}%</span>
                       </div>
                     </div>
                   </div>
 
                   {Array.isArray(atsResults.matchedKeywords) && atsResults.matchedKeywords.length > 0 && (
                     <div>
-                      <h4 className="text-xs font-bold text-[#111827] mb-2 flex items-center gap-1.5"><CheckCircle2 size={13} className="text-emerald-500" /> Present Keywords ({atsResults.matchedKeywords.length})</h4>
+                      <h4 className="text-xs font-bold text-[#0F172A] mb-2 flex items-center gap-1.5"><CheckCircle2 size={13} className="text-[#10B981]" /> Present Keywords ({atsResults.matchedKeywords.length})</h4>
                       <div className="flex flex-wrap gap-1.5">
                         {atsResults.matchedKeywords.map((kw: string) => (
-                          <span key={kw} className="px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-[10px] font-semibold text-emerald-700">{kw}</span>
+                          <span key={kw} className="px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-[10px] font-bold text-emerald-800">{kw}</span>
                         ))}
                       </div>
                     </div>
@@ -1187,19 +1142,19 @@ export default function BuilderPage() {
 
                   {Array.isArray(atsResults.missingKeywords) && atsResults.missingKeywords.length > 0 && (
                     <div>
-                      <h4 className="text-xs font-bold text-[#111827] mb-2 flex items-center gap-1.5"><AlertCircle size={13} className="text-amber-500" /> Missing Required Keywords ({atsResults.missingKeywords.length})</h4>
+                      <h4 className="text-xs font-bold text-[#0F172A] mb-2 flex items-center gap-1.5"><AlertCircle size={13} className="text-[#F59E0B]" /> Missing Required Keywords ({atsResults.missingKeywords.length})</h4>
                       <div className="flex flex-wrap gap-1.5">
                         {atsResults.missingKeywords.map((kw: string) => (
-                          <span key={kw} className="px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-200 text-[10px] font-semibold text-amber-700">{kw}</span>
+                          <span key={kw} className="px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-200 text-[10px] font-bold text-amber-800">{kw}</span>
                         ))}
                       </div>
                     </div>
                   )}
 
                   {Array.isArray(atsResults.actionableSuggestions) && atsResults.actionableSuggestions.length > 0 && (
-                    <div className="bg-[#EFF6FF] rounded-xl p-4 border border-blue-100">
-                      <h4 className="text-xs font-bold text-[#1E40AF] mb-2 flex items-center gap-1.5"><Lightbulb size={13} className="text-blue-600" /> Actionable Recommendations</h4>
-                      <ul className="space-y-1.5 text-xs text-[#1E3A8A]">
+                    <div className="bg-purple-50 rounded-xl p-4 border border-purple-200">
+                      <h4 className="text-xs font-bold text-[#7C3AED] mb-2 flex items-center gap-1.5"><Lightbulb size={13} className="text-[#7C3AED]" /> Actionable Recommendations</h4>
+                      <ul className="space-y-1.5 text-xs text-[#0F172A]">
                         {atsResults.actionableSuggestions.map((tip: string, idx: number) => (
                           <li key={idx}>• {tip}</li>
                         ))}

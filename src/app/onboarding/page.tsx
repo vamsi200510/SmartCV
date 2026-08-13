@@ -114,28 +114,29 @@ export default function OnboardingPage() {
   const optionCls = (selected: boolean) =>
     `p-4 rounded-2xl border text-left flex flex-col gap-1 transition-all duration-150 cursor-pointer ${
       selected
-        ? 'bg-gradient-to-r from-blue-50 to-purple-50 border-[#2563EB] shadow-[0_0_0_1px_rgba(37,99,235,0.2)]'
-        : 'bg-slate-50 border-[#E2E8F0] hover:border-slate-300 hover:bg-white'
+        ? 'liquid-glass-card-primary border-[#2563EB]/60 text-[#1D4ED8] shadow-xs'
+        : 'liquid-glass-card-secondary hover:border-white/90 text-[#0F172A]'
     }`;
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] flex flex-col justify-between font-[Inter,sans-serif] relative overflow-hidden">
-      <AnimatedShader />
+    <div className="min-h-screen text-[#0F172A] flex flex-col justify-between font-[Inter,sans-serif] relative overflow-hidden">
       <MouseGlow />
 
-      {/* Header */}
-      <header className="border-b border-[#E2E8F0] backdrop-blur-md px-6 py-4 sticky top-0 z-50 flex items-center bg-white/90">
-        <div className="flex items-center gap-2.5">
-          <div className="h-8 w-8 rounded-xl bg-white border border-[#ECEDF3] flex items-center justify-center shadow-sm">
-            <img src="/SmartCV_logo.png" alt="Logo" className="h-5 w-5 object-contain" />
+      {/* Floating Header */}
+      <header className="fixed top-4 inset-x-0 z-50 px-6 max-w-xl mx-auto pointer-events-none">
+        <div className="liquid-glass-surface rounded-full px-5 py-2.5 flex items-center justify-between shadow-lg pointer-events-auto border border-white/80">
+          <div className="flex items-center gap-2.5">
+            <div className="h-7 w-7 rounded-xl liquid-glass-square flex items-center justify-center shadow-xs">
+              <img src="/SmartCV_logo.png" alt="Logo" className="h-4 w-4 object-contain" />
+            </div>
+            <span className="font-black text-sm tracking-tight text-[#0F172A]">SmartCV</span>
           </div>
-          <span className="font-extrabold text-base tracking-tight text-[#0F172A]">SmartCV</span>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="flex-grow flex items-center justify-center px-6 py-12 relative z-10">
-        <Card className="max-w-xl w-full p-6 sm:p-8" hover={false}>
+      <main className="flex-grow flex items-center justify-center px-6 pt-24 pb-12 relative z-10">
+        <div className="liquid-glass-card-primary max-w-xl w-full p-6 sm:p-8 rounded-3xl shadow-xl">
 
           {/* Progress */}
           <div className="mb-8">
@@ -273,7 +274,7 @@ export default function OnboardingPage() {
               )}
             </motion.div>
           </AnimatePresence>
-        </Card>
+        </div>
       </main>
 
       {/* Footer */}

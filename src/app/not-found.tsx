@@ -9,14 +9,14 @@ export default function NotFound() {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center relative overflow-hidden font-[Inter,sans-serif]">
+    <div className="min-h-screen bg-[#FFFDD0] flex flex-col items-center justify-center relative overflow-hidden font-[Inter,sans-serif]">
       <AnimatedShader />
       <MouseGlow />
 
       <div className="relative z-10 text-center px-6 max-w-md mx-auto">
         {/* Logo */}
         <div className="flex items-center justify-center gap-2.5 mb-12">
-          <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-[#2563EB] to-[#7C3AED] flex items-center justify-center shadow-lg">
+          <div className="h-10 w-10 rounded-2xl bg-[#315E9B] flex items-center justify-center shadow-lg">
             <Sparkles className="h-5 w-5 text-white" />
           </div>
           <span className="text-xl font-extrabold tracking-tight text-[#0F172A]">SmartCV</span>
@@ -28,12 +28,7 @@ export default function NotFound() {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         >
-          <div className="text-[120px] font-extrabold leading-none tracking-tighter mb-4"
-            style={{
-              background: 'linear-gradient(135deg, #2563EB 0%, #7C3AED 50%, #06B6D4 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}
+          <div className="text-[120px] font-extrabold leading-none tracking-tighter mb-4 text-[#315E9B]"
           >
             404
           </div>

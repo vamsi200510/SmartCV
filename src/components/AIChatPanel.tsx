@@ -300,83 +300,71 @@ export default function AIChatPanel({
         onClick={onClose}
       />
 
-      {/* Panel */}
-      <div className="fixed bottom-0 right-0 top-[56px] z-50 w-[400px] flex flex-col bg-white border-l border-[#ECEDF3] shadow-[-8px_0_32px_rgba(0,0,0,0.08)] animate-panel-slide-in">
+      {/* Panel — Solid conversational surface */}
+      <div className="fixed bottom-0 right-0 top-[56px] z-50 w-[400px] flex flex-col bg-slate-100 border-l border-slate-200 shadow-2xl animate-panel-slide-in">
 
-        {/* ── Panel Header ───────────────────────────────────── */}
-        <div className="shrink-0 px-4 pt-4 pb-0 border-b border-[#ECEDF3] bg-white">
+        {/* ── Panel Header (Rich Purple Anchor) ───────────────── */}
+        <div className="shrink-0 px-4 pt-4 pb-0 border-b border-purple-950 bg-[#2E1065] text-white">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2.5">
-              <div className="relative h-9 w-9 rounded-xl border border-[#ECEDF3] bg-white flex items-center justify-center p-1.5 shadow-sm">
+              <div className="relative h-9 w-9 rounded-xl bg-[#1E1035] border border-white/20 flex items-center justify-center p-1.5 shadow-sm">
                 <img src="/Chatbot_logo.png" alt="AI" className="h-full w-full object-contain" />
-                <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 border-2 border-white" />
+                <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-[#10B981] border-2 border-[#2E1065]" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-[#111827]">SmartCV AI</h3>
-                <p className="text-[10px] text-emerald-600 font-semibold">Career Assistant · Active</p>
+                <h3 className="text-sm font-bold text-white">SmartCV AI</h3>
+                <p className="text-[10px] text-purple-200 font-bold">Career Assistant · Active</p>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="h-8 w-8 rounded-lg flex items-center justify-center text-[#9CA3AF] hover:text-[#374151] hover:bg-[#F3F4F6] transition-colors"
+              className="h-8 w-8 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white/80 hover:text-white flex items-center justify-center transition-colors cursor-pointer shadow-xs"
             >
-              <X size={15} />
+              <X size={14} />
             </button>
           </div>
 
           {/* Mode tabs */}
-          <div className="flex items-center bg-[#F3F4F6] rounded-xl p-0.5 gap-0.5 mb-3">
+          <div className="flex items-center bg-[#1E1035] rounded-full p-1 gap-1 mb-3 border border-white/10">
             {MODES.map(({ id, label, icon }) => (
               <button
                 key={id}
                 onClick={() => onModeChange(id)}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-[10px] text-[11px] font-semibold transition-all duration-150 ${
+                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-full text-[11px] font-bold transition-all duration-150 cursor-pointer ${
                   mode === id
-                    ? id === 'edit'
-                      ? 'bg-white text-[#2563EB] shadow-sm'
-                      : id === 'suggest'
-                      ? 'bg-white text-[#7C3AED] shadow-sm'
-                      : 'bg-white text-[#D97706] shadow-sm'
-                    : 'text-[#6B7280] hover:text-[#374151]'
+                    ? 'bg-[#7C3AED] text-white shadow-sm'
+                    : 'text-white/70 hover:text-white'
                 }`}
               >
-                <span className={mode === id
-                  ? id === 'edit' ? 'text-[#2563EB]' : id === 'suggest' ? 'text-[#7C3AED]' : 'text-[#D97706]'
-                  : ''}>{icon}</span>
+                <span>{icon}</span>
                 {label}
               </button>
             ))}
           </div>
 
           {/* Mode description */}
-          <div className={`mx-0 mb-3 px-3 py-2 rounded-xl text-[10px] font-medium flex items-center gap-1.5 ${
-            mode === 'edit'
-              ? 'bg-[#EFF6FF] text-[#1D4ED8]'
-              : mode === 'suggest'
-              ? 'bg-[#F5F3FF] text-[#6D28D9]'
-              : 'bg-[#FFFBEB] text-[#92400E]'
-          }`}>
-            <Lightbulb size={10} />
+          <div className="mx-0 mb-3 px-3 py-1.5 rounded-full bg-purple-900/50 border border-purple-400/30 text-[10px] font-bold text-purple-200 flex items-center gap-1.5 shadow-xs">
+            <Lightbulb size={11} className="text-purple-300" />
             {currentMode.description}
           </div>
         </div>
 
         {/* ── Messages ──────────────────────────────────────── */}
-        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 bg-[#F9FAFB] custom-scrollbar">
+        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3.5 bg-slate-50 custom-scrollbar">
 
           {/* Quick action pills (only when no messages or just greeting) */}
           {messages.length <= 1 && (
             <div className="space-y-2.5">
-              <p className="text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-wide">Quick actions</p>
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Quick actions</p>
               <div className="grid grid-cols-2 gap-1.5">
                 {QUICK_ACTIONS[mode].map((action) => (
                   <button
                     key={action}
                     onClick={() => handleQuickAction(action)}
-                    className="text-left px-3 py-2.5 bg-white border border-[#E5E7EB] hover:border-current rounded-xl text-[11px] font-medium text-[#374151] hover:text-[#111827] transition-all group shadow-[0_1px_2px_rgba(0,0,0,0.04)] hover:shadow-[0_2px_6px_rgba(0,0,0,0.08)]"
+                    className="text-left px-3 py-2.5 bg-white border border-slate-200 hover:border-[#7C3AED] rounded-xl text-[11px] font-bold text-[#0F172A] hover:text-[#7C3AED] transition-all group shadow-xs"
                   >
                     <span className="flex items-center gap-1.5">
-                      <ChevronRight size={10} className="text-[#9CA3AF] group-hover:text-[#2563EB] shrink-0" />
+                      <ChevronRight size={10} className="text-slate-400 group-hover:text-[#7C3AED] shrink-0" />
                       {action}
                     </span>
                   </button>
@@ -404,10 +392,10 @@ export default function AIChatPanel({
         </div>
 
         {/* ── Footer input ──────────────────────────────────── */}
-        <div className="shrink-0 border-t border-[#ECEDF3] bg-white px-4 pt-4 pb-5 space-y-3">
+        <div className="shrink-0 border-t border-slate-200 bg-slate-100 px-4 pt-4 pb-5 space-y-3">
           <form
             onSubmit={handleSubmit}
-            className="flex flex-col gap-2 bg-[#F8FAFC] border border-[#E2E8F0] focus-within:border-[#4F46E5] focus-within:ring-2 focus-within:ring-[#4F46E5]/10 rounded-2xl p-3.5 transition-all shadow-sm"
+            className="flex flex-col gap-2 bg-white border border-slate-300 focus-within:border-[#7C3AED] focus-within:ring-2 focus-within:ring-[#7C3AED]/20 rounded-2xl p-3.5 transition-all shadow-sm"
           >
             <textarea
               ref={inputRef as any}
@@ -421,22 +409,22 @@ export default function AIChatPanel({
                 }
               }}
               placeholder={currentMode.placeholder}
-              className="w-full text-[13px] bg-transparent text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none resize-none leading-relaxed custom-scrollbar min-h-[64px] max-h-40"
+              className="w-full text-[13px] bg-transparent text-[#0F172A] placeholder:text-slate-400 focus:outline-none resize-none leading-relaxed custom-scrollbar min-h-[64px] max-h-40"
               disabled={isLoading}
             />
             <div className="flex items-center justify-between">
-              <p className="text-[10px] text-[#9CA3AF] font-medium">
+              <p className="text-[10px] text-slate-500 font-medium">
                 Enter to send · Shift+Enter for new line
               </p>
               <button
                 type="submit"
                 disabled={isLoading || !inputValue.trim()}
-                className={`h-10 px-5 rounded-xl flex items-center justify-center gap-2 transition-all shrink-0 font-semibold text-[13px] ${
+                className={`h-10 px-5 rounded-xl flex items-center justify-center gap-2 transition-all shrink-0 font-bold text-[13px] ${
                   mode === 'edit'
-                    ? 'bg-gradient-to-r from-[#4F46E5] to-[#2563EB] hover:from-[#4338CA] hover:to-[#1D4ED8]'
+                    ? 'bg-[#7C3AED] hover:bg-[#6D28D9]'
                     : mode === 'suggest'
-                    ? 'bg-gradient-to-r from-[#7C3AED] to-[#6D28D9]'
-                    : 'bg-gradient-to-r from-[#D97706] to-[#B45309]'
+                    ? 'bg-[#8B5CF6] hover:bg-[#7C3AED]'
+                    : 'bg-[#F59E0B] hover:bg-[#D97706]'
                 } text-white disabled:opacity-40 disabled:pointer-events-none shadow-md hover:shadow-lg active:scale-95`}
               >
                 {isLoading ? (

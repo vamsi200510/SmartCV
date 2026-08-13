@@ -5,7 +5,16 @@ import { motion, MotionProps } from 'framer-motion';
 
 export type LiquidGlassVariant = 'circle' | 'pill' | 'square' | 'toolbar';
 export type LiquidGlassSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
-export type LiquidGlassTheme = 'neutral' | 'primary' | 'emerald' | 'purple' | 'amber' | 'rose';
+export type LiquidGlassTheme =
+  | 'neutral'
+  | 'primary'
+  | 'secondary'
+  | 'emerald'
+  | 'purple'
+  | 'amber'
+  | 'rose'
+  | 'danger'
+  | 'ghost';
 
 export interface LiquidGlassButtonProps
   extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, keyof MotionProps> {
@@ -60,7 +69,7 @@ export const LiquidGlassButton = React.forwardRef<HTMLButtonElement, LiquidGlass
       // Pill or toolbar
       switch (size) {
         case 'xs': return 'h-7 px-2.5 text-[11px] rounded-full gap-1';
-        case 'sm': return 'h-8 px-3 text-xs rounded-full gap-1.5';
+        case 'sm': return 'h-8 px-3.5 text-xs font-semibold rounded-full gap-1.5';
         case 'md': return 'h-9 px-4 text-xs font-semibold rounded-full gap-2';
         case 'lg': return 'h-11 px-5 text-sm font-semibold rounded-full gap-2.5';
         case 'xl': return 'h-14 px-6 text-base font-bold rounded-full gap-3';
@@ -70,21 +79,26 @@ export const LiquidGlassButton = React.forwardRef<HTMLButtonElement, LiquidGlass
     // ── Color Theme Adjustments ──────────────────────────────────
     const getThemeClass = () => {
       if (active) {
-        return 'liquid-glass-active text-[#0F172A]';
+        return 'liquid-glass-active text-[#7C3AED] font-bold';
       }
       switch (theme) {
         case 'primary':
-          return 'text-[#1E40AF] hover:text-[#1D4ED8]';
+          return 'text-[#7C3AED] hover:text-[#6D28D9] bg-white/45 border-white/65 shadow-xs font-semibold';
+        case 'secondary':
+          return 'text-slate-600 hover:text-[#0F172A] bg-white/40 border-white/55';
         case 'emerald':
-          return 'text-emerald-800 hover:text-emerald-900';
+          return 'text-[#10B981] hover:text-[#059669] bg-emerald-50/70 border-emerald-200/60';
         case 'purple':
-          return 'text-purple-800 hover:text-purple-900';
+          return 'text-[#7C3AED] hover:text-[#6D28D9] bg-purple-50/70 border-purple-200/60';
         case 'amber':
-          return 'text-amber-800 hover:text-amber-900';
+          return 'text-[#F59E0B] hover:text-[#D97706] bg-amber-50/70 border-amber-200/60';
         case 'rose':
-          return 'text-rose-800 hover:text-rose-900';
+        case 'danger':
+          return 'text-[#EF4444] hover:text-[#DC2626] bg-rose-50/70 border-rose-200/60';
+        case 'ghost':
+          return 'text-slate-500 hover:text-[#0F172A] bg-transparent border-transparent hover:bg-white/30 hover:border-white/40 shadow-none';
         default:
-          return 'text-[#1E293B] hover:text-[#0F172A]';
+          return 'text-[#0F172A] hover:text-[#7C3AED] bg-white/40 border-white/55';
       }
     };
 
@@ -98,7 +112,7 @@ export const LiquidGlassButton = React.forwardRef<HTMLButtonElement, LiquidGlass
       <motion.button
         ref={ref}
         whileHover={disabled || loading ? {} : { y: -1 }}
-        whileTap={disabled || loading ? {} : { scale: 0.97 }}
+        whileTap={disabled || loading ? {} : { scale: 0.985 }}
         transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
         disabled={disabled || loading}
         onClick={onClick}
@@ -126,7 +140,7 @@ export const LiquidGlassButton = React.forwardRef<HTMLButtonElement, LiquidGlass
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
             </svg>
           ) : icon ? (
-            <span className="liquid-glass-icon-wrapper shrink-0">{icon}</span>
+            <span className="liquid-glass-icon-wrapper shrink-0 flex items-center justify-center">{icon}</span>
           ) : null}
           {children}
         </span>
@@ -136,3 +150,24 @@ export const LiquidGlassButton = React.forwardRef<HTMLButtonElement, LiquidGlass
 );
 
 LiquidGlassButton.displayName = 'LiquidGlassButton';
+
+// ── Reusable GlassIconButton ──────────────────────────────────
+export interface GlassIconButtonProps extends LiquidGlassButtonProps {
+  icon: React.ReactNode;
+}
+
+export const GlassIconButton = React.forwardRef<HTMLButtonElement, GlassIconButtonProps>(
+  ({ variant = 'circle', size = 'md', className = '', ...props }, ref) => {
+    return (
+      <LiquidGlassButton
+        ref={ref}
+        variant={variant}
+        size={size}
+        className={`shrink-0 ${className}`}
+        {...props}
+      />
+    );
+  }
+);
+
+GlassIconButton.displayName = 'GlassIconButton';

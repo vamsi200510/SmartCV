@@ -20,14 +20,14 @@ export default function ErrorPage({
   }, [error]);
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center relative overflow-hidden font-[Inter,sans-serif]">
+    <div className="min-h-screen bg-[#FFFDD0] flex flex-col items-center justify-center relative overflow-hidden font-[Inter,sans-serif]">
       <AnimatedShader />
       <MouseGlow />
 
       <div className="relative z-10 text-center px-6 max-w-md mx-auto">
         {/* Logo */}
         <div className="flex items-center justify-center gap-2.5 mb-12">
-          <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-[#2563EB] to-[#7C3AED] flex items-center justify-center shadow-lg">
+          <div className="h-10 w-10 rounded-2xl bg-[#315E9B] flex items-center justify-center shadow-lg">
             <Sparkles className="h-5 w-5 text-white" />
           </div>
           <span className="text-xl font-extrabold tracking-tight text-[#0F172A]">SmartCV</span>

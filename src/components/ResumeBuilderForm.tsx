@@ -31,9 +31,9 @@ const STEPS = [
 ];
 
 // ── Shared field style helpers ─────────────────────────────────────
-const inputClass = `w-full h-9 px-3 rounded-[10px] border text-[13px] font-medium focus:outline-none transition-all duration-150 border-[#E2E8F0] bg-white text-[#0F172A] placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 hover:border-slate-300`;
-const textareaClass = `w-full px-3 py-2.5 rounded-[10px] border text-[13px] font-medium focus:outline-none transition-all duration-150 resize-none leading-relaxed border-[#E2E8F0] bg-white text-[#0F172A] placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 hover:border-slate-300`;
-const labelClass = `text-[10px] font-semibold uppercase tracking-wide text-[#64748B] mb-1 block`;
+const inputClass = `bg-white border border-slate-300 rounded-[10px] w-full h-9 px-3 text-[13px] font-medium text-[#0F172A] placeholder:text-slate-400 focus:border-[#7C3AED] focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/20 transition`;
+const textareaClass = `bg-white border border-slate-300 rounded-[10px] w-full px-3 py-2 text-[13px] font-medium resize-none leading-relaxed text-[#0F172A] placeholder:text-slate-400 focus:border-[#7C3AED] focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/20 transition`;
+const labelClass = `text-[10px] font-bold uppercase tracking-wide text-slate-600 mb-1 block`;
 
 // ── Item card wrapper ──────────────────────────────────────────────
 function ItemCard({
@@ -52,11 +52,11 @@ function ItemCard({
   canMoveDown: boolean;
 }) {
   return (
-    <div className="border border-[#E2E8F0] rounded-xl p-4 space-y-3 relative group bg-white shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:border-slate-300 transition-all duration-200">
+    <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-3 relative group shadow-xs hover:border-[#7C3AED]/50 transition-all duration-200">
       <div className="absolute top-2.5 right-2.5 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-        <button type="button" onClick={onMoveUp} disabled={!canMoveUp} className="p-1.5 rounded-lg text-[#94A3B8] hover:text-[#2563EB] hover:bg-[#EFF6FF] disabled:opacity-25 transition-colors cursor-pointer" title="Move Up"><ArrowUp size={13} /></button>
-        <button type="button" onClick={onMoveDown} disabled={!canMoveDown} className="p-1.5 rounded-lg text-[#94A3B8] hover:text-[#2563EB] hover:bg-[#EFF6FF] disabled:opacity-25 transition-colors cursor-pointer" title="Move Down"><ArrowDown size={13} /></button>
-        <button type="button" onClick={onDelete} className="p-1.5 rounded-lg text-[#94A3B8] hover:text-[#EF4444] hover:bg-[#FEF2F2] transition-colors cursor-pointer" title="Delete"><Trash2 size={13} /></button>
+        <button type="button" onClick={onMoveUp} disabled={!canMoveUp} className="p-1.5 rounded-lg text-slate-400 hover:text-[#7C3AED] hover:bg-purple-50 disabled:opacity-25 transition-colors cursor-pointer" title="Move Up"><ArrowUp size={13} /></button>
+        <button type="button" onClick={onMoveDown} disabled={!canMoveDown} className="p-1.5 rounded-lg text-slate-400 hover:text-[#7C3AED] hover:bg-purple-50 disabled:opacity-25 transition-colors cursor-pointer" title="Move Down"><ArrowDown size={13} /></button>
+        <button type="button" onClick={onDelete} className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer" title="Delete"><Trash2 size={13} /></button>
       </div>
       {children}
     </div>
@@ -240,27 +240,27 @@ export default function ResumeBuilderForm({
 
   // ── Render ────────────────────────────────────────────────────
   return (
-    <div className="h-full flex bg-white rounded-2xl shadow-[0_4px_25px_rgba(0,0,0,0.04)] border border-[#E2E8F0] overflow-hidden text-[#111827]">
+    <div className="h-full flex bg-[#F8FAFC] border border-slate-200 rounded-2xl shadow-sm overflow-hidden text-[#0F172A]">
 
       {/* ── Sidebar Navigation ──────────────────────────────────── */}
-      <aside className="w-[175px] shrink-0 border-r border-[#ECEDF3] bg-[#F8FAFC]/90 p-2.5 flex flex-col justify-between hidden sm:flex">
+      <aside className="w-[175px] shrink-0 border-r border-slate-200 bg-slate-50 p-2.5 flex flex-col justify-between hidden sm:flex">
         <div className="space-y-2">
           {/* Progress Bar */}
-          <div className="px-2.5 py-1.5 border-b border-[#ECEDF3] shrink-0 pb-2">
-            <div className="flex items-center justify-between text-[10px] font-bold text-[#64748B] mb-1">
+          <div className="px-2.5 py-1.5 border-b border-slate-200 shrink-0 pb-2">
+            <div className="flex items-center justify-between text-[10px] font-bold text-slate-500 mb-1">
               <span>Progress</span>
-              <span className={progressPercent === 100 ? 'text-emerald-600' : 'text-[#4F46E5]'}>{progressPercent}%</span>
+              <span className={progressPercent === 100 ? 'text-[#10B981]' : 'text-[#7C3AED]'}>{progressPercent}%</span>
             </div>
-            <div className="h-1 w-full bg-[#E2E8F0] rounded-full overflow-hidden">
+            <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden p-px">
               <div
-                className={`h-full transition-all duration-500 rounded-full ${progressPercent === 100 ? 'bg-emerald-500' : 'bg-gradient-to-r from-[#6366F1] to-[#2563EB]'}`}
+                className={`h-full transition-all duration-500 rounded-full ${progressPercent === 100 ? 'bg-[#10B981]' : 'bg-[#7C3AED]'}`}
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
           </div>
 
           {/* Step Items */}
-          <nav className="space-y-0.5 custom-scrollbar overflow-y-auto max-h-[calc(100vh-140px)]">
+          <nav className="space-y-1 custom-scrollbar overflow-y-auto max-h-[calc(100vh-140px)]">
             {STEPS.map((step) => {
               const Icon = step.icon;
               const isActive = activeStep === step.id;
@@ -271,26 +271,24 @@ export default function ResumeBuilderForm({
                   onClick={() => setActiveStep(step.id)}
                   className={`w-full flex items-center justify-between px-2.5 py-[7px] rounded-xl text-[11px] font-bold transition-all duration-150 cursor-pointer group ${
                     isActive
-                      ? 'bg-[#EEF2FF] text-[#4F46E5] shadow-xs border border-[#E0E7FF]'
-                      : 'text-[#64748B] hover:bg-white hover:text-[#0F172A] border border-transparent'
+                      ? 'bg-white text-[#7C3AED] shadow-xs border border-slate-200'
+                      : 'text-slate-600 hover:bg-slate-100 hover:text-[#0F172A]'
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    <Icon size={13} className={isActive ? 'text-[#4F46E5]' : isDone ? 'text-emerald-500' : 'text-[#94A3B8] group-hover:text-[#64748B]'} />
+                    <Icon size={13} className={isActive ? 'text-[#7C3AED]' : isDone ? 'text-[#10B981]' : 'text-slate-400 group-hover:text-slate-600'} />
                     <span>{step.label}</span>
                   </div>
-                  {isDone && <Check size={11} className="text-emerald-500 shrink-0" />}
+                  {isDone && <Check size={11} className="text-[#10B981] shrink-0" />}
                 </button>
               );
             })}
           </nav>
         </div>
-
-
       </aside>
 
       {/* ── Main Content ─────────────────────────────────────────── */}
-      <div className="flex-1 flex flex-col min-w-0 relative overflow-hidden bg-[#F8FAFC]/50">
+      <div className="flex-1 flex flex-col min-w-0 relative overflow-hidden bg-[#F8FAFC]">
 
         {/* Content area */}
         <div className="flex-1 overflow-y-auto p-4 custom-scrollbar pb-20">
