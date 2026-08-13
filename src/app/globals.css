@@ -267,54 +267,54 @@ body {
     0 0 40px rgba(35, 55, 75, 0.12);
 }
 
-/* ── 4 Semantic Quick Actions Cards ─────────────────────────── */
+/* ── 4 Semantic Quick Actions Cards (Thick Solid Colors) ─────── */
 .card-action-blue {
-  background-color: #DDEBFA;
-  color: #172B4D;
-  border: 1px solid #BBD6F2;
+  background-color: #7C3AED;
+  color: #FFFFFF;
+  border: 1px solid #6D28D9;
 }
 
 .card-action-purple {
-  background-color: #E9DDF4;
-  color: #3E2855;
-  border: 1px solid #D5C0EB;
+  background-color: #7C3AED;
+  color: #FFFFFF;
+  border: 1px solid #6D28D9;
 }
 
 .card-action-orange {
-  background-color: #F5DFC8;
-  color: #593713;
-  border: 1px solid #EAC49D;
+  background-color: #F59E0B;
+  color: #FFFFFF;
+  border: 1px solid #D97706;
 }
 
 .card-action-teal {
-  background-color: #D3EAE5;
-  color: #164B45;
-  border: 1px solid #B5D9D2;
+  background-color: #10B981;
+  color: #FFFFFF;
+  border: 1px solid #059669;
 }
 
-/* Semantic Content Card Surfaces */
+/* Semantic Content Card Surfaces (Thick Solid Colors) */
 .card-ats {
-  background-color: #D3EAE5;
-  color: #164B45;
-  border: 1px solid #B5D9D2;
+  background-color: #10B981;
+  color: #FFFFFF;
+  border: 1px solid #059669;
 }
 
 .card-templates {
-  background-color: #E9DDF4;
-  color: #3E2855;
-  border: 1px solid #D5C0EB;
+  background-color: #7C3AED;
+  color: #FFFFFF;
+  border: 1px solid #6D28D9;
 }
 
 .card-export {
-  background-color: #F5DFC8;
-  color: #593713;
-  border: 1px solid #EAC49D;
+  background-color: #F59E0B;
+  color: #FFFFFF;
+  border: 1px solid #D97706;
 }
 
 .card-stats {
-  background-color: #DDEBFA;
-  color: #172B4D;
-  border: 1px solid #BBD6F2;
+  background-color: #7C3AED;
+  color: #FFFFFF;
+  border: 1px solid #6D28D9;
 }
 
 .card-neutral {

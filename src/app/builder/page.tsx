@@ -813,41 +813,41 @@ export default function BuilderPage() {
 
       {/* ── RIGHT FLOATING ACTION CONTROL RAIL (Solid Semantic Dock) ───── */}
       <aside className="fixed right-4 top-[68px] z-30 hidden xl:flex flex-col rounded-[22px] bg-[#FFFFFF] border border-[#B8CBD8] shadow-lg p-2 items-center gap-2">
-        {/* Section 1: ATS Analysis — Teal Family (#D3EAE5 / #168477 / #155A52) */}
+        {/* Section 1: ATS Analysis — Solid Thick Emerald */}
         <button
           onClick={() => {
             setAtsModalOpen(true);
             if (!atsResults) runAtsAnalysis();
           }}
-          className="w-[62px] py-2.5 flex flex-col items-center justify-center text-center gap-1 rounded-xl bg-[#D3EAE5] border border-[#B5D9D2] hover:bg-[#C2E3DC] transition-all cursor-pointer group shadow-xs"
+          className="w-[64px] py-2.5 flex flex-col items-center justify-center text-center gap-1.5 rounded-2xl bg-[#10B981] hover:bg-[#059669] text-white transition-all cursor-pointer group shadow-sm"
           title="Run Real-Time ATS Analysis"
         >
-          <Shield size={16} className="text-[#168477] group-hover:scale-105 transition-transform" />
-          <span className="font-bold text-[10px] text-[#155A52] leading-tight">ATS</span>
-          <span className="px-1.5 py-px rounded-md bg-[#168477] text-white font-extrabold text-[9px] shadow-xs">
+          <Shield size={16} className="text-white group-hover:scale-110 transition-transform" />
+          <span className="font-bold text-[10px] text-white leading-tight">ATS</span>
+          <span className="px-1.5 py-0.5 rounded-md bg-[#047857] text-white font-black text-[9px] shadow-xs">
             {selectedTemplate?.ats_score || 98}%
           </span>
         </button>
 
-        {/* Section 2: Change Template — Purple Family (#E9DDF3 / #7650A8 / #49316A) */}
+        {/* Section 2: Change Template — Solid Thick Purple */}
         <button
           onClick={() => router.push(resumeId ? `/dashboard?tab=templates&source=builder&resumeId=${resumeId}` : '/dashboard?tab=templates')}
-          className="w-[62px] py-2.5 flex flex-col items-center justify-center text-center gap-1 rounded-xl bg-[#E9DDF3] border border-[#D8C5E8] hover:bg-[#DDD0EA] transition-all cursor-pointer group shadow-xs"
+          className="w-[64px] py-2.5 flex flex-col items-center justify-center text-center gap-1.5 rounded-2xl bg-[#7C3AED] hover:bg-[#6D28D9] text-white transition-all cursor-pointer group shadow-sm"
           title="Switch template"
         >
-          <LayoutTemplate size={16} className="text-[#7650A8] group-hover:scale-105 transition-transform" />
-          <span className="font-bold text-[10px] text-[#49316A] leading-tight">Template</span>
+          <LayoutTemplate size={16} className="text-white group-hover:scale-110 transition-transform" />
+          <span className="font-bold text-[10px] text-white leading-tight">Template</span>
         </button>
 
-        {/* Section 3: Export PDF — Orange Family (#F5DFC8 / #C47720 / #70430F) */}
+        {/* Section 3: Export PDF — Solid Thick Amber */}
         <button
           onClick={handleExportPdf}
           disabled={pdfExporting}
-          className="w-[62px] py-2.5 flex flex-col items-center justify-center text-center gap-1 rounded-xl bg-[#F5DFC8] border border-[#E4C59E] hover:bg-[#ECD0B5] transition-all cursor-pointer group disabled:opacity-50 shadow-xs"
+          className="w-[64px] py-2.5 flex flex-col items-center justify-center text-center gap-1.5 rounded-2xl bg-[#F59E0B] hover:bg-[#D97706] text-white transition-all cursor-pointer group disabled:opacity-50 shadow-sm"
           title="Download PDF Resume"
         >
-          {pdfExporting ? <Loader2 size={16} className="animate-spin text-[#C47720]" /> : <Download size={16} className="text-[#C47720] group-hover:scale-105 transition-transform" />}
-          <span className="font-bold text-[10px] text-[#70430F] leading-tight">Export</span>
+          {pdfExporting ? <Loader2 size={16} className="animate-spin text-white" /> : <Download size={16} className="text-white group-hover:scale-110 transition-transform" />}
+          <span className="font-bold text-[10px] text-white leading-tight">Export</span>
         </button>
       </aside>
 
@@ -890,10 +890,10 @@ export default function BuilderPage() {
         {/* Action buttons */}
         <button
           onClick={() => router.push(resumeId ? `/dashboard?tab=templates&source=builder&resumeId=${resumeId}` : '/dashboard?tab=templates')}
-          className="h-8 px-3.5 rounded-full text-[11px] font-bold text-[#7650A8] bg-[#E9DDF3] border border-[#D8C5E8] hover:bg-[#DDD0EA] shadow-xs flex items-center gap-1.5 cursor-pointer transition"
+          className="h-8 px-3.5 rounded-full text-[11px] font-bold text-white bg-[#7C3AED] hover:bg-[#6D28D9] shadow-xs flex items-center gap-1.5 cursor-pointer transition"
           title="Change template layout"
         >
-          <LayoutTemplate size={13} className="text-[#7650A8]" />
+          <LayoutTemplate size={13} className="text-white" />
           <span>Template</span>
         </button>
 
