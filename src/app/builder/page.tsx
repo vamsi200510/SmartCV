@@ -704,8 +704,9 @@ export default function BuilderPage() {
             <ArrowLeft size={15} />
           </button>
 
-          <div className="flex flex-col leading-tight min-w-0">
-            <div className="flex items-center gap-1.5">
+          <div className="flex flex-col min-w-0 py-0.5">
+            {/* Title Row */}
+            <div className="flex items-center gap-2">
               {isEditingTitle ? (
                 <input
                   type="text"
@@ -717,7 +718,7 @@ export default function BuilderPage() {
                     if (e.key === 'Escape') setIsEditingTitle(false);
                   }}
                   autoFocus
-                  className="h-6 px-1.5 py-0.5 rounded-md border border-[#C2600E] bg-white text-[13px] font-extrabold text-[#241C12] focus:outline-none focus:ring-2 focus:ring-[#C2600E]/20 max-w-[240px]"
+                  className="h-7 px-2.5 py-0.5 rounded-lg border border-[#C2600E] bg-white text-[13.5px] font-black text-[#241C12] focus:outline-none focus:ring-2 focus:ring-[#C2600E]/20 max-w-[240px]"
                 />
               ) : (
                 <div
@@ -728,29 +729,41 @@ export default function BuilderPage() {
                   }}
                   title="Click to edit resume title"
                 >
-                  <span className="text-[13px] font-extrabold text-[#241C12] truncate max-w-[220px]">
+                  <span className="text-[14px] font-black text-[#241C12] truncate max-w-[220px] tracking-tight">
                     {resumeDetails?.title || 'My Resume'}
                   </span>
-                  <span title="Edit Resume Title"><Pencil size={12} className="text-slate-400 group-hover:text-[#241C12] transition-colors" /></span>
+                  <div
+                    className="h-6 w-6 rounded-md hover:bg-black/5 text-slate-400 group-hover:text-[#241C12] flex items-center justify-center transition-colors shrink-0"
+                    title="Edit Resume Title"
+                  >
+                    <Pencil size={12} />
+                  </div>
                 </div>
               )}
             </div>
-            <div className="flex items-center gap-2 text-[11px] font-medium mt-0.5">
-              <span className="text-[#1F7A3D] font-bold flex items-center gap-1">
-                <Check size={11} /> Saved just now
+
+            {/* Status Row: 2 Clearly Separated, Properly Padded Chips */}
+            <div className="flex items-center flex-wrap gap-2 text-[11px] font-medium pt-1.5">
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#DCFCE7] text-[#1F7A3D] border border-[#86EFAC]/70 text-[10.5px] font-bold shadow-2xs">
+                <Check size={11} className="stroke-[2.5]" />
+                <span>Saved just now</span>
               </span>
-              <span className="text-slate-400">·</span>
+
               <button
                 onClick={() => {
                   setAtsModalOpen(true);
                   if (!atsResults) runAtsAnalysis();
                 }}
-                className={`px-2 py-0.5 rounded-full font-bold text-[10px] shadow-xs leading-none cursor-pointer hover:opacity-85 transition flex items-center gap-1 ${
-                  currentAtsScore >= 75 ? 'badge-emerald' : currentAtsScore >= 50 ? 'badge-amber' : 'badge-rose'
+                className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10.5px] font-bold shadow-2xs cursor-pointer hover:opacity-90 transition border ${
+                  currentAtsScore >= 75
+                    ? 'bg-[#DCFCE7] text-[#1F7A3D] border-[#86EFAC]/70'
+                    : currentAtsScore >= 50
+                    ? 'bg-[#FEF3C7] text-[#D97706] border-[#FDE68A]'
+                    : 'bg-[#FEE2E2] text-[#DC2626] border-[#FECACA]'
                 }`}
                 title="Click to view real-time ATS audit breakdown"
               >
-                <Shield size={10} />
+                <Shield size={11} className="stroke-[2.5]" />
                 <span>ATS Score {currentAtsScore}%</span>
               </button>
             </div>
