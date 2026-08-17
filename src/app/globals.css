@@ -138,19 +138,39 @@
   --glass-radius-xl: 32px;
   --glass-pill: 9999px;
 
-  /* Glass backgrounds — Layered subtle warm-to-cool diagonal gradients for inherent glass identity */
-  --glass-bg-primary: linear-gradient(
-    135deg,
-    rgba(255, 248, 235, 0.70) 0%,
-    rgba(255, 255, 255, 0.48) 45%,
-    rgba(230, 240, 250, 0.58) 100%
-  );
-  --glass-bg-base: linear-gradient(
-    135deg,
-    rgba(255, 248, 235, 0.68) 0%,
-    rgba(255, 255, 255, 0.45) 45%,
-    rgba(230, 240, 250, 0.55) 100%
-  );
+  /* Glass backgrounds — Layered subtle warm-to-cool gradient with integrated chromatic refraction */
+  --glass-bg-primary:
+    linear-gradient(
+      90deg,
+      rgba(194, 96, 14, 0.08) 0%,
+      rgba(255, 248, 235, 0.40) 25%,
+      rgba(255, 255, 255, 0.50) 50%,
+      rgba(230, 240, 250, 0.40) 75%,
+      rgba(30, 111, 168, 0.08) 100%
+    ),
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.65) 0%,
+      rgba(255, 255, 255, 0.42) 50%,
+      rgba(255, 255, 255, 0.55) 100%
+    );
+
+  --glass-bg-base:
+    linear-gradient(
+      90deg,
+      rgba(194, 96, 14, 0.07) 0%,
+      rgba(255, 248, 235, 0.38) 25%,
+      rgba(255, 255, 255, 0.46) 50%,
+      rgba(230, 240, 250, 0.38) 75%,
+      rgba(30, 111, 168, 0.07) 100%
+    ),
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.62) 0%,
+      rgba(255, 255, 255, 0.40) 50%,
+      rgba(255, 255, 255, 0.52) 100%
+    );
+
   --glass-bg-secondary: linear-gradient(
     135deg,
     rgba(255, 248, 235, 0.55) 0%,
@@ -785,6 +805,7 @@ body {
   -webkit-backdrop-filter: blur(var(--glass-blur-lg)) saturate(var(--glass-saturation));
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow);
+  overflow: hidden;
 }
 
 .liquid-glass-surface::before {
