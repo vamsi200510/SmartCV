@@ -2,9 +2,47 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import puppeteer from 'puppeteer';
+
+export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
+
+/**
+ * Helper to acquire a browser instance
+ * - Production on Vercel (Linux Serverless): Uses `puppeteer-core` with `@sparticuz/chromium-min`
+ * - Local / Development: Uses standard `puppeteer`
+ */
+async function launchBrowser() {
+  const isVercel = !!process.env.VERCEL || !!process.env.VERCEL_ENV;
+  const isProduction = process.env.NODE_ENV === 'production';
+
+  if (isVercel || (isProduction && process.platform === 'linux')) {
+    const puppeteerCore = await import('puppeteer-core');
+    const chromium = (await import('@sparticuz/chromium-min')).default;
+
+    // Optional: Configure font or graphics support if needed
+    const executablePath = await chromium.executablePath(
+      'https://github.com/Sparticuz/chromium/releases/download/v131.0.1/chromium-v131.0.1-pack.tar'
+    );
+
+    return await puppeteerCore.launch({
+      args: [...chromium.args, '--hide-scrollbars', '--disable-web-security', '--no-sandbox', '--disable-setuid-sandbox'],
+      defaultViewport: { width: 1200, height: 1600, deviceScaleFactor: 2 },
+      executablePath,
+      headless: true,
+    });
+  } else {
+    const puppeteer = await import('puppeteer');
+    return await puppeteer.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu'],
+      defaultViewport: { width: 1200, height: 1600, deviceScaleFactor: 2 },
+    });
+  }
+}
 
 export async function GET(request: NextRequest) {
+  let browser: any = null;
+
   try {
     const cookieStore = await cookies();
     const supabase = createServerClient(
@@ -54,22 +92,16 @@ export async function GET(request: NextRequest) {
 
     // Resolve host address from incoming request headers
     const host = request.headers.get('host') || 'localhost:3000';
-    const protocol = request.nextUrl.protocol || 'http:';
-    
-    // Check if running on localhost or similar, fall back safely
-    const targetUrl = `${protocol}//${host}/builder/print-viewport?resumeId=${resumeId}`;
+    const protocol = request.headers.get('x-forwarded-proto') || request.nextUrl.protocol || 'https:';
+    const targetUrl = `${protocol.replace(/:$/, '')}://${host}/builder/print-viewport?resumeId=${resumeId}`;
 
-    console.time('[EXPORT-PDF] Total time');
+    console.time('[EXPORT-PDF] Generation time');
     console.log(`[EXPORT-PDF] Launching browser for URL: ${targetUrl}`);
 
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu'],
-    });
-
+    browser = await launchBrowser();
     const page = await browser.newPage();
 
-    // Set auth cookies in batch for the headless browser session
+    // Set auth cookies for the headless browser session
     const allCookies = cookieStore.getAll();
     const domain = host.split(':')[0];
     const cookiesToSet = allCookies.map(c => ({
@@ -84,9 +116,12 @@ export async function GET(request: NextRequest) {
 
     // Load print viewport page
     await page.goto(targetUrl, {
-      waitUntil: 'networkidle2',
-      timeout: 30000,
+      waitUntil: 'networkidle0',
+      timeout: 45000,
     });
+
+    // Wait an additional moment for all fonts and CSS to stabilize
+    await new Promise((r) => setTimeout(r, 400));
 
     // Generate PDF from page
     const pdfBuffer = await page.pdf({
@@ -100,14 +135,14 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    await browser.close();
-    console.timeEnd('[EXPORT-PDF] Total time');
+    console.timeEnd('[EXPORT-PDF] Generation time');
 
     return new NextResponse(pdfBuffer as any, {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="Resume_${cleanTitle}.pdf"`,
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
       },
     });
   } catch (err: any) {
@@ -116,5 +151,13 @@ export async function GET(request: NextRequest) {
       { error: err.message || 'Failed to generate PDF. Internal server error.' },
       { status: 500 }
     );
+  } finally {
+    if (browser) {
+      try {
+        await browser.close();
+      } catch (closeErr) {
+        console.error('[EXPORT-PDF] Error closing browser:', closeErr);
+      }
+    }
   }
 }
