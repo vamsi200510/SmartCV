@@ -40,9 +40,9 @@ export default function AboutPage() {
             </div>
           </div>
           <Link href="/auth?mode=signup">
-            <Button variant="primary" size="sm" className="bg-[#C2600E] text-white hover:bg-[#7D3804] font-bold shadow-md transition-colors duration-200">
+            <button className="px-4 py-1.5 text-xs font-bold text-white bg-[#C2600E] hover:bg-[#8F3F10] rounded-full border border-[#9C4A08]/40 hover:border-[#7D3405] shadow-sm hover:shadow-md transition-all duration-150 flex items-center gap-1.5 cursor-pointer">
               Get Started <ArrowRight size={12} />
-            </Button>
+            </button>
           </Link>
         </div>
       </header>

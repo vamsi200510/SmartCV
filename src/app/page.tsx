@@ -108,12 +108,14 @@ export default function LandingPage() {
 
           <div className="hidden md:flex items-center gap-2.5">
             <Link href="/auth?mode=signin">
-              <Button variant="ghost" size="sm" className="text-[#405A73] hover:text-[#172B4D] font-bold">Sign In</Button>
+              <button className="px-4 py-1.5 text-xs font-bold text-[#405A73] hover:text-[#172B4D] rounded-full hover:bg-white/70 border border-transparent hover:border-white/80 transition-all duration-150 cursor-pointer shadow-none">
+                Sign In
+              </button>
             </Link>
             <Link href="/auth?mode=signup">
-              <Button variant="primary" size="sm" className="bg-[#C2600E] text-white hover:bg-[#7D3804] font-bold shadow-md transition-colors duration-200">
+              <button className="px-4 py-1.5 text-xs font-bold text-white bg-[#C2600E] hover:bg-[#8F3F10] rounded-full border border-[#9C4A08]/40 hover:border-[#7D3405] shadow-sm hover:shadow-md transition-all duration-150 flex items-center gap-1.5 cursor-pointer">
                 Get Started Free <ArrowRight className="h-3.5 w-3.5" />
-              </Button>
+              </button>
             </Link>
           </div>
 
@@ -150,7 +152,7 @@ export default function LandingPage() {
                     <Button variant="secondary" size="sm" className="w-full bg-[#F5EFEB] text-[#172B4D] border-[#E8DDD0]">Sign In</Button>
                   </Link>
                   <Link href="/auth?mode=signup" onClick={() => setMobileOpen(false)}>
-                    <Button variant="primary" size="sm" className="w-full bg-[#C2600E] hover:bg-[#7D3804] text-white font-bold transition-colors duration-200">Get Started Free</Button>
+                    <Button variant="primary" size="sm" className="w-full bg-[#C2600E] hover:bg-[#9C4A08] text-white font-bold">Get Started Free</Button>
                   </Link>
                 </div>
               </div>

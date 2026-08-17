@@ -805,7 +805,6 @@ body {
   -webkit-backdrop-filter: blur(var(--glass-blur-lg)) saturate(var(--glass-saturation));
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow);
-  overflow: hidden;
 }
 
 .liquid-glass-surface::before {
