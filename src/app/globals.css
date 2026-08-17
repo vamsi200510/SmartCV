@@ -129,7 +129,7 @@
   --glass-blur: 28px;
   --glass-blur-lg: 32px;
   --glass-blur-sm: 18px;
-  --glass-saturation: 220%;
+  --glass-saturation: 240%;
 
   --glass-radius-xs: 12px;
   --glass-radius-sm: 18px;
@@ -138,37 +138,37 @@
   --glass-radius-xl: 32px;
   --glass-pill: 9999px;
 
-  /* Glass backgrounds — Layered subtle warm-to-cool gradient with integrated chromatic refraction */
+  /* Glass backgrounds — Thin, crystalline liquid glass with vibrant chromatic color intensity */
   --glass-bg-primary:
     linear-gradient(
       90deg,
-      rgba(194, 96, 14, 0.08) 0%,
-      rgba(255, 248, 235, 0.40) 25%,
-      rgba(255, 255, 255, 0.50) 50%,
-      rgba(230, 240, 250, 0.40) 75%,
-      rgba(30, 111, 168, 0.08) 100%
+      rgba(225, 108, 12, 0.18) 0%,
+      rgba(245, 150, 40, 0.10) 22%,
+      rgba(255, 255, 255, 0.35) 50%,
+      rgba(30, 140, 220, 0.10) 78%,
+      rgba(14, 115, 190, 0.18) 100%
     ),
     linear-gradient(
       135deg,
-      rgba(255, 255, 255, 0.65) 0%,
-      rgba(255, 255, 255, 0.42) 50%,
-      rgba(255, 255, 255, 0.55) 100%
+      rgba(255, 255, 255, 0.48) 0%,
+      rgba(255, 255, 255, 0.22) 50%,
+      rgba(255, 255, 255, 0.38) 100%
     );
 
   --glass-bg-base:
     linear-gradient(
       90deg,
-      rgba(194, 96, 14, 0.07) 0%,
-      rgba(255, 248, 235, 0.38) 25%,
-      rgba(255, 255, 255, 0.46) 50%,
-      rgba(230, 240, 250, 0.38) 75%,
-      rgba(30, 111, 168, 0.07) 100%
+      rgba(225, 108, 12, 0.16) 0%,
+      rgba(245, 150, 40, 0.08) 22%,
+      rgba(255, 255, 255, 0.32) 50%,
+      rgba(30, 140, 220, 0.08) 78%,
+      rgba(14, 115, 190, 0.16) 100%
     ),
     linear-gradient(
       135deg,
-      rgba(255, 255, 255, 0.62) 0%,
-      rgba(255, 255, 255, 0.40) 50%,
-      rgba(255, 255, 255, 0.52) 100%
+      rgba(255, 255, 255, 0.45) 0%,
+      rgba(255, 255, 255, 0.20) 50%,
+      rgba(255, 255, 255, 0.35) 100%
     );
 
   --glass-bg-secondary: linear-gradient(
