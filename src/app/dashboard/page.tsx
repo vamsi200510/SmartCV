@@ -1132,10 +1132,11 @@ export default function DashboardPage() {
                       <button
                         key={filter}
                         onClick={() => setActiveFilter(filter)}
-                        className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-150 whitespace-nowrap cursor-pointer ${activeFilter === filter
-                            ? 'bg-[#C2600E] text-white shadow-sm'
-                            : 'text-slate-600 hover:text-[#241C12]'
-                          }`}
+                        className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-150 whitespace-nowrap cursor-pointer ${
+                          activeFilter === filter
+                            ? 'bg-[#C2600E] !text-[#FFFEF9] text-white shadow-sm border border-[#9C4A08]/40'
+                            : 'bg-[#FCE3C7]/40 text-[#C2600E] hover:bg-[#FCE3C7] border border-[#F4B77E]/30'
+                        }`}
                       >
                         {filter}
                       </button>
