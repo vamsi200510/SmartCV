@@ -27,7 +27,7 @@ function AuthLeftPanel() {
   const [currentBullet, setCurrentBullet] = useState(0);
   const bullets = [
     { icon: <Shield className="h-4 w-4" />, text: 'ATS score up to 99/100', color: 'text-blue-600 bg-blue-50 border-blue-100' },
-    { icon: <Sparkles className="h-4 w-4" />, text: 'AI-powered bullet rewriting', color: 'text-purple-600 bg-purple-50 border-purple-100' },
+    { icon: <Sparkles className="h-4 w-4" />, text: 'AI-powered bullet rewriting', color: 'text-[#1E6FA8] bg-[#EBF5FB] border-[#C7E1F0]' },
     { icon: <TrendingUp className="h-4 w-4" />, text: '3· more interview callbacks', color: 'text-emerald-600 bg-emerald-50 border-emerald-100' },
     { icon: <FileText className="h-4 w-4" />, text: '12+ premium templates', color: 'text-amber-600 bg-amber-50 border-amber-100' },
   ];

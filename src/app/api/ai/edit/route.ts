@@ -290,6 +290,25 @@ ${JSON.stringify(chatHistory || [], null, 2)}
     return NextResponse.json(result);
   } catch (err: any) {
     console.error("Error in edit-resume AI route:", err);
-    return NextResponse.json({ error: err.message || "Internal server error." }, { status: 500 });
+
+    const errorMessage = err?.message || "";
+    const isRateLimit =
+      err?.status === 429 ||
+      errorMessage.includes("429") ||
+      errorMessage.includes("RESOURCE_EXHAUSTED") ||
+      errorMessage.includes("quota") ||
+      errorMessage.includes("rate limit");
+
+    if (isRateLimit) {
+      return NextResponse.json(
+        { error: "The AI assistant is currently experiencing high traffic. Please wait a few seconds and try again." },
+        { status: 429 }
+      );
+    }
+
+    return NextResponse.json(
+      { error: errorMessage || "Failed to process AI resume edit. Please try again." },
+      { status: 500 }
+    );
   }
 }
