@@ -41,11 +41,11 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     const variants: Record<ButtonVariant, string> = {
-      primary: "rounded-full text-white bg-[#C2600E] hover:bg-[#9C4A08] shadow-sm border border-[#9C4A08]/30",
+      primary: "rounded-full text-white bg-[#C2600E] hover:bg-[#7D3804] active:bg-[#5C2B04] shadow-sm border border-[#9C4A08]/30 transition-all duration-200",
       secondary: "rounded-full text-[#172B4D] bg-[#FFFFFF] border border-[#BFD5E8] hover:bg-slate-50 shadow-xs",
       outline: "rounded-full text-[#C2600E] bg-white border border-[#C2600E]/40 hover:bg-[#FCE3C7]/40",
       glass: "liquid-glass-pill text-[#172B4D] bg-white border-white/70 hover:bg-white shadow-xs",
-      gradient: "rounded-full text-white bg-[#C2600E] hover:bg-[#9C4A08] shadow-sm",
+      gradient: "rounded-full text-white bg-[#C2600E] hover:bg-[#7D3804] shadow-sm transition-all duration-200",
       ghost: "text-[#405A73] hover:text-[#172B4D] rounded-full hover:bg-white/40 border border-transparent shadow-none",
       danger: "rounded-full text-white bg-[#A84B55] hover:bg-[#8F3F48] shadow-xs border border-[#8F3F48]/30",
       success: "rounded-full text-white bg-[#21877B] hover:bg-[#1D6E67] shadow-xs border border-[#1D6E67]/30",

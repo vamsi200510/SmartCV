@@ -111,7 +111,7 @@ export default function LandingPage() {
               <Button variant="ghost" size="sm" className="text-[#405A73] hover:text-[#172B4D] font-bold">Sign In</Button>
             </Link>
             <Link href="/auth?mode=signup">
-              <Button variant="primary" size="sm" className="bg-[#C2600E] text-white hover:bg-[#9C4A08] font-bold shadow-md">
+              <Button variant="primary" size="sm" className="bg-[#C2600E] text-white hover:bg-[#7D3804] font-bold shadow-md transition-colors duration-200">
                 Get Started Free <ArrowRight className="h-3.5 w-3.5" />
               </Button>
             </Link>
@@ -150,7 +150,7 @@ export default function LandingPage() {
                     <Button variant="secondary" size="sm" className="w-full bg-[#F5EFEB] text-[#172B4D] border-[#E8DDD0]">Sign In</Button>
                   </Link>
                   <Link href="/auth?mode=signup" onClick={() => setMobileOpen(false)}>
-                    <Button variant="primary" size="sm" className="w-full bg-[#C2600E] hover:bg-[#9C4A08] text-white font-bold">Get Started Free</Button>
+                    <Button variant="primary" size="sm" className="w-full bg-[#C2600E] hover:bg-[#7D3804] text-white font-bold transition-colors duration-200">Get Started Free</Button>
                   </Link>
                 </div>
               </div>

@@ -40,7 +40,7 @@ export default function AboutPage() {
             </div>
           </div>
           <Link href="/auth?mode=signup">
-            <Button variant="primary" size="sm" className="bg-[#C2600E] text-white hover:bg-[#9C4A08] font-bold">
+            <Button variant="primary" size="sm" className="bg-[#C2600E] text-white hover:bg-[#7D3804] font-bold shadow-md transition-colors duration-200">
               Get Started <ArrowRight size={12} />
             </Button>
           </Link>
