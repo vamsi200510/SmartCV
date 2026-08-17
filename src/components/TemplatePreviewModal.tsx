@@ -66,28 +66,28 @@ export default function TemplatePreviewModal({
 
   return (
     <div className={`fixed inset-0 z-50 flex flex-col transition-colors duration-300 ${
-      'bg-slate-50 text-slate-800'
+      'bg-[#F6EFE4] text-[#241C12]'
     }`}>
       
       {/* Top Navbar Toolbar */}
-      <header className="h-16 border-b px-6 flex items-center justify-between shrink-0 transition-colors duration-300 border-slate-200/80 bg-white/85 backdrop-blur-md">
+      <header className="h-16 border-b px-6 flex items-center justify-between shrink-0 transition-colors duration-300 border-[#E0D5C5] bg-white/90 backdrop-blur-md">
         
         {/* Left side: Template Info */}
         <div className="flex items-center gap-3">
           <button
             onClick={onClose}
             title="Close Preview"
-            className="liquid-glass-interactive liquid-glass-square h-9 w-9 text-slate-600 hover:text-slate-900 shadow-xs cursor-pointer"
+            className="liquid-glass-interactive liquid-glass-square h-9 w-9 text-[#5C4E3E] hover:text-[#241C12] shadow-xs cursor-pointer"
           >
             <span className="liquid-glass-specular" aria-hidden="true" />
             <span className="liquid-glass-refraction" aria-hidden="true" />
             <X size={16} className="relative z-10 liquid-glass-content" />
           </button>
           <div className="hidden sm:block">
-            <h3 className="text-sm font-black leading-none text-slate-950">
+            <h3 className="text-sm font-black leading-none text-[#241C12]">
               {title || template.name}
             </h3>
-            <span className="text-[9px] font-bold tracking-wider uppercase mt-1 block text-slate-400">
+            <span className="text-[9px] font-bold tracking-wider uppercase mt-1 block text-[#9A8C7E]">
               {title ? `${template.name} · ${template.layout_type}` : `${template.layout_type} · ${template.page_length}`}
             </span>
           </div>
@@ -100,14 +100,14 @@ export default function TemplatePreviewModal({
             <>
               <button
                 onClick={onPrev}
-                className="liquid-glass-interactive liquid-glass-circle h-8 w-8 text-slate-600 hover:text-slate-900 cursor-pointer"
+                className="liquid-glass-interactive liquid-glass-circle h-8 w-8 text-[#5C4E3E] hover:text-[#241C12] cursor-pointer"
                 title="Previous Template (←)"
               >
                 <span className="liquid-glass-specular" aria-hidden="true" />
                 <span className="liquid-glass-refraction" aria-hidden="true" />
                 <ChevronLeft size={16} className="relative z-10 liquid-glass-content" />
               </button>
-              <div className="h-4 w-[1px] bg-slate-200/80" />
+              <div className="h-4 w-[1px] bg-[#E0D5C5]" />
             </>
           )}
 
@@ -116,7 +116,7 @@ export default function TemplatePreviewModal({
             <button
               onClick={handleZoomOut}
               disabled={zoom <= 50}
-              className="liquid-glass-interactive liquid-glass-circle h-7 w-7 text-slate-600 hover:text-slate-900 disabled:opacity-30 cursor-pointer"
+              className="liquid-glass-interactive liquid-glass-circle h-7 w-7 text-[#5C4E3E] hover:text-[#241C12] disabled:opacity-30 cursor-pointer"
               title="Zoom Out"
             >
               <span className="liquid-glass-specular" aria-hidden="true" />
@@ -124,14 +124,14 @@ export default function TemplatePreviewModal({
               <ZoomOut size={14} className="relative z-10 liquid-glass-content" />
             </button>
             
-            <span className="text-xs font-mono font-bold min-w-10 text-center text-slate-700 select-none">
+            <span className="text-xs font-mono font-bold min-w-10 text-center text-[#241C12] select-none">
               {zoom}%
             </span>
 
             <button
               onClick={handleZoomIn}
               disabled={zoom >= 150}
-              className="liquid-glass-interactive liquid-glass-circle h-7 w-7 text-slate-600 hover:text-slate-900 disabled:opacity-30 cursor-pointer"
+              className="liquid-glass-interactive liquid-glass-circle h-7 w-7 text-[#5C4E3E] hover:text-[#241C12] disabled:opacity-30 cursor-pointer"
               title="Zoom In"
             >
               <span className="liquid-glass-specular" aria-hidden="true" />
@@ -141,7 +141,7 @@ export default function TemplatePreviewModal({
 
             <button
               onClick={handleFitToScreen}
-              className="liquid-glass-interactive liquid-glass-circle h-7 w-7 text-slate-600 hover:text-slate-900 cursor-pointer"
+              className="liquid-glass-interactive liquid-glass-circle h-7 w-7 text-[#5C4E3E] hover:text-[#241C12] cursor-pointer"
               title="Fit to Screen"
             >
               <span className="liquid-glass-specular" aria-hidden="true" />
@@ -153,10 +153,10 @@ export default function TemplatePreviewModal({
           {/* Next template */}
           {!data && (
             <>
-              <div className="h-4 w-[1px] bg-slate-200/80" />
+              <div className="h-4 w-[1px] bg-[#E0D5C5]" />
               <button
                 onClick={onNext}
-                className="liquid-glass-interactive liquid-glass-circle h-8 w-8 text-slate-600 hover:text-slate-900 cursor-pointer"
+                className="liquid-glass-interactive liquid-glass-circle h-8 w-8 text-[#5C4E3E] hover:text-[#241C12] cursor-pointer"
                 title="Next Template (→)"
               >
                 <span className="liquid-glass-specular" aria-hidden="true" />
@@ -174,7 +174,7 @@ export default function TemplatePreviewModal({
             disabled={isLoading}
             className="liquid-glass-interactive liquid-glass-pill px-5 h-9 text-white text-xs font-black uppercase tracking-wider transition duration-200 flex items-center gap-1.5 shadow-md cursor-pointer disabled:opacity-50"
             style={{
-              background: 'linear-gradient(140deg, rgba(37, 99, 235, 0.92) 0%, rgba(79, 70, 229, 0.88) 100%)',
+              background: 'linear-gradient(140deg, #C2600E 0%, #1E6FA8 100%)',
               borderColor: 'rgba(255, 255, 255, 0.45)',
             }}
           >
@@ -196,10 +196,10 @@ export default function TemplatePreviewModal({
 
       {/* Main Preview Workarea */}
       <div className={`flex-1 overflow-auto flex justify-center items-start p-8 md:p-12 transition-colors duration-300 ${
-        'bg-slate-200/50'
+        'bg-[#EDE2D0]'
       }`}>
         <div 
-          className="transition-all duration-150 ease-out flex justify-center shadow-2xl border border-slate-200/30"
+          className="transition-all duration-150 ease-out flex justify-center shadow-2xl border border-[#E0D5C5]/60"
           style={{ 
             height: `${1123 * (zoom / 100) + 48}px`, 
             width: `${794 * (zoom / 100) + 48}px`,

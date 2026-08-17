@@ -6,15 +6,15 @@ import {
 } from 'lucide-react';
 
 // ── Shared field style helpers ────────────────────────────────────
-export const inputClass = `liquid-glass-input w-full h-9 px-3 text-[13px] text-[#0F172A]
+export const inputClass = `liquid-glass-input w-full h-9 px-3 text-[13px] text-[#241C12]
   placeholder:text-[#94A3B8] font-medium`;
 
-export const textareaClass = `liquid-glass-input w-full px-3 py-2 text-[13px] text-[#0F172A]
+export const textareaClass = `liquid-glass-input w-full px-3 py-2 text-[13px] text-[#241C12]
   resize-none leading-relaxed placeholder:text-[#94A3B8] font-medium min-h-[68px]`;
 
 export const labelClass = `block text-[10px] font-bold uppercase tracking-wider text-[#64748B] mb-1`;
 
-export const sectionHeadingClass = `text-[13px] font-bold text-[#0F172A]`;
+export const sectionHeadingClass = `text-[13px] font-bold text-[#241C12]`;
 
 // Auto-resizing textarea hook
 export function useAutoResize() {
@@ -64,14 +64,14 @@ export function SectionCard({
       {/* Card header */}
       <div className="flex items-center justify-between px-3.5 py-2 border-b border-white/60 bg-white/40">
         <div className="flex items-center gap-2">
-          <div className="cursor-grab text-[#94A3B8] hover:text-[#0F172A] transition-colors">
+          <div className="cursor-grab text-[#94A3B8] hover:text-[#241C12] transition-colors">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="9" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="19" r="1"/>
               <circle cx="15" cy="5" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="19" r="1"/>
             </svg>
           </div>
           <div>
-            <p className="text-[13px] font-bold text-[#0F172A] leading-tight">{title}</p>
+            <p className="text-[13px] font-bold text-[#241C12] leading-tight">{title}</p>
             {subtitle && <p className="text-[10px] text-[#64748B] font-medium leading-tight">{subtitle}</p>}
           </div>
         </div>
@@ -113,7 +113,7 @@ export function AddItemButton({ onClick, label }: { onClick: () => void; label: 
   return (
     <button
       onClick={onClick}
-      className="w-full py-2.5 rounded-full liquid-glass-pill border-dashed border-[#2563EB]/40 flex items-center justify-center gap-1.5 text-xs font-bold text-[#2563EB] hover:bg-blue-500/10 transition-all duration-200 cursor-pointer shadow-xs"
+      className="w-full py-2.5 rounded-full liquid-glass-pill border-dashed border-[#C2600E]/40 flex items-center justify-center gap-1.5 text-xs font-bold text-[#C2600E] hover:bg-[#C2600E]/10 transition-all duration-200 cursor-pointer shadow-xs"
     >
       <Plus size={14} />
       <span>{label}</span>
@@ -125,11 +125,11 @@ export function AddItemButton({ onClick, label }: { onClick: () => void; label: 
 export function EmptySectionState({ label }: { label: string }) {
   return (
     <div className="text-center py-7 liquid-glass-card-secondary rounded-2xl">
-      <div className="w-8 h-8 liquid-glass-circle flex items-center justify-center shadow-xs mx-auto mb-2 text-[#2563EB]">
+      <div className="w-8 h-8 liquid-glass-circle flex items-center justify-center shadow-xs mx-auto mb-2 text-[#C2600E]">
         <Plus size={15} />
       </div>
-      <p className="text-xs font-bold text-[#0F172A]">No {label} added yet</p>
-      <p className="text-[11px] text-[#64748B] mt-0.5 font-medium">Click the button below to add one.</p>
+      <p className="text-xs font-bold text-[#241C12]">No {label} added yet</p>
+      <p className="text-[11px] text-[#5C4E3E] mt-0.5 font-medium">Click the button below to add one.</p>
     </div>
   );
 }
@@ -139,7 +139,7 @@ export function StepHeader({ title, description }: { title: string; description:
   return (
     <div className="mb-4">
       <h3 className={sectionHeadingClass}>{title}</h3>
-      <p className="text-xs text-[#64748B] mt-0.5 leading-relaxed font-medium">{description}</p>
+      <p className="text-xs text-[#5C4E3E] mt-0.5 leading-relaxed font-medium">{description}</p>
     </div>
   );
 }
@@ -162,7 +162,7 @@ export function ToggleSwitch({
       className="flex items-center justify-between gap-3 cursor-pointer group select-none"
     >
       {label && (
-        <span className="text-xs font-bold text-[#334155] group-hover:text-[#0F172A] transition-colors">
+        <span className="text-xs font-bold text-[#334155] group-hover:text-[#241C12] transition-colors">
           {label}
         </span>
       )}
@@ -173,7 +173,7 @@ export function ToggleSwitch({
         aria-checked={checked}
         onClick={() => onChange(!checked)}
         className={`relative inline-flex h-5 w-9 items-center rounded-full transition-all duration-200 focus:outline-none ${
-          checked ? 'bg-[#2563EB] shadow-xs' : 'bg-slate-300'
+          checked ? 'bg-[#C2600E] shadow-xs' : 'bg-[#D5C8B4]'
         }`}
       >
         <span
@@ -208,13 +208,13 @@ export function CollapsibleGroup({
       >
         <div className="flex items-center gap-2">
           {icon && (
-            <span className="text-[#64748B] group-hover:text-[#2563EB] transition-colors">{icon}</span>
+            <span className="text-[#9A8C7E] group-hover:text-[#C2600E] transition-colors">{icon}</span>
           )}
-          <span className="text-xs font-bold text-[#0F172A]">{title}</span>
+          <span className="text-xs font-bold text-[#241C12]">{title}</span>
         </div>
         <ChevronDown
           size={13}
-          className={`text-[#94A3B8] transition-transform duration-200 ${
+          className={`text-[#B8A99A] transition-transform duration-200 ${
             open ? 'rotate-0' : '-rotate-90'
           }`}
         />
@@ -231,11 +231,11 @@ export function CollapsibleGroup({
 // ── Completion badge ──────────────────────────────────────────────
 export function CompletionBadge({ done, label }: { done: boolean; label: string }) {
   return (
-    <div className={`flex items-center gap-1.5 text-xs font-semibold ${done ? 'text-emerald-600' : 'text-[#94A3B8]'}`}>
+    <div className={`flex items-center gap-1.5 text-xs font-semibold ${done ? 'text-[#1F7A3D]' : 'text-[#9A8C7E]'}`}>
       {done ? (
-        <Check size={12} className="text-emerald-500" />
+        <Check size={12} className="text-[#1F7A3D]" />
       ) : (
-        <span className="h-3.5 w-3.5 rounded-full border border-slate-300 shrink-0" />
+        <span className="h-3.5 w-3.5 rounded-full border border-[#D5C8B4] shrink-0" />
       )}
       <span className={done ? 'line-through' : ''}>{label}</span>
     </div>

@@ -1,9 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { Resend } from 'resend';
+import { OTP_LOGIN_ENABLED } from '@/config/authConfig';
 
 export async function POST(request: NextRequest) {
   try {
+    if (!OTP_LOGIN_ENABLED) {
+      return NextResponse.json(
+        { error: 'Email OTP login is temporarily unavailable. Please continue with Google Sign-In.' },
+        { status: 503 }
+      );
+    }
+
     const { email } = await request.json();
 
     if (!email || !/\S+@\S+\.\S+/.test(email)) {

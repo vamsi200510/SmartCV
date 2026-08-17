@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/components/ui/design-system';
 import { motion } from 'framer-motion';
+import { ColorMeshBackdrop } from '@/components/ui/ColorMeshBackdrop';
 import {
   ArrowLeft, User, Mail, Building2,
   Briefcase, Globe, ExternalLink,
@@ -21,8 +22,8 @@ const EXP_LEVELS = [
   { value: 'Lead/Executive', label: 'Lead / Executive (8+ yrs)' },
 ];
 
-const INPUT_CLASS = "w-full h-11 px-4 text-sm text-[#0F172A] placeholder:text-slate-400 font-medium bg-white border border-slate-300 rounded-xl focus:outline-none focus:border-[#7C3AED] focus:ring-2 focus:ring-[#7C3AED]/20 transition shadow-xs";
-const LABEL_CLASS = "text-[11px] font-bold text-slate-600 mb-1.5 block uppercase tracking-wide";
+const INPUT_CLASS = "w-full h-11 px-4 text-sm text-[#241C12] placeholder:text-slate-400 font-medium level-2-input shadow-xs";
+const LABEL_CLASS = "text-[11px] font-bold text-[#5C4E3E] mb-1.5 block uppercase tracking-wide";
 
 export default function ProfilePage() {
   const { user, profile, logout, refreshProfile } = useAuth();
@@ -212,18 +213,19 @@ export default function ProfilePage() {
   const initials = fullName ? fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : 'U';
 
   return (
-    <div className="min-h-screen bg-white text-[#0F172A]" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
+    <div className="min-h-screen level-0-base text-[#241C12] relative overflow-hidden color-mesh-backdrop" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
+      <ColorMeshBackdrop />
       {/* Floating Liquid Glass Top Header */}
-      <header className="fixed top-4 inset-x-0 z-50 px-4 sm:px-6 max-w-3xl mx-auto pointer-events-none">
-        <div className="liquid-glass-surface rounded-[24px] px-5 py-2.5 flex items-center justify-between shadow-lg pointer-events-auto border border-white/70">
+      <header className="fixed top-4 inset-x-0 z-40 px-4 sm:px-6 max-w-5xl mx-auto pointer-events-none">
+        <div className="liquid-glass-surface rounded-[28px] px-5 py-2.5 flex items-center justify-between shadow-lg pointer-events-auto border border-white/80">
           <div className="flex items-center gap-3">
-            <button onClick={() => router.push('/dashboard')} className="h-8 w-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:text-[#0F172A] transition cursor-pointer shadow-xs">
+            <button onClick={() => router.push('/dashboard')} className="h-8 w-8 rounded-full bg-white/70 border border-white/80 flex items-center justify-center text-slate-700 hover:text-[#241C12] transition cursor-pointer shadow-xs">
               <ArrowLeft size={14} />
             </button>
-            <span className="font-extrabold text-sm text-[#0F172A]">Profile Settings</span>
+            <span className="font-extrabold text-sm text-[#241C12]">Profile Settings</span>
           </div>
           {saveStatus === 'success' && (
-            <span className="flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
+            <span className="flex items-center gap-1 text-xs font-bold text-[#1F7A3D] bg-[#DCFCE7] border border-[#86EFAC] px-3 py-1 rounded-full shadow-xs">
               <Check size={12} /> Saved
             </span>
           )}
@@ -232,11 +234,11 @@ export default function ProfilePage() {
 
       <main className="max-w-3xl mx-auto px-6 pt-24 pb-12 relative z-10 space-y-6">
 
-        {/* Profile Header */}
+        {/* Level 1: Profile Header Card (Pure Solid White) */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white border border-slate-200 rounded-3xl p-8 relative overflow-hidden shadow-sm"
+          className="level-1-card p-8 relative overflow-hidden"
         >
           <div className="relative z-10 flex flex-col sm:flex-row items-center gap-6">
             {/* Avatar with completion ring */}
@@ -249,10 +251,10 @@ export default function ProfilePage() {
                 className="hidden"
               />
               <svg width="96" height="96" viewBox="0 0 96 96" className="absolute -top-1 -left-1 pointer-events-none">
-                <circle cx="48" cy="48" r="44" fill="none" stroke="#E2E8F0" strokeWidth="3" />
+                <circle cx="48" cy="48" r="44" fill="none" stroke="#E8DDD0" strokeWidth="3" />
                 <circle
                   cx="48" cy="48" r="44" fill="none"
-                  stroke={completion >= 80 ? '#10B981' : completion >= 50 ? '#7C3AED' : '#F59E0B'}
+                  stroke={completion >= 80 ? '#1F7A3D' : completion >= 50 ? '#C2600E' : '#B5790C'}
                   strokeWidth="3"
                   strokeDasharray={`${completion * 2.76} ${276 - completion * 2.76}`}
                   strokeDashoffset="69"
@@ -265,7 +267,7 @@ export default function ProfilePage() {
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
-                className="w-[88px] h-[88px] rounded-full bg-[#7C3AED] flex items-center justify-center text-white text-2xl font-extrabold shadow-md m-1 relative overflow-hidden group cursor-pointer"
+                className="w-[88px] h-[88px] rounded-full bg-[#C2600E] flex items-center justify-center text-white text-2xl font-extrabold shadow-md m-1 relative overflow-hidden group cursor-pointer"
               >
                 {uploading ? (
                   <Loader2 className="h-6 w-6 animate-spin text-white" />
@@ -281,18 +283,18 @@ export default function ProfilePage() {
                 </div>
               </button>
 
-              <div className="absolute -bottom-1 -right-1 bg-white border border-slate-200 rounded-full px-2 py-0.5 text-[10px] font-bold text-[#0F172A] shadow-xs">
+              <div className="absolute -bottom-1 -right-1 bg-white border border-[#E8DDD0] rounded-full px-2 py-0.5 text-[10px] font-bold text-[#241C12] shadow-xs">
                 {completion}%
               </div>
             </div>
             <div className="text-center sm:text-left flex-1">
-              <h1 className="text-xl font-extrabold text-[#0F172A]">{fullName || 'Your Name'}</h1>
-              <p className="text-sm text-slate-500 mt-0.5 font-medium">{user.email}</p>
-              <div className="flex flex-wrap items-center gap-2 mt-2 justify-center sm:justify-start">
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-purple-50 border border-purple-200 text-[10px] font-bold text-[#7C3AED]">
+              <h1 className="text-xl font-extrabold text-[#241C12]">{fullName || 'Your Name'}</h1>
+              <p className="text-sm text-[#5C4E3E] mt-0.5 font-medium">{user.email}</p>
+              <div className="flex flex-wrap items-center gap-2 mt-3 justify-center sm:justify-start">
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full badge-orange text-[10px] shadow-xs">
                   <Briefcase size={10} /> {experienceLevel}
                 </span>
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-purple-50 border border-purple-200 text-[10px] font-bold text-[#7C3AED]">
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full badge-blue text-[10px] shadow-xs">
                   <Building2 size={10} /> {department}
                 </span>
                 {profileImage && (
@@ -300,7 +302,7 @@ export default function ProfilePage() {
                     type="button"
                     onClick={handleRemovePhoto}
                     disabled={uploading}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-50 border border-rose-200 text-[10px] font-bold text-rose-700 hover:bg-rose-100 transition cursor-pointer"
+                    className="inline-flex items-center gap-1 px-3 py-1 rounded-full badge-rose text-[10px] hover:opacity-90 transition cursor-pointer shadow-xs"
                   >
                     <Trash2 size={10} /> Remove Photo
                   </button>
@@ -313,18 +315,18 @@ export default function ProfilePage() {
         {/* Form */}
         <form onSubmit={handleSave} className="space-y-6">
 
-          {/* Personal Details */}
+          {/* Level 1: Personal Details Card (Pure Solid White) */}
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05 }}
-            className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm"
+            className="level-1-card p-7"
           >
-            <div className="flex items-center gap-2.5 mb-5 pb-4 border-b border-slate-100">
-              <div className="h-8 w-8 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-center">
-                <User size={14} className="text-[#7C3AED]" />
+            <div className="flex items-center gap-2.5 mb-6 pb-4 border-b border-[#E8DDD0]">
+              <div className="h-8 w-8 rounded-xl bg-[#FCE3C7] border border-[#F4B77E] flex items-center justify-center shadow-xs">
+                <User size={14} className="text-[#C2600E]" />
               </div>
-              <h2 className="text-sm font-bold text-[#0F172A]">Personal Details</h2>
+              <h2 className="text-sm font-bold text-[#241C12]">Personal Details</h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="sm:col-span-2">
@@ -362,23 +364,23 @@ export default function ProfilePage() {
               <div className="sm:col-span-2">
                 <label className={LABEL_CLASS}>Key Skills</label>
                 <input type="text" value={skills} onChange={e => setSkills(e.target.value)} placeholder="React, TypeScript, Node.js, Python" className={INPUT_CLASS} />
-                <p className="text-[10px] text-[#66788A] mt-1 font-medium">Comma-separated list of your top skills</p>
+                <p className="text-[10px] text-[#567C8D] mt-1 font-medium">Comma-separated list of your top skills</p>
               </div>
             </div>
           </motion.div>
 
-          {/* Links */}
+          {/* Level 1: Social Links Card (Pure Solid White) */}
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm"
+            className="level-1-card p-7"
           >
-            <div className="flex items-center gap-2.5 mb-5 pb-4 border-b border-slate-100">
-              <div className="h-8 w-8 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-center">
-                <Globe size={14} className="text-[#7C3AED]" />
+            <div className="flex items-center gap-2.5 mb-6 pb-4 border-b border-[#E8DDD0]">
+              <div className="h-8 w-8 rounded-xl bg-[#C7E1F0] border border-[#9BC4DE] flex items-center justify-center shadow-xs">
+                <Globe size={14} className="text-[#1E6FA8]" />
               </div>
-              <h2 className="text-sm font-bold text-[#0F172A]">Social Links</h2>
+              <h2 className="text-sm font-bold text-[#241C12]">Social Links</h2>
             </div>
             <div className="space-y-4">
               <div>
@@ -405,7 +407,7 @@ export default function ProfilePage() {
             <button
               type="submit"
               disabled={saving || !fullName.trim()}
-              className="w-full h-12 bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-bold rounded-full text-sm transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shadow-md hover:shadow-lg active:scale-95"
+              className="w-full h-12 bg-[#C2600E] hover:bg-[#9C4A08] text-white font-bold rounded-full text-sm transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shadow-md hover:shadow-lg active:scale-95"
             >
               {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
               <span>{saving ? 'Saving...' : saveStatus === 'success' ? 'Saved!' : 'Save Changes'}</span>
@@ -413,33 +415,33 @@ export default function ProfilePage() {
           </motion.div>
         </form>
 
-        {/* Security Section */}
+        {/* Level 1: Security & Account Section (Pure Solid White) */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm"
+          className="level-1-card p-7"
         >
-          <div className="flex items-center gap-2.5 mb-5 pb-4 border-b border-slate-100">
-            <div className="h-8 w-8 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center">
-              <Shield size={14} className="text-rose-600" />
+          <div className="flex items-center gap-2.5 mb-6 pb-4 border-b border-[#E8DDD0]">
+            <div className="h-8 w-8 rounded-xl bg-[#FEE2E2] border border-[#FECACA] flex items-center justify-center shadow-xs">
+              <Shield size={14} className="text-[#B23A2E]" />
             </div>
-            <h2 className="text-sm font-bold text-[#0F172A]">Account</h2>
+            <h2 className="text-sm font-bold text-[#241C12]">Account</h2>
           </div>
           <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl">
+            <div className="flex items-center justify-between p-3.5 level-2-nested">
               <div className="flex items-center gap-3">
                 <Mail size={14} className="text-slate-500" />
                 <div>
-                  <p className="text-xs font-bold text-[#0F172A]">Email</p>
-                  <p className="text-[11px] text-slate-500 font-medium">{user.email}</p>
+                  <p className="text-xs font-bold text-[#241C12]">Email</p>
+                  <p className="text-[11px] text-[#5C4E3E] font-medium">{user.email}</p>
                 </div>
               </div>
-              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">Verified</span>
+              <span className="text-[10px] font-bold text-[#1F7A3D] bg-[#DCFCE7] border border-[#86EFAC] px-2.5 py-0.5 rounded-full shadow-xs">Verified</span>
             </div>
             <button
               onClick={logout}
-              className="w-full flex items-center gap-3 p-3 rounded-xl text-rose-600 hover:bg-rose-50 transition cursor-pointer text-left font-bold text-xs"
+              className="w-full flex items-center gap-3 p-3.5 rounded-xl text-[#B23A2E] hover:bg-[#FEE2E2]/60 transition cursor-pointer text-left font-bold text-xs border border-transparent hover:border-[#FECACA]"
             >
               <LogOut size={14} />
               <span>Log Out</span>

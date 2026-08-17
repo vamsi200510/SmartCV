@@ -13,9 +13,11 @@ export default function FloatingAIAssistant({ onOpen, isOpen }: FloatingAIAssist
   const dragStartPos = useRef<{ x: number; y: number } | null>(null);
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
 
+  const SIZE = 72;
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      setPosition({ x: window.innerWidth - 76, y: window.innerHeight - 88 });
+      setPosition({ x: window.innerWidth - SIZE - 20, y: window.innerHeight - SIZE - 24 });
     }
   }, []);
 
@@ -28,13 +30,13 @@ export default function FloatingAIAssistant({ onOpen, isOpen }: FloatingAIAssist
     setTimeout(() => setIsDragging(false), 50);
     if (typeof window === 'undefined') return;
 
-    const currentX = (position?.x ?? window.innerWidth - 76) + info.offset.x;
-    const currentY = (position?.y ?? window.innerHeight - 88) + info.offset.y;
+    const currentX = (position?.x ?? window.innerWidth - SIZE - 20) + info.offset.x;
+    const currentY = (position?.y ?? window.innerHeight - SIZE - 24) + info.offset.y;
 
     // Snap to nearest horizontal edge
     const snapToRight = currentX > window.innerWidth / 2;
-    const targetX = snapToRight ? window.innerWidth - 76 : 16;
-    const targetY = Math.max(64, Math.min(window.innerHeight - 76, currentY));
+    const targetX = snapToRight ? window.innerWidth - SIZE - 20 : 20;
+    const targetY = Math.max(64, Math.min(window.innerHeight - SIZE - 24, currentY));
 
     setPosition({ x: targetX, y: targetY });
   };
@@ -67,10 +69,10 @@ export default function FloatingAIAssistant({ onOpen, isOpen }: FloatingAIAssist
         }}
         whileTap={{ scale: 0.96 }}
         title="Open SmartCV AI Assistant (drag to reposition)"
-        className="liquid-glass-interactive liquid-glass-circle shadow-lg group relative"
+        className="liquid-glass-interactive liquid-glass-circle shadow-2xl group relative flex items-center justify-center border border-white/80"
         style={{
-          width: 58,
-          height: 58,
+          width: SIZE,
+          height: SIZE,
           padding: 0,
           cursor: cursorStyle,
         }}
@@ -82,18 +84,18 @@ export default function FloatingAIAssistant({ onOpen, isOpen }: FloatingAIAssist
         <span className="liquid-glass-refraction" aria-hidden="true" />
 
         {/* Embedded Robot Icon with subtle drop shadow */}
-        <div className="relative z-10 flex items-center justify-center p-1.5 liquid-glass-content">
+        <div className="relative z-10 flex items-center justify-center p-2 liquid-glass-content">
           <img
             src="/Chatbot_logo_transparent.png"
             alt="AI"
             style={{
-              width: 38,
-              height: 38,
+              width: 48,
+              height: 48,
               objectFit: 'contain',
               display: 'block',
               pointerEvents: 'none',
               userSelect: 'none',
-              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.14))',
+              filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.18))',
             }}
             draggable={false}
           />
@@ -105,7 +107,7 @@ export default function FloatingAIAssistant({ onOpen, isOpen }: FloatingAIAssist
         className="group-hover:opacity-100"
         style={{
           position: 'absolute',
-          right: 64,
+          right: SIZE + 12,
           top: '50%',
           transform: 'translateY(-50%)',
           pointerEvents: 'none',
@@ -114,11 +116,11 @@ export default function FloatingAIAssistant({ onOpen, isOpen }: FloatingAIAssist
           color: '#ffffff',
           fontSize: 11,
           fontWeight: 600,
-          padding: '5px 10px',
-          borderRadius: 10,
+          padding: '6px 12px',
+          borderRadius: 12,
           opacity: 0,
           transition: 'opacity 0.2s',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+          boxShadow: '0 4px 14px rgba(0,0,0,0.22)',
         }}
         id="floating-ai-tooltip"
       >

@@ -31,9 +31,9 @@ const STEPS = [
 ];
 
 // ── Shared field style helpers ─────────────────────────────────────
-const inputClass = `bg-white border border-slate-300 rounded-[10px] w-full h-9 px-3 text-[13px] font-medium text-[#0F172A] placeholder:text-slate-400 focus:border-[#7C3AED] focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/20 transition`;
-const textareaClass = `bg-white border border-slate-300 rounded-[10px] w-full px-3 py-2 text-[13px] font-medium resize-none leading-relaxed text-[#0F172A] placeholder:text-slate-400 focus:border-[#7C3AED] focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/20 transition`;
-const labelClass = `text-[10px] font-bold uppercase tracking-wide text-slate-600 mb-1 block`;
+const inputClass = `level-2-input rounded-xl w-full h-9 px-3 text-[13px] font-medium text-[#241C12] placeholder:text-slate-400 focus:border-[#C2600E] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#C2600E]/20 transition shadow-xs`;
+const textareaClass = `level-2-input rounded-xl w-full px-3 py-2 text-[13px] font-medium resize-none leading-relaxed text-[#241C12] placeholder:text-slate-400 focus:border-[#C2600E] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#C2600E]/20 transition shadow-xs`;
+const labelClass = `text-[10px] font-bold uppercase tracking-wide text-[#5C4E3E] mb-1 block`;
 
 // ── Item card wrapper ──────────────────────────────────────────────
 function ItemCard({
@@ -52,11 +52,11 @@ function ItemCard({
   canMoveDown: boolean;
 }) {
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-3 relative group shadow-xs hover:border-[#7C3AED]/50 transition-all duration-200">
+    <div className="bg-[#FFFEF9] border border-[#E8DDD0] rounded-2xl p-4 space-y-3 relative group shadow-xs hover:border-[#C2600E]/50 transition-all duration-200">
       <div className="absolute top-2.5 right-2.5 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-        <button type="button" onClick={onMoveUp} disabled={!canMoveUp} className="p-1.5 rounded-lg text-slate-400 hover:text-[#7C3AED] hover:bg-purple-50 disabled:opacity-25 transition-colors cursor-pointer" title="Move Up"><ArrowUp size={13} /></button>
-        <button type="button" onClick={onMoveDown} disabled={!canMoveDown} className="p-1.5 rounded-lg text-slate-400 hover:text-[#7C3AED] hover:bg-purple-50 disabled:opacity-25 transition-colors cursor-pointer" title="Move Down"><ArrowDown size={13} /></button>
-        <button type="button" onClick={onDelete} className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer" title="Delete"><Trash2 size={13} /></button>
+        <button type="button" onClick={onMoveUp} disabled={!canMoveUp} className="p-1.5 rounded-lg text-slate-400 hover:text-[#C2600E] hover:bg-[#F5EFEB] disabled:opacity-25 transition-colors cursor-pointer" title="Move Up"><ArrowUp size={13} /></button>
+        <button type="button" onClick={onMoveDown} disabled={!canMoveDown} className="p-1.5 rounded-lg text-slate-400 hover:text-[#C2600E] hover:bg-[#F5EFEB] disabled:opacity-25 transition-colors cursor-pointer" title="Move Down"><ArrowDown size={13} /></button>
+        <button type="button" onClick={onDelete} className="p-1.5 rounded-lg text-slate-400 hover:text-[#B23A2E] hover:bg-rose-50 transition-colors cursor-pointer" title="Delete"><Trash2 size={13} /></button>
       </div>
       {children}
     </div>
@@ -109,8 +109,6 @@ export default function ResumeBuilderForm({
     }
   }, [initialData]);
 
-
-
   // ── Export PDF ────────────────────────────────────────────────
   const _handleExportPdf = async () => {
     if (isExportingPdf) return;
@@ -146,7 +144,7 @@ export default function ResumeBuilderForm({
   };
   const isLowConf = (field: string) => !!formData?.importMetadata?.lowConfidenceFields?.includes(field);
   const getFieldClass = (field: string) => isLowConf(field)
-    ? `w-full h-9 px-3 rounded-[10px] border text-[13px] focus:outline-none transition-all duration-150 border-amber-400 focus:ring-2 focus:ring-amber-400/20 bg-amber-50 text-[#111827]`
+    ? `w-full h-9 px-3 rounded-xl border text-[13px] focus:outline-none transition-all duration-150 border-[#B5790C] focus:ring-2 focus:ring-[#B5790C]/20 bg-[#FEF3C7] text-[#241C12]`
     : inputClass;
 
   // ── Field updaters ────────────────────────────────────────────
@@ -231,8 +229,8 @@ export default function ResumeBuilderForm({
 
   if (!formData) {
     return (
-      <div className="h-full w-full flex items-center justify-center gap-3 text-[#6B7280]">
-        <Loader2 size={20} className="animate-spin text-[#2563EB]" />
+      <div className="h-full w-full flex items-center justify-center gap-3 text-[#5C4E3E]">
+        <Loader2 size={20} className="animate-spin text-[#C2600E]" />
         <span className="text-sm font-medium">Loading editor…</span>
       </div>
     );
@@ -240,20 +238,20 @@ export default function ResumeBuilderForm({
 
   // ── Render ────────────────────────────────────────────────────
   return (
-    <div className="h-full flex bg-[#F8FAFC] border border-slate-200 rounded-2xl shadow-sm overflow-hidden text-[#0F172A]">
+    <div className="h-full flex bg-white border border-[#E8DDD0] rounded-2xl shadow-sm overflow-hidden text-[#241C12]">
 
       {/* ── Sidebar Navigation ──────────────────────────────────── */}
-      <aside className="w-[175px] shrink-0 border-r border-slate-200 bg-slate-50 p-2.5 flex flex-col justify-between hidden sm:flex">
+      <aside className="w-[175px] shrink-0 border-r border-[#E8DDD0] bg-[#FFFEF9] p-2.5 flex flex-col justify-between hidden sm:flex">
         <div className="space-y-2">
           {/* Progress Bar */}
-          <div className="px-2.5 py-1.5 border-b border-slate-200 shrink-0 pb-2">
-            <div className="flex items-center justify-between text-[10px] font-bold text-slate-500 mb-1">
+          <div className="px-2.5 py-1.5 border-b border-[#E8DDD0] shrink-0 pb-2">
+            <div className="flex items-center justify-between text-[10px] font-bold text-[#5C4E3E] mb-1">
               <span>Progress</span>
-              <span className={progressPercent === 100 ? 'text-[#10B981]' : 'text-[#7C3AED]'}>{progressPercent}%</span>
+              <span className={progressPercent === 100 ? 'text-[#1F7A3D]' : 'text-[#C2600E]'}>{progressPercent}%</span>
             </div>
-            <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden p-px">
+            <div className="h-1.5 w-full bg-[#EDE2D0] rounded-full overflow-hidden p-px">
               <div
-                className={`h-full transition-all duration-500 rounded-full ${progressPercent === 100 ? 'bg-[#10B981]' : 'bg-[#7C3AED]'}`}
+                className={`h-full transition-all duration-500 rounded-full ${progressPercent === 100 ? 'bg-[#1F7A3D]' : 'bg-[#C2600E]'}`}
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
@@ -271,15 +269,15 @@ export default function ResumeBuilderForm({
                   onClick={() => setActiveStep(step.id)}
                   className={`w-full flex items-center justify-between px-2.5 py-[7px] rounded-xl text-[11px] font-bold transition-all duration-150 cursor-pointer group ${
                     isActive
-                      ? 'bg-white text-[#7C3AED] shadow-xs border border-slate-200'
-                      : 'text-slate-600 hover:bg-slate-100 hover:text-[#0F172A]'
+                      ? 'bg-[#F5EFEB] text-[#C2600E] shadow-xs border border-[#E8DDD0]'
+                      : 'text-[#5C4E3E] hover:bg-[#F5EFEB] hover:text-[#241C12]'
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    <Icon size={13} className={isActive ? 'text-[#7C3AED]' : isDone ? 'text-[#10B981]' : 'text-slate-400 group-hover:text-slate-600'} />
+                    <Icon size={13} className={isActive ? 'text-[#C2600E]' : isDone ? 'text-[#1F7A3D]' : 'text-[#9A8C7E] group-hover:text-[#5C4E3E]'} />
                     <span>{step.label}</span>
                   </div>
-                  {isDone && <Check size={11} className="text-[#10B981] shrink-0" />}
+                  {isDone && <Check size={11} className="text-[#1F7A3D] shrink-0" />}
                 </button>
               );
             })}
@@ -288,7 +286,7 @@ export default function ResumeBuilderForm({
       </aside>
 
       {/* ── Main Content ─────────────────────────────────────────── */}
-      <div className="flex-1 flex flex-col min-w-0 relative overflow-hidden bg-[#F8FAFC]">
+      <div className="flex-1 flex flex-col min-w-0 relative overflow-hidden bg-white">
 
         {/* Content area */}
         <div className="flex-1 overflow-y-auto p-4 custom-scrollbar pb-20">
@@ -299,10 +297,10 @@ export default function ResumeBuilderForm({
               <div className="space-y-3">
                 <div>
                   <h3 className="text-[13px] font-bold text-[#111827]">Personal Information</h3>
-                  <p className="text-[11px] text-[#6B7280] mt-0.5">Your contact details appear at the top of your resume.</p>
+                  <p className="text-[11px] text-[#5C4E3E] mt-0.5">Your contact details appear at the top of your resume.</p>
                 </div>
                 {isLowConf('fullName') && (
-                  <div className="flex items-start gap-2 p-2.5 bg-amber-50 border border-amber-200 rounded-[10px] text-[12px] text-amber-700">
+                  <div className="flex items-start gap-2 p-2.5 bg-[#FEF3C7]/40 border border-[#B5790C]/40 rounded-[10px] text-[12px] text-[#B5790C]">
                     <AlertCircle size={13} className="shrink-0 mt-0.5" />
                     <span>Some fields were auto-extracted with low confidence. Please review highlighted fields.</span>
                   </div>
@@ -319,12 +317,12 @@ export default function ResumeBuilderForm({
                           <img
                             src={formData.personalInfo.profileImage}
                             alt="Resume photo"
-                            className="h-12 w-12 rounded-full object-cover border-2 border-[#E2E8F0] shadow-sm"
+                            className="h-12 w-12 rounded-full object-cover border-2 border-[#E0D5C5] shadow-sm"
                           />
                           <button
                             type="button"
                             onClick={() => updatePersonalInfo('profileImage', '')}
-                            className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-rose-500 text-white flex items-center justify-center shadow hover:bg-rose-600 transition-colors"
+                            className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-[#B23A2E] text-white flex items-center justify-center shadow hover:bg-[#8B2D22] transition-colors"
                             title="Remove photo"
                           >
                             <X size={8} />
@@ -381,7 +379,7 @@ export default function ResumeBuilderForm({
                         type="button"
                         onClick={() => photoInputRef.current?.click()}
                         disabled={photoUploading}
-                        className="flex items-center gap-1.5 h-8 px-3 rounded-[10px] border border-[#E2E8F0] bg-white text-[11px] font-semibold text-[#374151] hover:bg-[#F9FAFB] transition-colors shadow-sm disabled:opacity-50"
+                        className="flex items-center gap-1.5 h-8 px-3 rounded-[10px] border border-[#E0D5C5] bg-white text-[11px] font-semibold text-[#5C4E3E] hover:bg-[#F6EFE4] transition-colors shadow-sm disabled:opacity-50"
                       >
                         {photoUploading ? <Loader2 size={11} className="animate-spin" /> : <Camera size={11} />}
                         {formData?.personalInfo?.profileImage ? 'Replace Photo' : 'Upload Photo'}
@@ -390,7 +388,7 @@ export default function ResumeBuilderForm({
                         <button
                           type="button"
                           onClick={() => updatePersonalInfo('profileImage', '')}
-                          className="flex items-center gap-1 h-7 px-2.5 rounded-lg text-[11px] font-medium text-rose-500 hover:bg-rose-50 transition-colors"
+                          className="flex items-center gap-1 h-7 px-2.5 rounded-lg text-[11px] font-medium text-[#B23A2E] hover:bg-[#FEE2E2]/30 transition-colors"
                         >
                           <Trash2 size={10} /> Remove
                         </button>
@@ -462,7 +460,7 @@ export default function ResumeBuilderForm({
               <div className="space-y-3">
                 <div>
                   <h3 className="text-[13px] font-bold text-[#111827]">Professional Summary</h3>
-                  <p className="text-[11px] text-[#6B7280] mt-0.5">A concise overview of your expertise and key achievements.</p>
+                  <p className="text-[11px] text-[#5C4E3E] mt-0.5">A concise overview of your expertise and key achievements.</p>
                 </div>
                 <div className="space-y-1">
                   <label className={labelClass}>Summary / Professional Bio</label>
@@ -486,14 +484,14 @@ export default function ResumeBuilderForm({
                 <div className="flex items-start justify-between">
                   <div>
                     <h3 className="text-[13px] font-bold text-[#111827]">Education</h3>
-                    <p className="text-[11px] text-[#6B7280] mt-0.5">Academic qualifications and institutions.</p>
+                    <p className="text-[11px] text-[#5C4E3E] mt-0.5">Academic qualifications and institutions.</p>
                   </div>
-                  <button onClick={addEducation} className="flex items-center gap-1.5 h-8 px-3 rounded-[10px] border border-[#E2E8F0] bg-white text-[11px] font-semibold text-[#374151] hover:bg-[#F9FAFB] transition-colors shadow-sm shrink-0">
+                  <button onClick={addEducation} className="flex items-center gap-1.5 h-8 px-3 rounded-[10px] border border-[#E0D5C5] bg-white text-[11px] font-semibold text-[#5C4E3E] hover:bg-[#F6EFE4] transition-colors shadow-sm shrink-0">
                     <Plus size={13} />Add Education
                   </button>
                 </div>
                 {(formData.education || []).length === 0 && (
-                  <div className="text-center py-6 border border-dashed border-[#E2E8F0] rounded-xl text-[#9CA3AF] text-[13px]">No educational entries added yet.</div>
+                  <div className="text-center py-6 border border-dashed border-[#E0D5C5] rounded-xl text-[#9A8C7E] text-[13px]">No educational entries added yet.</div>
                 )}
                 <div className="space-y-3">
                   {(formData.education || []).map((edu: any, i: number) => (
@@ -530,14 +528,14 @@ export default function ResumeBuilderForm({
                 <div className="flex items-start justify-between">
                   <div>
                     <h3 className="text-[13px] font-bold text-[#111827]">Technical Skills</h3>
-                    <p className="text-[11px] text-[#6B7280] mt-0.5">Organize skills by category (e.g., Languages, Frameworks, Tools).</p>
+                    <p className="text-[11px] text-[#5C4E3E] mt-0.5">Organize skills by category (e.g., Languages, Frameworks, Tools).</p>
                   </div>
-                  <button onClick={addSkill} className="flex items-center gap-1.5 h-8 px-3 rounded-[10px] border border-[#E2E8F0] bg-white text-[11px] font-semibold text-[#374151] hover:bg-[#F9FAFB] transition-colors shadow-sm shrink-0">
+                  <button onClick={addSkill} className="flex items-center gap-1.5 h-8 px-3 rounded-[10px] border border-[#E0D5C5] bg-white text-[11px] font-semibold text-[#5C4E3E] hover:bg-[#F6EFE4] transition-colors shadow-sm shrink-0">
                     <Plus size={12} />Add Category
                   </button>
                 </div>
                 {(formData.skills || []).length === 0 && (
-                  <div className="text-center py-6 border border-dashed border-[#E2E8F0] rounded-xl text-[#9CA3AF] text-[13px]">No skill categories added yet.</div>
+                  <div className="text-center py-6 border border-dashed border-[#E0D5C5] rounded-xl text-[#9A8C7E] text-[13px]">No skill categories added yet.</div>
                 )}
                 <div className="space-y-3">
                   {(formData.skills || []).map((skill: any, i: number) => (
@@ -564,14 +562,14 @@ export default function ResumeBuilderForm({
                 <div className="flex items-start justify-between">
                   <div>
                     <h3 className="text-[13px] font-bold text-[#111827]">Projects</h3>
-                    <p className="text-[11px] text-[#6B7280] mt-0.5">Showcase your key technical projects and their impact.</p>
+                    <p className="text-[11px] text-[#5C4E3E] mt-0.5">Showcase your key technical projects and their impact.</p>
                   </div>
-                  <button onClick={addProject} className="flex items-center gap-1.5 h-8 px-3 rounded-[10px] border border-[#E2E8F0] bg-white text-[11px] font-semibold text-[#374151] hover:bg-[#F9FAFB] transition-colors shadow-sm shrink-0">
+                  <button onClick={addProject} className="flex items-center gap-1.5 h-8 px-3 rounded-[10px] border border-[#E0D5C5] bg-white text-[11px] font-semibold text-[#5C4E3E] hover:bg-[#F6EFE4] transition-colors shadow-sm shrink-0">
                     <Plus size={12} />Add Project
                   </button>
                 </div>
                 {(formData.projects || []).length === 0 && (
-                  <div className="text-center py-6 border border-dashed border-[#E2E8F0] rounded-xl text-[#9CA3AF] text-[13px]">No projects added yet.</div>
+                  <div className="text-center py-6 border border-dashed border-[#E0D5C5] rounded-xl text-[#9A8C7E] text-[13px]">No projects added yet.</div>
                 )}
                 <div className="space-y-3">
                   {(formData.projects || []).map((proj: any, i: number) => (
@@ -604,14 +602,14 @@ export default function ResumeBuilderForm({
                 <div className="flex items-start justify-between">
                   <div>
                     <h3 className="text-[13px] font-bold text-[#111827]">Work Experience</h3>
-                    <p className="text-[11px] text-[#6B7280] mt-0.5">Professional roles, internships, and responsibilities.</p>
+                    <p className="text-[11px] text-[#5C4E3E] mt-0.5">Professional roles, internships, and responsibilities.</p>
                   </div>
-                  <button onClick={addExperience} className="flex items-center gap-1.5 h-8 px-3 rounded-[10px] border border-[#E2E8F0] bg-white text-[11px] font-semibold text-[#374151] hover:bg-[#F9FAFB] transition-colors shadow-sm shrink-0">
+                  <button onClick={addExperience} className="flex items-center gap-1.5 h-8 px-3 rounded-[10px] border border-[#E0D5C5] bg-white text-[11px] font-semibold text-[#5C4E3E] hover:bg-[#F6EFE4] transition-colors shadow-sm shrink-0">
                     <Plus size={12} />Add Experience
                   </button>
                 </div>
                 {(formData.experience || []).length === 0 && (
-                  <div className="text-center py-6 border border-dashed border-[#E2E8F0] rounded-xl text-[#9CA3AF] text-[13px]">No experience entries added yet.</div>
+                  <div className="text-center py-6 border border-dashed border-[#E0D5C5] rounded-xl text-[#9A8C7E] text-[13px]">No experience entries added yet.</div>
                 )}
                 <div className="space-y-3">
                   {(formData.experience || []).map((exp: any, i: number) => (
@@ -652,14 +650,14 @@ export default function ResumeBuilderForm({
                 <div className="flex items-start justify-between">
                   <div>
                     <h3 className="text-[13px] font-bold text-[#111827]">Certifications</h3>
-                    <p className="text-[11px] text-[#6B7280] mt-0.5">Professional certifications, licenses, or credentials.</p>
+                    <p className="text-[11px] text-[#5C4E3E] mt-0.5">Professional certifications, licenses, or credentials.</p>
                   </div>
-                  <button onClick={addCert} className="flex items-center gap-1.5 h-8 px-3 rounded-[10px] border border-[#E2E8F0] bg-white text-[11px] font-semibold text-[#374151] hover:bg-[#F9FAFB] transition-colors shadow-sm shrink-0">
+                  <button onClick={addCert} className="flex items-center gap-1.5 h-8 px-3 rounded-[10px] border border-[#E0D5C5] bg-white text-[11px] font-semibold text-[#5C4E3E] hover:bg-[#F6EFE4] transition-colors shadow-sm shrink-0">
                     <Plus size={12} />Add Certification
                   </button>
                 </div>
                 {(formData.certifications || []).length === 0 && (
-                  <div className="text-center py-6 border border-dashed border-[#E2E8F0] rounded-xl text-[#9CA3AF] text-[13px]">No certifications added yet.</div>
+                  <div className="text-center py-6 border border-dashed border-[#E0D5C5] rounded-xl text-[#9A8C7E] text-[13px]">No certifications added yet.</div>
                 )}
                 <div className="space-y-3">
                   {(formData.certifications || []).map((cert: any, i: number) => (
@@ -692,14 +690,14 @@ export default function ResumeBuilderForm({
                 <div className="flex items-start justify-between">
                   <div>
                     <h3 className="text-[13px] font-bold text-[#111827]">Achievements & Awards</h3>
-                    <p className="text-[11px] text-[#6B7280] mt-0.5">Competitions won, recognitions received, or significant milestones.</p>
+                    <p className="text-[11px] text-[#5C4E3E] mt-0.5">Competitions won, recognitions received, or significant milestones.</p>
                   </div>
-                  <button onClick={addAchievement} className="flex items-center gap-1.5 h-8 px-3 rounded-[10px] border border-[#E2E8F0] bg-white text-[11px] font-semibold text-[#374151] hover:bg-[#F9FAFB] transition-colors shadow-sm shrink-0">
+                  <button onClick={addAchievement} className="flex items-center gap-1.5 h-8 px-3 rounded-[10px] border border-[#E0D5C5] bg-white text-[11px] font-semibold text-[#5C4E3E] hover:bg-[#F6EFE4] transition-colors shadow-sm shrink-0">
                     <Plus size={12} />Add Achievement
                   </button>
                 </div>
                 {(formData.achievements || []).length === 0 && (
-                  <div className="text-center py-6 border border-dashed border-[#E2E8F0] rounded-xl text-[#9CA3AF] text-[13px]">No achievements added yet.</div>
+                  <div className="text-center py-6 border border-dashed border-[#E0D5C5] rounded-xl text-[#9A8C7E] text-[13px]">No achievements added yet.</div>
                 )}
                 <div className="space-y-3">
                   {(formData.achievements || []).map((ach: any, i: number) => (
@@ -725,9 +723,9 @@ export default function ResumeBuilderForm({
               <div className="space-y-3">
                 <div>
                   <h3 className="text-[13px] font-bold text-[#111827]">Additional Information</h3>
-                  <p className="text-[11px] text-[#6B7280] mt-0.5">Languages spoken, interests, and hobbies that round out your profile.</p>
+                  <p className="text-[11px] text-[#5C4E3E] mt-0.5">Languages spoken, interests, and hobbies that round out your profile.</p>
                 </div>
-                <div className="bg-white rounded-xl border border-[#E2E8F0] p-4 space-y-3 shadow-[0_1px_4px_rgba(0,0,0,0.04)]">
+                <div className="bg-white rounded-xl border border-[#E0D5C5] p-4 space-y-3 shadow-[0_1px_4px_rgba(0,0,0,0.04)]">
                   <div className="space-y-1">
                     <label className={labelClass}>Languages Spoken (comma-separated)</label>
                     <input type="text" placeholder="e.g. English (Fluent), Telugu (Native), Hindi (Conversational)" value={formData.additionalInfo?.languages || ''} onChange={(e) => updateAdditionalInfo('languages', e.target.value)} className={inputClass} />
@@ -745,16 +743,16 @@ export default function ResumeBuilderForm({
 
         {/* ── Optional Checklist Footer (Only when no template selected) ───── */}
         {!templateId && (
-          <div className="shrink-0 border-t border-[#ECEDF3] bg-white/95 backdrop-blur-sm px-4 py-2">
+          <div className="shrink-0 border-t border-[#E0D5C5] bg-white/95 backdrop-blur-sm px-4 py-2">
             <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2.5 text-[10px] font-medium text-[#6B7280]">
+              <div className="flex items-center gap-2.5 text-[10px] font-medium text-[#9A8C7E]">
                 {[
                   { done: isPersonalInfoComplete, label: 'Personal Info' },
                   { done: isEducationComplete, label: 'Education' },
                   { done: isSkillsComplete, label: 'Skills' },
                   { done: isProjectsComplete, label: 'Projects' },
                 ].map(({ done, label }) => (
-                  <span key={label} className={`flex items-center gap-1 ${done ? 'text-emerald-600' : ''}`}>
+                  <span key={label} className={`flex items-center gap-1 ${done ? 'text-[#1F7A3D]' : ''}`}>
                     {done ? <Check size={10} /> : <span className="h-2 w-2 rounded-full border border-current inline-block" />}
                     {label}
                   </span>
@@ -762,7 +760,7 @@ export default function ResumeBuilderForm({
               </div>
               <button
                 onClick={() => { window.location.href = `/dashboard?tab=templates&source=builder&resumeId=${resumeId}`; }}
-                className="h-8 px-3 rounded-[10px] bg-[#2563EB] hover:bg-[#1D4ED8] text-white shadow-sm text-[11px] font-semibold flex items-center gap-1.5 transition-all shrink-0 cursor-pointer"
+                className="h-8 px-3 rounded-[10px] bg-[#C2600E] hover:bg-[#9C4A08] text-white shadow-sm text-[11px] font-semibold flex items-center gap-1.5 transition-all shrink-0 cursor-pointer"
               >
                 Change Template <ChevronRight size={12} />
               </button>

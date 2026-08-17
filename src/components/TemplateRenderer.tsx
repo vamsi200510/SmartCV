@@ -338,7 +338,7 @@ export function sanitizeResumeData(data: any): ResumeData {
       fontFamily: data?.customization?.fontFamily || 'Inter',
       fontSize: data?.customization?.fontSize || 'medium',
       density: data?.customization?.density || 'balanced',
-      primaryColor: data?.customization?.primaryColor || '#0f172a',
+      primaryColor: data?.customization?.primaryColor || '#241C12',
       visibleSections: Array.isArray(data?.customization?.visibleSections)
         ? data.customization.visibleSections
         : ['summary', 'experience', 'projects', 'skills', 'education', 'certifications', 'achievements', 'additionalInfo'],
@@ -447,7 +447,7 @@ function TemplateRendererComponent({
   const density = densityConfigs[customization.density || 'balanced'] || densityConfigs.balanced;
   const fontFamilyValue = fontFamilies[customization.fontFamily || 'Inter'] || 'var(--font-inter)';
   const fontSizeValue = fontSizes[customization.fontSize || 'medium'] || '11.5px';
-  const primaryColorValue = customization.primaryColor || '#0f172a';
+  const primaryColorValue = customization.primaryColor || '#241C12';
 
   const dynamicCss = `
     .resume-preview-container-${templateId} {
@@ -564,8 +564,8 @@ function TemplateRendererComponent({
       margin-top: calc(var(--resume-element-spacing) * 0.25) !important;
     }
 
-    .resume-preview-container-${templateId} .text-[#0f172a],
-    .resume-preview-container-[#0f172a] .text-[#1e293b],
+    .resume-preview-container-${templateId} .text-[#241C12],
+    .resume-preview-container-[#241C12] .text-[#1e293b],
     .resume-preview-container-${templateId} .text-slate-900,
     .resume-preview-container-${templateId} .text-slate-950,
     .resume-preview-container-${templateId} .text-[#4F46E5],

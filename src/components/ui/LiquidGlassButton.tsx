@@ -79,26 +79,26 @@ export const LiquidGlassButton = React.forwardRef<HTMLButtonElement, LiquidGlass
     // ── Color Theme Adjustments ──────────────────────────────────
     const getThemeClass = () => {
       if (active) {
-        return 'liquid-glass-active text-[#7C3AED] font-bold';
+        return 'liquid-glass-active text-[#C2600E] font-bold';
       }
       switch (theme) {
         case 'primary':
-          return 'text-[#7C3AED] hover:text-[#6D28D9] bg-white/45 border-white/65 shadow-xs font-semibold';
+          return 'text-[#C2600E] hover:text-[#9C4A08] bg-white/45 border-white/65 shadow-xs font-semibold';
         case 'secondary':
-          return 'text-slate-600 hover:text-[#0F172A] bg-white/40 border-white/55';
+          return 'text-slate-600 hover:text-[#241C12] bg-white/40 border-white/55';
         case 'emerald':
           return 'text-[#10B981] hover:text-[#059669] bg-emerald-50/70 border-emerald-200/60';
         case 'purple':
-          return 'text-[#7C3AED] hover:text-[#6D28D9] bg-purple-50/70 border-purple-200/60';
+          return 'text-[#C2600E] hover:text-[#9C4A08] bg-purple-50/70 border-purple-200/60';
         case 'amber':
           return 'text-[#F59E0B] hover:text-[#D97706] bg-amber-50/70 border-amber-200/60';
         case 'rose':
         case 'danger':
           return 'text-[#EF4444] hover:text-[#DC2626] bg-rose-50/70 border-rose-200/60';
         case 'ghost':
-          return 'text-slate-500 hover:text-[#0F172A] bg-transparent border-transparent hover:bg-white/30 hover:border-white/40 shadow-none';
+          return 'text-slate-500 hover:text-[#241C12] bg-transparent border-transparent hover:bg-white/30 hover:border-white/40 shadow-none';
         default:
-          return 'text-[#0F172A] hover:text-[#7C3AED] bg-white/40 border-white/55';
+          return 'text-[#241C12] hover:text-[#C2600E] bg-white/40 border-white/55';
       }
     };
 

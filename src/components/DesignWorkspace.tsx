@@ -57,10 +57,10 @@ const DENSITIES = [
 ];
 
 const COLORS = [
-  { name: 'Slate', value: '#0f172a' },
+  { name: 'Slate', value: '#241C12' },
   { name: 'Blue', value: '#2563eb' },
   { name: 'Indigo', value: '#4f46e5' },
-  { name: 'Violet', value: '#7c3aed' },
+  { name: 'Violet', value: '#C2600E' },
   { name: 'Emerald', value: '#10b981' },
   { name: 'Teal', value: '#0d9488' },
   { name: 'Rose', value: '#f43f5e' },
@@ -85,7 +85,7 @@ const DEFAULT_CUSTOMIZATION: Required<Omit<Customization, 'sectionTypography'>> 
   fontFamily: 'Inter',
   fontSize: 'medium',
   density: 'balanced',
-  primaryColor: '#0f172a',
+  primaryColor: '#241C12',
   visibleSections: [...ALL_SECTIONS],
   sectionOrder: [...ALL_SECTIONS],
   sectionTypography: {},
@@ -117,19 +117,19 @@ function DraggableSectionRow({
     >
       <button
         onPointerDown={(e) => controls.start(e)}
-        className="text-[#94A3B8] hover:text-[#0F172A] transition-colors cursor-grab active:cursor-grabbing touch-none p-0.5 shrink-0"
+        className="text-[#94A3B8] hover:text-[#241C12] transition-colors cursor-grab active:cursor-grabbing touch-none p-0.5 shrink-0"
         aria-label="Drag to reorder"
       >
         <GripVertical size={14} />
       </button>
-      <span className="flex-1 text-xs font-bold text-[#0F172A]">
+      <span className="flex-1 text-xs font-bold text-[#241C12]">
         {SECTION_LABELS[sectionId] ?? sectionId}
       </span>
       <div className="flex items-center gap-0.5">
         <button
           onClick={onMoveUp}
           disabled={index === 0}
-          className="p-1 rounded-lg text-[#64748B] hover:text-[#2563EB] hover:bg-white/60 disabled:opacity-25 transition-colors cursor-pointer"
+          className="p-1 rounded-lg text-[#9A8C7E] hover:text-[#C2600E] hover:bg-white/60 disabled:opacity-25 transition-colors cursor-pointer"
           aria-label="Move section up"
         >
           <ArrowUp size={12} />
@@ -137,7 +137,7 @@ function DraggableSectionRow({
         <button
           onClick={onMoveDown}
           disabled={index === total - 1}
-          className="p-1 rounded-lg text-[#64748B] hover:text-[#2563EB] hover:bg-white/60 disabled:opacity-25 transition-colors cursor-pointer"
+          className="p-1 rounded-lg text-[#9A8C7E] hover:text-[#C2600E] hover:bg-white/60 disabled:opacity-25 transition-colors cursor-pointer"
           aria-label="Move section down"
         >
           <ArrowDown size={12} />
@@ -184,16 +184,16 @@ export default function DesignWorkspace({
   };
 
   return (
-    <div className="h-full flex flex-col liquid-glass-card-primary rounded-2xl shadow-md overflow-hidden text-[#0F172A]">
+    <div className="h-full flex flex-col liquid-glass-card-primary rounded-2xl shadow-md overflow-hidden text-[#241C12]">
       {/* Header */}
       <div className="px-5 py-4 border-b border-white/60 bg-white/40 shrink-0">
         <div className="flex items-center gap-2.5">
-          <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-[#6366F1] to-[#2563EB] flex items-center justify-center shrink-0 shadow-xs">
+          <div className="h-8 w-8 rounded-xl bg-[#C2600E] flex items-center justify-center shrink-0 shadow-xs">
             <Palette size={15} className="text-white" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-[#0F172A]">Design Workspace</h3>
-            <p className="text-[11px] text-[#64748B]">All changes update the preview instantly</p>
+            <h3 className="text-sm font-bold text-[#241C12]">Design Workspace</h3>
+            <p className="text-[11px] text-[#5C4E3E]">All changes update the preview instantly</p>
           </div>
         </div>
       </div>
@@ -216,8 +216,8 @@ export default function DesignWorkspace({
                     onClick={() => update({ fontFamily: font.value })}
                     className={`flex flex-col items-start px-3 py-2 rounded-xl border text-left transition-all duration-150 ${
                       isSelected
-                        ? 'border-[#2563EB] bg-[#EFF6FF] text-[#1D4ED8]'
-                        : 'border-[#ECEDF3] bg-[#F9FAFB] hover:border-[#DDDEE8] hover:bg-white text-[#374151]'
+                        ? 'border-[#C2600E] bg-[#F2D9B8]/20 text-[#C2600E]'
+                        : 'border-[#E0D5C5] bg-white hover:border-[#C9BBA8] hover:bg-[#F6EFE4] text-[#5C4E3E]'
                     }`}
                     style={{ fontFamily: font.style }}
                   >
@@ -242,8 +242,8 @@ export default function DesignWorkspace({
                     onClick={() => update({ fontSize: fs.value })}
                     className={`flex flex-col items-center py-2 rounded-xl border text-center transition-all duration-150 ${
                       isSelected
-                        ? 'border-[#2563EB] bg-[#EFF6FF] text-[#1D4ED8]'
-                        : 'border-[#ECEDF3] bg-[#F9FAFB] hover:border-[#DDDEE8] hover:bg-white text-[#374151]'
+                        ? 'border-[#C2600E] bg-[#F2D9B8]/20 text-[#C2600E]'
+                        : 'border-[#E0D5C5] bg-white hover:border-[#C9BBA8] hover:bg-[#F6EFE4] text-[#5C4E3E]'
                     }`}
                   >
                     <span className="text-xs font-semibold">{fs.label}</span>
@@ -267,7 +267,7 @@ export default function DesignWorkspace({
                   onClick={() => update({ primaryColor: color.value })}
                   title={color.name}
                   className={`h-8 w-8 rounded-full transition-all duration-150 flex items-center justify-center ${
-                    isSelected ? 'ring-2 ring-offset-2 ring-[#2563EB] scale-110' : 'hover:scale-105'
+                    isSelected ? 'ring-2 ring-offset-2 ring-[#C2600E] scale-110' : 'hover:scale-105'
                   }`}
                   style={{ backgroundColor: color.value }}
                 >
@@ -279,7 +279,7 @@ export default function DesignWorkspace({
           {/* Custom hex input */}
           <div className="flex items-center gap-2 mt-1">
             <div
-              className="h-8 w-8 rounded-lg border-2 border-[#ECEDF3] shrink-0"
+              className="h-8 w-8 rounded-lg border-2 border-[#E0D5C5] shrink-0"
               style={{ backgroundColor: c.primaryColor }}
             />
             <input
@@ -309,8 +309,8 @@ export default function DesignWorkspace({
                   onClick={() => update({ density: d.value })}
                   className={`flex flex-col items-center py-3 rounded-xl border text-center transition-all duration-150 ${
                     isSelected
-                      ? 'border-[#2563EB] bg-[#EFF6FF] text-[#1D4ED8]'
-                      : 'border-[#ECEDF3] bg-[#F9FAFB] hover:border-[#DDDEE8] hover:bg-white text-[#374151]'
+                      ? 'border-[#C2600E] bg-[#F2D9B8]/20 text-[#C2600E]'
+                      : 'border-[#E0D5C5] bg-white hover:border-[#C9BBA8] hover:bg-[#F6EFE4] text-[#5C4E3E]'
                   }`}
                 >
                   <span className="text-[11px] font-mono mb-1 opacity-60">{d.icon}</span>
@@ -360,7 +360,7 @@ export default function DesignWorkspace({
                     <select
                       value={st.fontSize || ''}
                       onChange={(e) => updateSectionTypography(sectionId, { fontSize: e.target.value || undefined })}
-                      className="flex-1 h-9 px-2.5 rounded-xl border border-[#ECEDF3] bg-white text-xs text-[#374151] focus:border-[#2563EB] focus:outline-none transition"
+                      className="flex-1 h-9 px-2.5 rounded-xl border border-[#E0D5C5] bg-white text-xs text-[#5C4E3E] focus:border-[#C2600E] focus:outline-none transition"
                     >
                       <option value="">Global size</option>
                       <option value="small">Small (10.5pt)</option>
@@ -372,7 +372,7 @@ export default function DesignWorkspace({
                     <select
                       value={st.fontWeight || ''}
                       onChange={(e) => updateSectionTypography(sectionId, { fontWeight: e.target.value || undefined })}
-                      className="flex-1 h-9 px-2.5 rounded-xl border border-[#ECEDF3] bg-white text-xs text-[#374151] focus:border-[#2563EB] focus:outline-none transition"
+                      className="flex-1 h-9 px-2.5 rounded-xl border border-[#E0D5C5] bg-white text-xs text-[#5C4E3E] focus:border-[#C2600E] focus:outline-none transition"
                     >
                       <option value="">Global weight</option>
                       <option value="normal">Normal</option>
@@ -412,7 +412,7 @@ export default function DesignWorkspace({
         {/* ── Paper & Template ────────────────────────────────── */}
         <CollapsibleGroup title="Paper & Template" icon={<FileType size={14} />} defaultOpen={true}>
           <div className="space-y-3">
-            <p className="text-xs text-[#6B7280] leading-relaxed">
+            <p className="text-xs text-[#5C4E3E] leading-relaxed">
               The active template controls the full layout structure, column system, and typography styles.
             </p>
             <button
@@ -425,7 +425,7 @@ export default function DesignWorkspace({
                   window.location.href = '/dashboard?tab=templates';
                 }
               }}
-              className="w-full h-10 px-4 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition cursor-pointer"
+              className="w-full h-10 px-4 rounded-xl bg-[#C2600E] hover:bg-[#9C4A08] text-white text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition cursor-pointer"
             >
               <LayoutTemplate size={15} />
               <span>Change Template</span>

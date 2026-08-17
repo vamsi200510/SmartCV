@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { OTP_LOGIN_ENABLED } from '@/config/authConfig';
 
 export async function POST(request: NextRequest) {
   try {
+    if (!OTP_LOGIN_ENABLED) {
+      return NextResponse.json(
+        { error: 'Email OTP verification is temporarily unavailable. Please continue with Google Sign-In.' },
+        { status: 503 }
+      );
+    }
+
     const { email, otp_code } = await request.json();
 
     if (!email || !otp_code) {

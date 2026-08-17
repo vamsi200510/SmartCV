@@ -20,7 +20,7 @@ export default function ErrorPage({
   }, [error]);
 
   return (
-    <div className="min-h-screen bg-[#FFFDD0] flex flex-col items-center justify-center relative overflow-hidden font-[Inter,sans-serif]">
+    <div className="min-h-screen bg-[#F6EFE4] flex flex-col items-center justify-center relative overflow-hidden font-[Inter,sans-serif]">
       <AnimatedShader />
       <MouseGlow />
 
@@ -30,7 +30,7 @@ export default function ErrorPage({
           <div className="h-10 w-10 rounded-2xl bg-[#315E9B] flex items-center justify-center shadow-lg">
             <Sparkles className="h-5 w-5 text-white" />
           </div>
-          <span className="text-xl font-extrabold tracking-tight text-[#0F172A]">SmartCV</span>
+          <span className="text-xl font-extrabold tracking-tight text-[#241C12]">SmartCV</span>
         </div>
 
         <motion.div
@@ -42,7 +42,7 @@ export default function ErrorPage({
             <AlertTriangle className="h-7 w-7" />
           </div>
 
-          <h1 className="text-2xl font-bold text-[#0F172A] mb-3">Something went wrong</h1>
+          <h1 className="text-2xl font-bold text-[#241C12] mb-3">Something went wrong</h1>
           <p className="text-sm text-[#64748B] leading-relaxed mb-3">
             An unexpected error occurred. We've logged this and will look into it.
           </p>

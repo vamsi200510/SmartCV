@@ -41,11 +41,11 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     const variants: Record<ButtonVariant, string> = {
-      primary: "rounded-full text-white bg-[#7650A8] hover:bg-[#623E94] shadow-sm border border-[#623E94]/30",
+      primary: "rounded-full text-white bg-[#C2600E] hover:bg-[#9C4A08] shadow-sm border border-[#9C4A08]/30",
       secondary: "rounded-full text-[#172B4D] bg-[#FFFFFF] border border-[#BFD5E8] hover:bg-slate-50 shadow-xs",
-      outline: "rounded-full text-[#7650A8] bg-white border border-[#7650A8]/40 hover:bg-[#E9DDF4]/40",
+      outline: "rounded-full text-[#C2600E] bg-white border border-[#C2600E]/40 hover:bg-[#FCE3C7]/40",
       glass: "liquid-glass-pill text-[#172B4D] bg-white border-white/70 hover:bg-white shadow-xs",
-      gradient: "rounded-full text-white bg-[#7650A8] hover:bg-[#623E94] shadow-sm",
+      gradient: "rounded-full text-white bg-[#C2600E] hover:bg-[#9C4A08] shadow-sm",
       ghost: "text-[#405A73] hover:text-[#172B4D] rounded-full hover:bg-white/40 border border-transparent shadow-none",
       danger: "rounded-full text-white bg-[#A84B55] hover:bg-[#8F3F48] shadow-xs border border-[#8F3F48]/30",
       success: "rounded-full text-white bg-[#21877B] hover:bg-[#1D6E67] shadow-xs border border-[#1D6E67]/30",
@@ -228,7 +228,7 @@ export function SectionHeader({ title, subtitle, action, className = '' }: {
   return (
     <div className={`flex flex-col sm:flex-row justify-between sm:items-end gap-3 mb-6 ${className}`}>
       <div>
-        <h2 className="text-lg font-bold tracking-tight text-[#0F172A]">{title}</h2>
+        <h2 className="text-lg font-bold tracking-tight text-[#241C12]">{title}</h2>
         {subtitle && <p className="mt-0.5 text-xs text-[#64748B]">{subtitle}</p>}
       </div>
       {action && <div className="flex items-center gap-2 shrink-0">{action}</div>}
@@ -252,7 +252,7 @@ export function StatsCard({ title, value, subtitle, icon, trend, className = '' 
       <div className="flex justify-between items-start">
         <div>
           <p className="text-[11px] font-bold uppercase tracking-wider text-[#64748B] mb-1">{title}</p>
-          <p className="text-2xl font-black text-[#0F172A] tracking-tight">{value}</p>
+          <p className="text-2xl font-black text-[#241C12] tracking-tight">{value}</p>
         </div>
         {icon && (
           <div className="w-10 h-10 rounded-2xl liquid-glass-circle flex items-center justify-center text-[#2563EB] shrink-0">
@@ -378,7 +378,7 @@ export function ConfirmDialog({
     <ModalContainer isOpen={isOpen} onClose={onClose} size="sm">
       <div className="space-y-4">
         <div>
-          <h3 className="text-base font-bold text-[#0F172A]">{title}</h3>
+          <h3 className="text-base font-bold text-[#241C12]">{title}</h3>
           <p className="mt-1 text-xs text-[#64748B] leading-relaxed">{description}</p>
         </div>
         <div className="flex items-center gap-2.5 justify-end pt-2">
@@ -427,7 +427,7 @@ export function InlineRenameDialog({
   return (
     <ModalContainer isOpen={isOpen} onClose={onClose} size="sm">
       <form onSubmit={handleSubmit} className="space-y-4">
-        <h3 className="text-base font-bold text-[#0F172A]">{title}</h3>
+        <h3 className="text-base font-bold text-[#241C12]">{title}</h3>
         <div>
           <label className="block text-xs font-semibold text-[#64748B] mb-1.5">{label}</label>
           <input
@@ -436,7 +436,7 @@ export function InlineRenameDialog({
             onChange={e => setValue(e.target.value)}
             placeholder={placeholder}
             autoFocus
-            className="w-full h-11 px-3.5 rounded-xl liquid-glass-input text-sm text-[#0F172A] placeholder:text-[#94A3B8]"
+            className="w-full h-11 px-3.5 rounded-xl liquid-glass-input text-sm text-[#241C12] placeholder:text-[#94A3B8]"
           />
         </div>
         <div className="flex items-center gap-2.5 justify-end pt-2">
@@ -470,7 +470,7 @@ export function EmptyState({ icon, title, description, action }: {
       <div className="w-14 h-14 rounded-2xl liquid-glass-circle flex items-center justify-center text-[#2563EB] mb-4 shadow-sm">
         {icon}
       </div>
-      <h3 className="text-sm font-bold text-[#0F172A] mb-1">{title}</h3>
+      <h3 className="text-sm font-bold text-[#241C12] mb-1">{title}</h3>
       <p className="text-xs text-[#64748B] max-w-sm mb-5 leading-relaxed">{description}</p>
       {action}
     </motion.div>
@@ -569,7 +569,7 @@ function ToastNotification({ item, onDismiss }: { item: ToastItem; onDismiss: ()
       className="pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-2xl liquid-glass-surface shadow-lg min-w-[260px] max-w-[360px]"
     >
       {icons[item.variant]}
-      <span className="text-xs font-semibold text-[#0F172A] flex-1 leading-snug">{item.message}</span>
+      <span className="text-xs font-semibold text-[#241C12] flex-1 leading-snug">{item.message}</span>
       <button
         onClick={onDismiss}
         className="text-[#94A3B8] hover:text-[#475569] transition-colors cursor-pointer shrink-0"
@@ -634,7 +634,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             id={inputId}
             className={`
-              w-full h-11 px-3.5 rounded-xl liquid-glass-input text-xs font-medium text-[#0F172A]
+              w-full h-11 px-3.5 rounded-xl liquid-glass-input text-xs font-medium text-[#241C12]
               placeholder:text-[#94A3B8] focus:outline-none transition-all duration-180
               ${error ? '!border-rose-400 !focus:ring-rose-500/20' : ''}
               ${icon ? 'pl-10' : ''}
@@ -727,7 +727,7 @@ export function OTPInput({ length = 6, value, onChange }: { length?: number; val
           value={value[i] || ''}
           onChange={(e) => handleChange(e, i)}
           onKeyDown={(e) => handleKeyDown(e, i)}
-          className="w-11 h-13 sm:w-13 sm:h-15 liquid-glass-otp-digit rounded-2xl text-center text-xl sm:text-2xl font-black text-[#0F172A] focus:outline-none"
+          className="w-11 h-13 sm:w-13 sm:h-15 liquid-glass-otp-digit rounded-2xl text-center text-xl sm:text-2xl font-black text-[#241C12] focus:outline-none"
         />
       ))}
     </div>

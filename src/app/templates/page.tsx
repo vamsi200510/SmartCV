@@ -15,6 +15,7 @@ import TemplateDetailsDrawer from '@/components/TemplateDetailsDrawer';
 import TemplatePreviewModal from '@/components/TemplatePreviewModal';
 import { ResumeTemplate } from '@/types/database.types';
 import { Badge, useToast } from '@/components/ui/design-system';
+import { ColorMeshBackdrop } from '@/components/ui/ColorMeshBackdrop';
 import { getTemplatePreviewData } from '@/lib/templatePreviewData';
 
 const TEMPLATE_METADATA: ResumeTemplate[] = [
@@ -195,36 +196,37 @@ export default function TemplatesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col justify-between text-[#0F172A] relative overflow-x-hidden" style={{ fontFamily: "'Inter', -apple-system, sans-serif" }}>
+    <div className="min-h-screen level-0-base flex flex-col justify-between text-[#241C12] relative overflow-x-hidden color-mesh-backdrop" style={{ fontFamily: "'Inter', -apple-system, sans-serif" }}>
+      <ColorMeshBackdrop />
 
-      {/* Floating Liquid Glass Top Header */}
-      <header className="fixed top-4 inset-x-0 z-40 px-4 sm:px-6 max-w-5xl mx-auto pointer-events-none">
-        <div className="liquid-glass-surface rounded-[24px] px-5 py-2.5 flex items-center justify-between shadow-lg pointer-events-auto border border-white/70">
+      {/* ── FLOATING LIQUID GLASS NAVBAR ── */}
+      <header className="fixed top-4 inset-x-0 z-50 px-4 sm:px-6 max-w-7xl mx-auto pointer-events-none">
+        <div className="liquid-glass-surface rounded-[28px] px-5 py-2.5 flex items-center justify-between shadow-lg pointer-events-auto border border-white/80">
           <div className="flex items-center gap-3">
             <button
               onClick={() => isBuilderContext && builderResumeId
                 ? router.replace(`/builder?resumeId=${builderResumeId}`)
                 : router.replace('/dashboard')
               }
-              className="h-8 w-8 rounded-full bg-white/40 hover:bg-white/60 border border-white/50 flex items-center justify-center text-[#405A73] hover:text-[#172B4D] transition cursor-pointer shadow-xs"
+              className="h-8 w-8 rounded-full bg-white/70 hover:bg-white border border-white/80 flex items-center justify-center text-slate-700 hover:text-[#241C12] transition cursor-pointer shadow-xs"
               title={isBuilderContext ? 'Back to Builder' : 'Back to Dashboard'}
             >
               <ArrowLeft className="h-4 w-4" />
             </button>
-            <div className="h-4 w-px bg-white/60" />
+            <div className="h-4 w-px bg-[#E8DDD0]" />
             <div className="flex items-center gap-2.5">
-              <div className="h-7 w-7 rounded-xl bg-white/40 border border-white/60 flex items-center justify-center shadow-xs">
+              <div className="h-7 w-7 rounded-xl bg-white/70 border border-white/80 flex items-center justify-center shadow-xs">
                 <img src="/SmartCV_logo.png" alt="Logo" className="h-4 w-4 object-contain" />
               </div>
               <span className="font-black text-sm text-[#172B4D] tracking-tight">SmartCV</span>
-              <span className="text-[10px] font-bold text-[#7650A8] uppercase tracking-wider">Templates</span>
+              <span className="text-[10px] font-bold text-[#C2600E] uppercase tracking-wider">Templates</span>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="hidden sm:flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/40 border border-white/60 text-[11px] font-semibold text-[#405A73] shadow-xs">
-              <span className="text-[#172B4D] font-bold">{TEMPLATE_METADATA.length} Templates</span>
-              <span className="text-[#B8CBD8]">|</span>
+            <div className="hidden sm:flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/60 border border-white/80 text-[11px] font-bold text-[#5C4E3E] shadow-xs">
+              <span className="text-[#241C12] font-black">{TEMPLATE_METADATA.length} Templates</span>
+              <span className="text-[#E8DDD0]">|</span>
               <span>{isBuilderContext ? 'Change Template' : 'Gallery Preview'}</span>
             </div>
           </div>
@@ -238,8 +240,8 @@ export default function TemplatesPage() {
         {recommendedTemplates.length > 0 && (
           <section className="space-y-4">
             <div className="flex items-center space-x-2">
-              <Sparkles className="text-[#7C3AED]" size={15} />
-              <h2 className="text-[11px] font-bold uppercase tracking-widest text-slate-500">
+              <Sparkles className="text-[#C2600E]" size={15} />
+              <h2 className="text-[11px] font-bold uppercase tracking-widest text-[#5C4E3E]">
                 Recommended For Your Profile
               </h2>
             </div>
@@ -249,22 +251,22 @@ export default function TemplatesPage() {
                 <div
                   key={tmpl.id}
                   onClick={() => handleCardClick(tmpl)}
-                  className="bg-white border border-slate-200 p-5 flex flex-col justify-between rounded-2xl shadow-sm cursor-pointer relative group hover:-translate-y-0.5 hover:border-[#7C3AED]/70 hover:shadow-md transition-all"
+                  className="level-1-card p-5 flex flex-col justify-between rounded-3xl shadow-sm cursor-pointer relative group hover:-translate-y-0.5 hover:border-[#C2600E] hover:shadow-md transition-all"
                 >
-                  <span className="absolute top-4 right-4 bg-[#7C3AED] text-white text-[9px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider z-20 shadow-xs">
+                  <span className="absolute top-4 right-4 bg-[#C2600E] text-white text-[9px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider z-20 shadow-xs">
                     Recommended
                   </span>
 
                   {/* Exact A4 Portrait Box */}
-                  <div className="w-full aspect-[210/297] rounded-xl border border-slate-200 bg-white overflow-hidden relative shadow-xs">
+                  <div className="w-full aspect-[210/297] rounded-xl border border-[#E8DDD0] bg-[#F5EFEB] overflow-hidden relative shadow-xs">
                     <A4ResumePreview templateId={tmpl.id} data={templatePreviewData} />
                   </div>
 
                   <div className="mt-4 flex flex-col justify-between space-y-3">
                     <div>
-                      <h3 className="text-sm font-bold text-[#0F172A]">{tmpl.name}</h3>
-                      <div className="flex items-center gap-1.5 mt-1 text-[10px] text-slate-500 font-medium">
-                        <span className="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">ATS: {tmpl.ats_score}%</span>
+                      <h3 className="text-sm font-bold text-[#241C12]">{tmpl.name}</h3>
+                      <div className="flex items-center gap-1.5 mt-1 text-[10px] text-[#5C4E3E] font-medium">
+                        <span className="font-bold badge-emerald px-2 py-0.5 rounded-full shadow-xs">ATS: {tmpl.ats_score}%</span>
                         <span className="text-slate-300">·</span>
                         <span>{tmpl.layout_type}</span>
                       </div>
@@ -276,7 +278,7 @@ export default function TemplatesPage() {
                           e.stopPropagation();
                           handleCardClick(tmpl);
                         }}
-                        className="flex-1 h-8 rounded-full bg-white border border-slate-200 text-[11px] font-bold text-slate-700 hover:text-[#0F172A] hover:bg-slate-50 transition cursor-pointer flex items-center justify-center gap-1 shadow-xs"
+                        className="flex-1 h-8 rounded-full bg-white border border-[#E8DDD0] text-[11px] font-bold text-[#241C12] hover:bg-[#F5EFEB] transition cursor-pointer flex items-center justify-center gap-1 shadow-xs"
                       >
                         <Eye size={12} /> Details
                       </button>
@@ -285,7 +287,7 @@ export default function TemplatesPage() {
                           e.stopPropagation();
                           handleUseTemplateClick(tmpl);
                         }}
-                        className="flex-1 h-8 rounded-full bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-[11px] font-bold transition cursor-pointer flex items-center justify-center gap-1 shadow-xs"
+                        className="flex-1 h-8 rounded-full bg-[#C2600E] hover:bg-[#9C4A08] text-white text-[11px] font-bold transition cursor-pointer flex items-center justify-center gap-1 shadow-xs"
                       >
                         <Check size={12} /> Select
                       </button>
@@ -300,10 +302,10 @@ export default function TemplatesPage() {
         {/* Gallery Section */}
         <section className="space-y-6">
 
-          <div className="space-y-4 border-b border-slate-200 pb-5">
+          <div className="space-y-4 border-b border-[#E8DDD0] pb-5">
             <div className="flex items-center space-x-2">
-              <Filter className="text-[#7C3AED]" size={15} />
-              <h2 className="text-[11px] font-bold uppercase tracking-widest text-slate-500">
+              <Filter className="text-[#C2600E]" size={15} />
+              <h2 className="text-[11px] font-bold uppercase tracking-widest text-[#5C4E3E]">
                 Browse Template Library
               </h2>
             </div>
@@ -314,8 +316,8 @@ export default function TemplatesPage() {
                   key={filter}
                   onClick={() => setActiveFilter(filter)}
                   className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-150 whitespace-nowrap cursor-pointer ${activeFilter === filter
-                      ? 'bg-[#7C3AED] text-white shadow-xs'
-                      : 'text-slate-600 hover:text-[#0F172A]'
+                      ? 'bg-[#C2600E] text-white shadow-xs'
+                      : 'text-[#5C4E3E] hover:text-[#241C12]'
                     }`}
                 >
                   {filter}
@@ -329,20 +331,20 @@ export default function TemplatesPage() {
               <div
                 key={tmpl.id}
                 onClick={() => handleCardClick(tmpl)}
-                className="bg-white border border-slate-200 p-4 flex flex-col justify-between rounded-2xl shadow-xs cursor-pointer group hover:-translate-y-0.5 hover:border-[#7C3AED]/70 hover:shadow-md transition-all"
+                className="level-1-card p-4 flex flex-col justify-between rounded-2xl shadow-xs cursor-pointer group hover:-translate-y-0.5 hover:border-[#C2600E] hover:shadow-md transition-all"
               >
                 {/* Exact A4 Portrait Box */}
-                <div className="w-full aspect-[210/297] rounded-xl border border-slate-200 bg-white overflow-hidden relative shadow-xs">
+                <div className="w-full aspect-[210/297] rounded-xl border border-[#E8DDD0] bg-[#F5EFEB] overflow-hidden relative shadow-xs">
                   <A4ResumePreview templateId={tmpl.id} data={templatePreviewData} />
                 </div>
 
                 <div className="mt-3.5 space-y-2">
-                  <h3 className="text-xs font-bold truncate leading-tight text-[#0F172A]">{tmpl.name}</h3>
+                  <h3 className="text-xs font-bold truncate leading-tight text-[#241C12]">{tmpl.name}</h3>
                   <div className="flex flex-wrap items-center gap-1.5">
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-[9px] font-bold text-emerald-700">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full badge-emerald text-[9px] font-bold shadow-xs">
                       <Shield size={8} /> ATS {tmpl.ats_score}%
                     </span>
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-purple-50 border border-purple-200 text-[9px] font-bold text-[#7C3AED]">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full badge-orange text-[9px] font-bold shadow-xs">
                       <Columns size={8} /> {tmpl.layout_type}
                     </span>
                   </div>
@@ -352,7 +354,7 @@ export default function TemplatesPage() {
                         e.stopPropagation();
                         handleCardClick(tmpl);
                       }}
-                      className="flex-1 h-7 rounded-full bg-white border border-slate-200 text-[10px] font-bold text-slate-700 hover:text-[#0F172A] hover:bg-slate-50 transition cursor-pointer flex items-center justify-center gap-1 shadow-xs"
+                      className="flex-1 h-7 rounded-full bg-white border border-[#E8DDD0] text-[10px] font-bold text-[#241C12] hover:bg-[#F5EFEB] transition cursor-pointer flex items-center justify-center gap-1 shadow-xs"
                     >
                       <Eye size={11} /> Details
                     </button>
@@ -361,7 +363,7 @@ export default function TemplatesPage() {
                         e.stopPropagation();
                         handleUseTemplateClick(tmpl);
                       }}
-                      className="flex-1 h-7 rounded-full bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-[10px] font-bold transition cursor-pointer flex items-center justify-center gap-1 shadow-xs"
+                      className="flex-1 h-7 rounded-full bg-[#C2600E] hover:bg-[#9C4A08] text-white text-[10px] font-bold transition cursor-pointer flex items-center justify-center gap-1 shadow-xs"
                     >
                       <Check size={11} /> Select
                     </button>
@@ -382,29 +384,51 @@ export default function TemplatesPage() {
 
       {/* Confirmation Modal */}
       {confirmTemplate && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[100] flex items-center justify-center px-4" onClick={() => setConfirmTemplate(null)}>
-          <div className="liquid-glass-card-floating p-6 w-full max-w-sm shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="w-11 h-11 rounded-2xl liquid-glass-circle bg-blue-500/15 border-blue-300/50 flex items-center justify-center mb-4">
-              <Check size={18} className="text-[#2563EB]" />
+        <div
+          className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center px-4"
+          onClick={() => !isSelecting && setConfirmTemplate(null)}
+        >
+          <div
+            className="bg-white rounded-3xl border border-[#E8DDD0] shadow-2xl p-6 max-w-sm w-full animate-scale-in space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-2xl bg-[#FCE3C7] border border-[#F4B77E] flex items-center justify-center shadow-xs">
+                <Check className="text-[#C2600E]" size={18} />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-[#241C12]">Use This Template?</h3>
+                <p className="text-xs text-[#5C4E3E] font-medium">{confirmTemplate.name}</p>
+              </div>
             </div>
-            <h3 className="text-sm font-bold text-[#0F172A]">Apply Template?</h3>
-            <p className="text-xs text-[#64748B] mt-1.5 leading-relaxed font-medium">
-              Switch your resume layout to <span className="font-bold text-[#0F172A]">{confirmTemplate.name}</span>? Your content will be preserved.
+
+            <p className="text-xs text-[#5C4E3E] leading-relaxed font-medium">
+              {isBuilderContext
+                ? 'Your resume content will be preserved and rendered in the new layout.'
+                : 'A new resume draft will be created with this template and your profile details.'}
             </p>
-            <div className="flex gap-2.5 mt-5">
-              <button onClick={() => setConfirmTemplate(null)} className="flex-1 h-9 rounded-full liquid-glass-pill text-xs font-semibold text-[#475569] hover:text-[#0F172A] transition cursor-pointer shadow-xs">Cancel</button>
+
+            <div className="flex items-center gap-2 pt-2">
               <button
-                onClick={() => handleSelectTemplate(confirmTemplate.id)}
                 disabled={isSelecting}
-                className="flex-1 h-9 rounded-full liquid-glass-pill bg-blue-500/15 border-blue-300/50 text-[#1E40AF] hover:text-[#1D4ED8] text-xs font-bold transition cursor-pointer disabled:opacity-50 flex items-center justify-center gap-1.5 shadow-xs"
+                onClick={() => setConfirmTemplate(null)}
+                className="flex-1 h-9 rounded-xl border border-[#E8DDD0] text-xs font-bold text-[#241C12] hover:bg-[#F5EFEB] transition cursor-pointer shadow-xs"
               >
-                {isSelecting ? 'Applying...' : 'Confirm'}
+                Cancel
+              </button>
+              <button
+                disabled={isSelecting}
+                onClick={() => handleSelectTemplate(confirmTemplate.id)}
+                className="flex-1 h-9 rounded-xl bg-[#C2600E] hover:bg-[#9C4A08] text-white text-xs font-bold transition cursor-pointer flex items-center justify-center gap-1 shadow-md"
+              >
+                {isSelecting ? 'Applying…' : 'Confirm'}
               </button>
             </div>
           </div>
         </div>
       )}
 
+      {/* Template Details Drawer */}
       <TemplateDetailsDrawer
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
@@ -414,6 +438,7 @@ export default function TemplatesPage() {
         isLoading={isSelecting}
       />
 
+      {/* Template Full-Screen Preview Modal */}
       <TemplatePreviewModal
         isOpen={isPreviewModalOpen}
         onClose={() => setIsPreviewModalOpen(false)}

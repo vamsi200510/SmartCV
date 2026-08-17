@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#7C3AED",
+  themeColor: "#C2600E",
 };
 
 export default function RootLayout({
@@ -35,7 +35,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-full flex flex-col bg-white text-[#0F172A]">
+      <body className="min-h-full flex flex-col bg-[#F6EFE4] text-[#241C12]">
 
         {/* Hidden SVG filters for liquid glass displacement distortion */}
         <svg

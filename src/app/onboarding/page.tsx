@@ -114,33 +114,33 @@ export default function OnboardingPage() {
   const optionCls = (selected: boolean) =>
     `p-4 rounded-2xl border text-left flex flex-col gap-1 transition-all duration-150 cursor-pointer ${
       selected
-        ? 'liquid-glass-card-primary border-[#2563EB]/60 text-[#1D4ED8] shadow-xs'
-        : 'liquid-glass-card-secondary hover:border-white/90 text-[#0F172A]'
+        ? 'bg-white border-[#C2600E] ring-2 ring-[#C2600E]/20 text-[#241C12] shadow-sm'
+        : 'level-2-nested hover:bg-white hover:border-[#C2600E]/50 text-[#241C12]'
     }`;
 
   return (
-    <div className="min-h-screen text-[#0F172A] flex flex-col justify-between font-[Inter,sans-serif] relative overflow-hidden">
+    <div className="min-h-screen level-0-base text-[#241C12] flex flex-col justify-between font-[Inter,sans-serif] relative overflow-hidden color-mesh-backdrop">
       <MouseGlow />
 
       {/* Floating Header */}
       <header className="fixed top-4 inset-x-0 z-50 px-6 max-w-xl mx-auto pointer-events-none">
         <div className="liquid-glass-surface rounded-full px-5 py-2.5 flex items-center justify-between shadow-lg pointer-events-auto border border-white/80">
           <div className="flex items-center gap-2.5">
-            <div className="h-7 w-7 rounded-xl liquid-glass-square flex items-center justify-center shadow-xs">
+            <div className="h-7 w-7 rounded-xl bg-white/70 border border-white/80 flex items-center justify-center shadow-xs">
               <img src="/SmartCV_logo.png" alt="Logo" className="h-4 w-4 object-contain" />
             </div>
-            <span className="font-black text-sm tracking-tight text-[#0F172A]">SmartCV</span>
+            <span className="font-black text-sm tracking-tight text-[#241C12]">SmartCV</span>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="flex-grow flex items-center justify-center px-6 pt-24 pb-12 relative z-10">
-        <div className="liquid-glass-card-primary max-w-xl w-full p-6 sm:p-8 rounded-3xl shadow-xl">
+        <div className="level-1-card max-w-xl w-full p-6 sm:p-8 rounded-3xl shadow-xl">
 
           {/* Progress */}
           <div className="mb-8">
-            <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-[#94A3B8] mb-2">
+            <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-[#5C4E3E] mb-2">
               <span>Step {step} of 3</span>
               <span>{['Profile Details', 'Career Goal', 'Experience Level'][step - 1]}</span>
             </div>
@@ -157,8 +157,8 @@ export default function OnboardingPage() {
               transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
             >
               <div className="mb-6">
-                <h1 className="text-2xl font-bold tracking-tight text-[#0F172A]">{stepTitles[step - 1]}</h1>
-                <p className="text-sm mt-1.5 leading-relaxed text-[#64748B]">{stepSubtitles[step - 1]}</p>
+                <h1 className="text-2xl font-bold tracking-tight text-[#241C12]">{stepTitles[step - 1]}</h1>
+                <p className="text-sm mt-1.5 leading-relaxed text-[#5C4E3E] font-medium">{stepSubtitles[step - 1]}</p>
               </div>
 
               {/* Error banner */}
@@ -168,10 +168,10 @@ export default function OnboardingPage() {
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="mb-4 p-3 bg-red-50 border border-red-100 rounded-xl flex items-center gap-2.5 overflow-hidden"
+                    className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-center gap-2.5 overflow-hidden shadow-xs"
                   >
-                    <AlertCircle className="h-4 w-4 text-red-500 shrink-0" />
-                    <p className="text-xs font-semibold text-red-700">{errorMsg}</p>
+                    <AlertCircle className="h-4 w-4 text-[#B23A2E] shrink-0" />
+                    <p className="text-xs font-bold text-[#B23A2E]">{errorMsg}</p>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -180,7 +180,7 @@ export default function OnboardingPage() {
               {step === 1 && (
                 <div className="space-y-6">
                   <div>
-                    <label htmlFor="fullname" className="block text-xs font-semibold text-[#64748B] mb-1.5 uppercase tracking-wide">
+                    <label htmlFor="fullname" className="block text-xs font-bold text-[#5C4E3E] mb-1.5 uppercase tracking-wide">
                       Your Full Name
                     </label>
                     <input
@@ -189,12 +189,12 @@ export default function OnboardingPage() {
                       placeholder="e.g. Vamsi Krishna"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      className="w-full h-11 px-3.5 rounded-xl border border-[#E2E8F0] text-sm text-[#0F172A] bg-white focus:outline-none focus:border-[#2563EB] focus:ring-3 focus:ring-blue-50 transition shadow-sm placeholder:text-[#94A3B8]"
+                      className="w-full h-11 px-3.5 rounded-xl level-2-input text-sm text-[#241C12] focus:outline-none focus:border-[#C2600E] focus:bg-white focus:ring-2 focus:ring-[#C2600E]/20 transition shadow-xs placeholder:text-slate-400 font-medium"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-[#64748B] mb-2 uppercase tracking-wide">
+                    <label className="block text-xs font-bold text-[#5C4E3E] mb-2 uppercase tracking-wide">
                       Select Department
                     </label>
                     <div className="grid grid-cols-2 gap-2.5">
@@ -205,14 +205,14 @@ export default function OnboardingPage() {
                           onClick={() => setDepartment(dept.id)}
                           className={optionCls(department === dept.id)}
                         >
-                          <span className="text-xs font-semibold text-[#0F172A] truncate">{dept.label}</span>
+                          <span className="text-xs font-bold text-[#241C12] truncate">{dept.label}</span>
                         </button>
                       ))}
                     </div>
                   </div>
 
                   <div className="pt-2 flex justify-end">
-                    <Button variant="gradient" onClick={handleNext} size="md">
+                    <Button variant="primary" onClick={handleNext} size="md" className="bg-[#C2600E] hover:bg-[#9C4A08] text-white font-bold shadow-md">
                       Continue <ArrowRight className="h-4 w-4" />
                     </Button>
                   </div>
@@ -230,16 +230,16 @@ export default function OnboardingPage() {
                         onClick={() => setCareerGoal(goal.id)}
                         className={optionCls(careerGoal === goal.id)}
                       >
-                        <span className="text-sm font-semibold text-[#0F172A]">{goal.label}</span>
-                        <span className="text-xs text-[#64748B] leading-normal">{goal.desc}</span>
+                        <span className="text-sm font-bold text-[#241C12]">{goal.label}</span>
+                        <span className="text-xs text-[#5C4E3E] leading-normal font-medium">{goal.desc}</span>
                       </button>
                     ))}
                   </div>
                   <div className="pt-2 flex items-center justify-between gap-4">
-                    <Button variant="secondary" onClick={handlePrev} size="md">
+                    <Button variant="secondary" onClick={handlePrev} size="md" className="bg-white border-[#E8DDD0] text-[#241C12] hover:bg-[#F5EFEB] font-bold shadow-xs">
                       <ArrowLeft className="h-4 w-4" /> Back
                     </Button>
-                    <Button variant="gradient" onClick={handleNext} size="md">
+                    <Button variant="primary" onClick={handleNext} size="md" className="bg-[#C2600E] hover:bg-[#9C4A08] text-white font-bold shadow-md">
                       Continue <ArrowRight className="h-4 w-4" />
                     </Button>
                   </div>
@@ -257,16 +257,16 @@ export default function OnboardingPage() {
                         onClick={() => setExperienceLevel(level.id)}
                         className={optionCls(experienceLevel === level.id)}
                       >
-                        <span className="text-sm font-semibold text-[#0F172A]">{level.label}</span>
-                        <span className="text-xs text-[#64748B] leading-normal">{level.desc}</span>
+                        <span className="text-sm font-bold text-[#241C12]">{level.label}</span>
+                        <span className="text-xs text-[#5C4E3E] leading-normal font-medium">{level.desc}</span>
                       </button>
                     ))}
                   </div>
                   <div className="pt-2 flex items-center justify-between gap-4">
-                    <Button variant="secondary" onClick={handlePrev} size="md">
+                    <Button variant="secondary" onClick={handlePrev} size="md" className="bg-white border-[#E8DDD0] text-[#241C12] hover:bg-[#F5EFEB] font-bold shadow-xs">
                       <ArrowLeft className="h-4 w-4" /> Back
                     </Button>
-                    <Button variant="gradient" onClick={handleSubmit} loading={loading} size="md">
+                    <Button variant="primary" onClick={handleSubmit} loading={loading} size="md" className="bg-[#C2600E] hover:bg-[#9C4A08] text-white font-bold shadow-md">
                       {!loading && <><span>Complete Setup</span> <Check className="h-4 w-4" /></>}
                     </Button>
                   </div>
@@ -278,8 +278,8 @@ export default function OnboardingPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-[#E2E8F0] py-5 px-6 text-center">
-        <p className="text-xs text-[#94A3B8]">SmartCV · Secure & Private · Your data is encrypted</p>
+      <footer className="border-t border-[#E8DDD0] py-5 px-6 text-center">
+        <p className="text-xs text-[#5C4E3E] font-medium">SmartCV · Secure & Private · Your data is encrypted</p>
       </footer>
     </div>
   );

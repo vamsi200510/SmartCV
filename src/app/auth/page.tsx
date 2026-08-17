@@ -5,11 +5,12 @@ import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Sparkles, Check, Shield,
+  Sparkles, Check, Shield, AlertCircle,
   Eye, EyeOff, RefreshCw, Mail, Lock, ChevronLeft,
   Star, CheckCircle, Zap, TrendingUp, FileText
 } from 'lucide-react';
 import { MouseGlow, ATSRing, OTPInput, MorphingButton } from '@/components/ui/design-system';
+import { ColorMeshBackdrop } from '@/components/ui/ColorMeshBackdrop';
 
 type AuthMode = 'sign-in' | 'create-account';
 type AuthStep =
@@ -55,16 +56,16 @@ function AuthLeftPanel() {
       <div className="relative z-10 flex flex-col h-full px-12 py-10">
         {/* Brand */}
         <div className="flex items-center gap-3 mb-16">
-          <div className="w-10 h-10 rounded-2xl bg-white border border-[#ECEDF3] flex items-center justify-center shadow-sm">
+          <div className="w-10 h-10 rounded-2xl bg-[#F6EFE4] border border-[#ECEDF3] flex items-center justify-center shadow-sm">
             <img src="/SmartCV_logo.png" alt="Logo" className="h-6 w-6 object-contain" />
           </div>
-          <span className="text-xl font-extrabold tracking-tight text-[#0F172A]">SmartCV</span>
+          <span className="text-xl font-extrabold tracking-tight text-[#241C12]">SmartCV</span>
         </div>
 
         {/* Hero text */}
         <div className="flex-1 flex flex-col justify-center">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-            <h1 className="text-4xl font-extrabold text-[#0F172A] leading-tight tracking-tight mb-4">
+            <h1 className="text-4xl font-extrabold text-[#241C12] leading-tight tracking-tight mb-4">
               Your career,{' '}
               <span className="text-[#315E9B]">
                 supercharged
@@ -82,11 +83,11 @@ function AuthLeftPanel() {
               <motion.div key={i}
                 animate={{ opacity: currentBullet === i ? 1 : 0.45, scale: currentBullet === i ? 1 : 0.97, x: currentBullet === i ? 0 : -4 }}
                 transition={{ duration: 0.35, ease: 'easeOut' }}
-                className={`flex items-center gap-3 bg-white/80 backdrop-blur-sm border rounded-2xl px-4 py-3 shadow-sm`}>
+                className={`flex items-center gap-3 bg-[#F6EFE4]/80 backdrop-blur-sm border rounded-2xl px-4 py-3 shadow-sm`}>
                 <div className={`w-8 h-8 rounded-xl flex items-center justify-center border ${b.color}`}>
                   {b.icon}
                 </div>
-                <span className="text-sm font-semibold text-[#0F172A]">{b.text}</span>
+                <span className="text-sm font-semibold text-[#241C12]">{b.text}</span>
                 {currentBullet === i && (
                   <div className="ml-auto w-5 h-5 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center">
                     <Check className="h-3 w-3 text-emerald-600" />
@@ -99,12 +100,12 @@ function AuthLeftPanel() {
           {/* Floating resume mockup with ATS ring */}
           <motion.div
             animate={{ y: [0, -6, 0] }} transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-            className="relative bg-white/90 backdrop-blur-sm border border-white rounded-3xl p-5 shadow-[0_8px_40px_rgba(37,99,235,0.14)] max-w-[280px]">
+            className="relative bg-[#F6EFE4]/90 backdrop-blur-sm border border-white rounded-3xl p-5 shadow-[0_8px_40px_rgba(37,99,235,0.14)] max-w-[280px]">
             {/* Mini resume preview */}
             <div className="flex items-start gap-3 mb-4">
               <ATSRing score={98} size={52} />
               <div className="flex-1">
-                <div className="h-3 bg-[#0F172A] rounded w-3/4 mb-1.5" />
+                <div className="h-3 bg-[#241C12] rounded w-3/4 mb-1.5" />
                 <div className="h-2 bg-slate-300 rounded w-1/2 mb-1" />
                 <div className="h-2 bg-slate-200 rounded w-2/3" />
               </div>
@@ -129,7 +130,7 @@ function AuthLeftPanel() {
         {/* Bottom social proof */}
         <div className="flex items-center gap-3 mt-10">
           <div className="flex -space-x-2">
-            {['#2563EB','#7C3AED','#06B6D4','#10B981'].map((c, i) => (
+            {['#2563EB','#C2600E','#06B6D4','#10B981'].map((c, i) => (
               <div key={i} className="w-7 h-7 rounded-full border-2 border-white flex items-center justify-center text-white text-[9px] font-bold"
                 style={{ background: c }}>
                 {['A','B','R','K'][i]}
@@ -137,17 +138,19 @@ function AuthLeftPanel() {
             ))}
           </div>
           <div className="text-xs text-[#64748B]">
-            <span className="font-semibold text-[#0F172A]">2M+</span> resumes created
+            <span className="font-semibold text-[#241C12]">2M+</span> resumes created
           </div>
           <div className="ml-auto flex items-center gap-1">
             {[...Array(5)].map((_,i) => <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400" />)}
-            <span className="text-xs font-bold text-[#0F172A] ml-1">4.9</span>
+            <span className="text-xs font-bold text-[#241C12] ml-1">4.9</span>
           </div>
         </div>
       </div>
     </div>
   );
 }
+
+import { OTP_LOGIN_ENABLED } from '@/config/authConfig';
 
 // ── Main Auth Page ─────────────────────────────────────────────
 export default function AuthPage() {
@@ -232,6 +235,10 @@ export default function AuthPage() {
 
   const handleSendOtp = async (e: React.FormEvent) => {
     e?.preventDefault(); if (!email) return;
+    if (!OTP_LOGIN_ENABLED) {
+      setErrorMsg("Email sign-in is temporarily unavailable. Please continue with Google for now — we're fixing this shortly.");
+      return;
+    }
     setLoadingStep('sending-otp'); setErrorMsg(null); setSuccessMsg(null); setMissingTableSql(null);
     try {
       const res = await fetch('/api/auth/send-otp', {
@@ -248,6 +255,10 @@ export default function AuthPage() {
 
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault(); if (!otpCode) return;
+    if (!OTP_LOGIN_ENABLED) {
+      setErrorMsg("Email verification is temporarily unavailable. Please continue with Google for now.");
+      return;
+    }
     console.log('[OTP] Verify button clicked');
     setLoadingStep('verifying-otp'); setErrorMsg(null); setSuccessMsg(null);
     try {
@@ -364,11 +375,12 @@ export default function AuthPage() {
   };
 
   // Shared input classes
-  const inputCls = "liquid-glass-input w-full h-11 px-4 text-sm text-[#0F172A] placeholder-[#94A3B8] font-medium shadow-xs";
+  const inputCls = "liquid-glass-input w-full h-11 px-4 text-sm text-[#241C12] placeholder-[#94A3B8] font-medium shadow-xs";
   const labelCls = "block text-[11px] font-bold text-[#64748B] mb-1.5 uppercase tracking-wider";
 
   return (
-    <div className="min-h-screen bg-white text-[#0F172A] font-[Inter,sans-serif] overflow-hidden relative" style={{ fontFamily: "'Inter', -apple-system, sans-serif" }}>
+    <div className="min-h-screen bg-[#F6EFE4] text-[#241C12] font-[Inter,sans-serif] overflow-hidden relative color-mesh-backdrop" style={{ fontFamily: "'Inter', -apple-system, sans-serif" }}>
+      <ColorMeshBackdrop />
       <MouseGlow />
       <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2">
         {/* LEFT: Branding */}
@@ -381,7 +393,7 @@ export default function AuthPage() {
             <div className="w-8 h-8 rounded-xl liquid-glass-square flex items-center justify-center shadow-xs">
               <img src="/SmartCV_logo.png" alt="Logo" className="h-5 w-5 object-contain" />
             </div>
-            <span className="text-lg font-black tracking-tight text-[#0F172A]">SmartCV</span>
+            <span className="text-lg font-black tracking-tight text-[#241C12]">SmartCV</span>
           </div>
 
           <div className="max-w-[420px] w-full mx-auto lg:mx-0 lg:ml-auto liquid-glass-card-primary p-7 sm:p-8 rounded-3xl shadow-xl">
@@ -394,11 +406,11 @@ export default function AuthPage() {
                 <div className="mb-8">
                   {step !== 'email-input' && (
                     <button onClick={() => { setStep('email-input'); setErrorMsg(null); setSuccessMsg(null); }}
-                      className="flex items-center gap-1.5 text-xs font-semibold text-[#64748B] hover:text-[#0F172A] mb-5 transition-colors cursor-pointer">
+                      className="flex items-center gap-1.5 text-xs font-semibold text-[#64748B] hover:text-[#241C12] mb-5 transition-colors cursor-pointer">
                       <ChevronLeft className="h-3.5 w-3.5" /> Back
                     </button>
                   )}
-                  <h2 className="text-3xl font-extrabold text-[#0F172A] tracking-tight mb-2">{stepTitle[step]}</h2>
+                  <h2 className="text-3xl font-extrabold text-[#241C12] tracking-tight mb-2">{stepTitle[step]}</h2>
                   <p className="text-sm text-[#64748B] leading-relaxed">{stepSubtitle[step]}</p>
                 </div>
 
@@ -431,76 +443,127 @@ export default function AuthPage() {
                 {/* Google login (email-input step only) */}
                 {step === 'email-input' && (
                   <>
-                    <button type="button" onClick={handleGoogleLogin} disabled={loadingStep !== null}
-                      className="w-full h-11 flex items-center justify-center gap-3 bg-white border border-[#E2E8F0] rounded-xl text-sm font-semibold text-[#0F172A] hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 shadow-[0_1px_3px_rgba(15,23,42,0.06)] mb-4 cursor-pointer disabled:opacity-60">
+                    <button
+                      type="button"
+                      onClick={handleGoogleLogin}
+                      disabled={loadingStep !== null}
+                      className={`w-full flex items-center justify-center gap-3 rounded-xl text-sm font-bold transition-all duration-200 cursor-pointer disabled:opacity-60 ${
+                        !OTP_LOGIN_ENABLED
+                          ? 'h-12 bg-[#C2600E] hover:bg-[#9C4A08] text-white shadow-md hover:shadow-lg'
+                          : 'h-11 bg-white border border-[#E8DDD0] text-[#241C12] hover:bg-slate-50 shadow-xs'
+                      }`}
+                    >
                       {loadingStep === 'google' ? (
-                        <RefreshCw className="h-4 w-4 animate-spin text-blue-500" />
+                        <RefreshCw className={`h-4 w-4 animate-spin ${!OTP_LOGIN_ENABLED ? 'text-white' : 'text-[#C2600E]'}`} />
                       ) : (
-                        <svg className="h-4 w-4" viewBox="0 0 24 24">
-                          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
-                          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-                          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05" />
-                          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
-                        </svg>
+                        <div className={`p-1 rounded-lg ${!OTP_LOGIN_ENABLED ? 'bg-white' : ''}`}>
+                          <svg className="h-4 w-4" viewBox="0 0 24 24">
+                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05" />
+                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+                          </svg>
+                        </div>
                       )}
-                      Continue with Google
+                      <span>Continue with Google</span>
                     </button>
 
-                    <div className="relative my-5 flex items-center">
-                      <div className="flex-1 h-px bg-[#E2E8F0]" />
-                      <span className="px-4 text-xs font-semibold text-[#94A3B8] uppercase tracking-wider">or continue with email</span>
-                      <div className="flex-1 h-px bg-[#E2E8F0]" />
-                    </div>
+                    {!OTP_LOGIN_ENABLED ? (
+                      <div className="p-3.5 my-5 bg-[#FEF3C7] border border-[#FDE68A] rounded-xl flex items-start gap-2.5 shadow-xs">
+                        <AlertCircle className="h-4 w-4 text-[#B5790C] shrink-0 mt-0.5" />
+                        <p className="text-xs text-[#92400E] font-medium leading-relaxed">
+                          Email sign-in is temporarily unavailable. Please continue with Google for now — we&apos;re fixing this shortly.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="relative my-5 flex items-center">
+                        <div className="flex-1 h-px bg-[#E2E8F0]" />
+                        <span className="px-4 text-xs font-semibold text-[#94A3B8] uppercase tracking-wider">or continue with email</span>
+                        <div className="flex-1 h-px bg-[#E2E8F0]" />
+                      </div>
+                    )}
                   </>
                 )}
 
                 {/* STEP: Email Input */}
                 {step === 'email-input' && (
                   <form onSubmit={handleEmailSubmit} className="space-y-4">
-                    <div>
-                      <label htmlFor="email" className={labelCls}>Email Address</label>
-                      <div className="relative">
-                        <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#94A3B8]" />
-                        <input id="email" type="email" required placeholder="name@company.com"
-                          value={email} onChange={e => setEmail(e.target.value)}
-                          className={`${inputCls} pl-10`} />
-                      </div>
-                    </div>
+                    {OTP_LOGIN_ENABLED ? (
+                      <>
+                        <div>
+                          <label htmlFor="email" className={labelCls}>Email Address</label>
+                          <div className="relative">
+                            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#94A3B8]" />
+                            <input id="email" type="email" required placeholder="name@company.com"
+                              value={email} onChange={e => setEmail(e.target.value)}
+                              className={`${inputCls} pl-10`} />
+                          </div>
+                        </div>
 
-                    {mode === 'sign-in' && (
-                      <div className="flex items-center justify-between">
-                        <label className="flex items-center gap-2 text-xs font-medium text-[#64748B] cursor-pointer select-none">
-                          <input type="checkbox" checked={rememberMe} onChange={e => setRememberMe(e.target.checked)}
-                            className="w-3.5 h-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer" />
-                          Remember me
-                        </label>
-                        <button type="button" onClick={() => { setStep('forgot-password-email'); setErrorMsg(null); setSuccessMsg(null); }}
-                          className="text-xs font-semibold text-[#2563EB] hover:text-[#1D4ED8] cursor-pointer transition-colors">
-                          Forgot password?
-                        </button>
+                        {mode === 'sign-in' && (
+                          <div className="flex items-center justify-between">
+                            <label className="flex items-center gap-2 text-xs font-medium text-[#64748B] cursor-pointer select-none">
+                              <input type="checkbox" checked={rememberMe} onChange={e => setRememberMe(e.target.checked)}
+                                className="w-3.5 h-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer" />
+                              Remember me
+                            </label>
+                            <button type="button" onClick={() => { setStep('forgot-password-email'); setErrorMsg(null); setSuccessMsg(null); }}
+                              className="text-xs font-semibold text-[#2563EB] hover:text-[#1D4ED8] cursor-pointer transition-colors">
+                              Forgot password?
+                            </button>
+                          </div>
+                        )}
+
+                        <MorphingButton 
+                          type="submit" 
+                          state={loadingStep === (mode === 'sign-in' ? 'signing-in' : 'sending-otp') ? 'loading' : 'idle'} 
+                          idleText={mode === 'sign-in' ? 'Continue' : 'Send Verification Code'} 
+                          successText="Success"
+                          className="w-full" 
+                        />
+
+                        <p className="text-center text-sm text-[#64748B] pt-3">
+                          {mode === 'sign-in' ? "Don't have an account? " : 'Already have an account? '}
+                          <button type="button" onClick={() => { setMode(mode === 'sign-in' ? 'create-account' : 'sign-in'); setErrorMsg(null); }}
+                            className="font-semibold text-[#2563EB] hover:text-[#1D4ED8] cursor-pointer transition-colors">
+                            {mode === 'sign-in' ? 'Sign up free' : 'Sign in'}
+                          </button>
+                        </p>
+                      </>
+                    ) : (
+                      /* When OTP is disabled, provide an optional password sign-in for existing users */
+                      <div className="pt-1 border-t border-[#E8DDD0] space-y-3">
+                        <details className="group">
+                          <summary className="text-xs font-bold text-[#5C4E3E] cursor-pointer hover:text-[#C2600E] transition-colors py-1 flex items-center justify-between select-none">
+                            <span>Already have an account with a password?</span>
+                            <span className="text-[10px] text-slate-400 group-open:rotate-180 transition-transform">▼</span>
+                          </summary>
+                          <div className="pt-3 space-y-3">
+                            <div>
+                              <label htmlFor="email" className={labelCls}>Email Address</label>
+                              <div className="relative">
+                                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#94A3B8]" />
+                                <input id="email" type="email" placeholder="name@company.com"
+                                  value={email} onChange={e => setEmail(e.target.value)}
+                                  className={`${inputCls} pl-10`} />
+                              </div>
+                            </div>
+                            <MorphingButton 
+                              type="submit" 
+                              state={loadingStep === 'signing-in' ? 'loading' : 'idle'} 
+                              idleText="Sign In with Password" 
+                              successText="Success"
+                              className="w-full" 
+                            />
+                          </div>
+                        </details>
                       </div>
                     )}
-
-                    <MorphingButton 
-                      type="submit" 
-                      state={loadingStep === (mode === 'sign-in' ? 'signing-in' : 'sending-otp') ? 'loading' : 'idle'} 
-                      idleText={mode === 'sign-in' ? 'Continue' : 'Send Verification Code'} 
-                      successText="Success"
-                      className="w-full" 
-                    />
-
-                    <p className="text-center text-sm text-[#64748B] pt-3">
-                      {mode === 'sign-in' ? "Don't have an account? " : 'Already have an account? '}
-                      <button type="button" onClick={() => { setMode(mode === 'sign-in' ? 'create-account' : 'sign-in'); setErrorMsg(null); }}
-                        className="font-semibold text-[#2563EB] hover:text-[#1D4ED8] cursor-pointer transition-colors">
-                        {mode === 'sign-in' ? 'Sign up free' : 'Sign in'}
-                      </button>
-                    </p>
                   </form>
                 )}
 
                 {/* STEP: OTP Input */}
-                {(step === 'otp-input' || step === 'forgot-password-otp') && (
+                {OTP_LOGIN_ENABLED && (step === 'otp-input' || step === 'forgot-password-otp') && (
                   <form onSubmit={handleVerifyOtp} className="space-y-4">
                     <div>
                       <label htmlFor="otp" className={labelCls}>6-Digit Code</label>
@@ -661,7 +724,7 @@ export default function AuthPage() {
                   <div className="mt-5 p-4 bg-amber-50 border border-amber-200 rounded-xl">
                     <p className="text-xs font-bold text-amber-800 mb-2">Database Setup Required</p>
                     <p className="text-xs text-amber-700 mb-2">Run this SQL in the Supabase Dashboard:</p>
-                    <pre className="text-[10px] bg-white border border-amber-100 rounded-lg p-2.5 overflow-x-auto font-mono text-slate-700 select-all">{missingTableSql}</pre>
+                    <pre className="text-[10px] bg-[#F6EFE4] border border-amber-100 rounded-lg p-2.5 overflow-x-auto font-mono text-slate-700 select-all">{missingTableSql}</pre>
                   </div>
                 )}
 
