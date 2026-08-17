@@ -138,8 +138,38 @@
   --glass-radius-xl: 32px;
   --glass-pill: 9999px;
 
-  /* Glass backgrounds — Thin, crystalline liquid glass with vibrant chromatic color intensity */
-  --glass-bg-primary:
+  /* Pure Neutral Crystalline Glass Backgrounds (Zero Color Gradient) */
+  --glass-bg-primary: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.72) 0%,
+    rgba(255, 255, 255, 0.45) 50%,
+    rgba(255, 255, 255, 0.58) 100%
+  );
+  --glass-bg-base: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.68) 0%,
+    rgba(255, 255, 255, 0.42) 50%,
+    rgba(255, 255, 255, 0.55) 100%
+  );
+  --glass-bg-secondary: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 255, 255, 0.38) 50%,
+    rgba(255, 255, 255, 0.48) 100%
+  );
+  --glass-bg-nested: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.45) 0%,
+    rgba(255, 255, 255, 0.30) 100%
+  );
+  --glass-bg-active: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.88) 0%,
+    rgba(245, 250, 255, 0.75) 100%
+  );
+
+  /* Special Navbar Chromatic Glass Background (Amber to Blue Horizontal) */
+  --glass-bg-nav:
     linear-gradient(
       90deg,
       rgba(225, 108, 12, 0.18) 0%,
@@ -154,39 +184,6 @@
       rgba(255, 255, 255, 0.22) 50%,
       rgba(255, 255, 255, 0.38) 100%
     );
-
-  --glass-bg-base:
-    linear-gradient(
-      90deg,
-      rgba(225, 108, 12, 0.16) 0%,
-      rgba(245, 150, 40, 0.08) 22%,
-      rgba(255, 255, 255, 0.32) 50%,
-      rgba(30, 140, 220, 0.08) 78%,
-      rgba(14, 115, 190, 0.16) 100%
-    ),
-    linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.45) 0%,
-      rgba(255, 255, 255, 0.20) 50%,
-      rgba(255, 255, 255, 0.35) 100%
-    );
-
-  --glass-bg-secondary: linear-gradient(
-    135deg,
-    rgba(255, 248, 235, 0.55) 0%,
-    rgba(255, 255, 255, 0.38) 50%,
-    rgba(230, 240, 250, 0.48) 100%
-  );
-  --glass-bg-nested: linear-gradient(
-    135deg,
-    rgba(255, 248, 235, 0.45) 0%,
-    rgba(230, 240, 250, 0.30) 100%
-  );
-  --glass-bg-active: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.88) 0%,
-    rgba(245, 250, 255, 0.75) 100%
-  );
 
   /* Glass borders — Crisp specular edges */
   --glass-border: rgba(255, 255, 255, 0.90);
@@ -799,7 +796,31 @@ body {
 
 /* ── Glass Cards & Surfaces (Material Only) ─────────────────── */
 
-.liquid-glass-surface {
+/* ── Glass Nav Bar (Chromatic Horizontal Amber-to-Blue Refraction) ── */
+.liquid-glass-nav {
+  background: var(--glass-bg-nav);
+  backdrop-filter: blur(var(--glass-blur-lg)) saturate(var(--glass-saturation));
+  -webkit-backdrop-filter: blur(var(--glass-blur-lg)) saturate(var(--glass-saturation));
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+.liquid-glass-nav::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.85), transparent);
+  pointer-events: none;
+  z-index: 20;
+}
+
+/* ── Pure Neutral Glass Surface & Dock & Circle (ZERO Gradient) ───── */
+.liquid-glass-surface,
+.liquid-glass-dock,
+.liquid-glass-circle {
   background: var(--glass-bg-primary);
   backdrop-filter: blur(var(--glass-blur-lg)) saturate(var(--glass-saturation));
   -webkit-backdrop-filter: blur(var(--glass-blur-lg)) saturate(var(--glass-saturation));
@@ -807,7 +828,12 @@ body {
   box-shadow: var(--glass-shadow);
 }
 
-.liquid-glass-surface::before {
+.liquid-glass-circle {
+  border-radius: 9999px;
+}
+
+.liquid-glass-surface::before,
+.liquid-glass-dock::before {
   content: '';
   position: absolute;
   top: 0;

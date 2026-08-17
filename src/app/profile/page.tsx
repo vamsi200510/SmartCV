@@ -217,7 +217,7 @@ export default function ProfilePage() {
       <ColorMeshBackdrop />
       {/* Floating Liquid Glass Top Header */}
       <header className="fixed top-4 inset-x-0 z-40 px-4 sm:px-6 max-w-5xl mx-auto pointer-events-none">
-        <div className="liquid-glass-surface rounded-[28px] px-5 py-2.5 flex items-center justify-between shadow-lg pointer-events-auto border border-white/80">
+        <div className="liquid-glass-nav rounded-[28px] px-5 py-2.5 flex items-center justify-between shadow-lg pointer-events-auto border border-white/80">
           <div className="flex items-center gap-3">
             <button onClick={() => router.push('/dashboard')} className="h-8 w-8 rounded-full bg-white/70 border border-white/80 flex items-center justify-center text-slate-700 hover:text-[#241C12] transition cursor-pointer shadow-xs">
               <ArrowLeft size={14} />

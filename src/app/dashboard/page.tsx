@@ -567,7 +567,7 @@ export default function DashboardPage() {
           Centered nav items, logo left, user right
           ============================================================ */}
       <header className="fixed top-4 inset-x-0 z-50 px-4 sm:px-6 max-w-[1320px] mx-auto pointer-events-none">
-        <div className="liquid-glass-surface rounded-[28px] px-5 py-2.5 flex items-center justify-between shadow-md pointer-events-auto border border-white/80">
+        <div className="liquid-glass-nav rounded-[28px] px-5 py-2.5 flex items-center justify-between shadow-md pointer-events-auto border border-white/80">
           {/* Logo */}
           <div className="flex items-center gap-2.5 shrink-0">
             <div className="h-8 w-8 rounded-xl bg-white/70 border border-white/80 flex items-center justify-center shadow-xs">

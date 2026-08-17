@@ -86,7 +86,7 @@ export default function LandingPage() {
 
       {/* ── FLOATING LIQUID GLASS NAVBAR ── */}
       <header className="fixed top-4 inset-x-0 z-50 px-4 sm:px-6 max-w-7xl mx-auto pointer-events-none">
-        <div className="liquid-glass-surface rounded-[28px] px-5 py-2.5 flex items-center justify-between shadow-lg pointer-events-auto border border-white/80">
+        <div className="liquid-glass-nav rounded-[28px] px-5 py-2.5 flex items-center justify-between shadow-lg pointer-events-auto border border-white/80">
           <Link href="/" className="flex items-center gap-2.5 shrink-0">
             <div className="w-8 h-8 rounded-xl bg-white/70 border border-white/80 flex items-center justify-center shadow-xs">
               <img src="/SmartCV_logo.png" alt="Logo" className="h-5 w-5 object-contain" />

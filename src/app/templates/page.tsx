@@ -201,7 +201,7 @@ export default function TemplatesPage() {
 
       {/* ── FLOATING LIQUID GLASS NAVBAR ── */}
       <header className="fixed top-4 inset-x-0 z-50 px-4 sm:px-6 max-w-7xl mx-auto pointer-events-none">
-        <div className="liquid-glass-surface rounded-[28px] px-5 py-2.5 flex items-center justify-between shadow-lg pointer-events-auto border border-white/80">
+        <div className="liquid-glass-nav rounded-[28px] px-5 py-2.5 flex items-center justify-between shadow-lg pointer-events-auto border border-white/80">
           <div className="flex items-center gap-3">
             <button
               onClick={() => isBuilderContext && builderResumeId

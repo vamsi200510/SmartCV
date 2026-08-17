@@ -27,7 +27,7 @@ export default function AboutPage() {
 
       {/* Floating Liquid Glass Navbar */}
       <header className="fixed top-4 inset-x-0 z-50 px-4 sm:px-6 max-w-5xl mx-auto pointer-events-none">
-        <div className="liquid-glass-surface rounded-full px-5 py-2.5 flex items-center justify-between shadow-lg pointer-events-auto border border-white/80">
+        <div className="liquid-glass-nav rounded-full px-5 py-2.5 flex items-center justify-between shadow-lg pointer-events-auto border border-white/80">
           <div className="flex items-center gap-3">
             <Link href="/" className="h-8 w-8 rounded-full bg-white/80 hover:bg-white border border-[#E8DDD0] flex items-center justify-center text-[#5C4E3E] hover:text-[#241C12] transition shadow-xs">
               <ArrowLeft size={14} />
