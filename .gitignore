@@ -48,3 +48,4 @@ get-otp.js
 otp-watcher.js
 fix_sections.js
 public/otp.txt
+.vercel

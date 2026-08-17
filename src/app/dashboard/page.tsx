@@ -152,7 +152,13 @@ export default function DashboardPage() {
       const formData = new FormData();
       formData.append('file', file);
       const response = await fetch('/api/resumes/import', { method: 'POST', body: formData });
-      const result = await response.json();
+      const text = await response.text();
+      let result: any = {};
+      try {
+        result = JSON.parse(text);
+      } catch {
+        throw new Error(`Server returned status ${response.status}. Please check file size and format.`);
+      }
       if (!response.ok) {
         throw new Error(result.error || 'Unable to extract resume data. Please complete fields manually.');
       }
