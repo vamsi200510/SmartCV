@@ -43,7 +43,7 @@ export default function FloatingAIAssistant({ onOpen, isOpen }: FloatingAIAssist
 
   if (isOpen || !position) return null;
 
-  const cursorStyle = isDragging ? 'grabbing' : 'grab';
+  const cursorStyle = isDragging ? 'move' : 'pointer';
 
   return (
     <motion.div
@@ -55,7 +55,7 @@ export default function FloatingAIAssistant({ onOpen, isOpen }: FloatingAIAssist
       animate={{ x: position.x, y: position.y }}
       transition={{ type: 'spring', stiffness: 400, damping: 28 }}
       style={{ position: 'fixed', top: 0, left: 0, zIndex: 50, cursor: cursorStyle }}
-      className="touch-none select-none"
+      className="touch-none select-none cursor-pointer"
     >
       <motion.button
         onClick={() => { if (!isDragging) onOpen(); }}

@@ -9,13 +9,15 @@ import {
   ArrowLeft, Maximize2, Loader2, Check, AlertCircle,
   Download, Eye, Columns, FileText as FileTextIcon, Palette,
   LayoutTemplate, Shield, CheckCircle2, Lightbulb, X,
-  Pencil, ChevronDown, RotateCcw, RotateCw, Minus, Plus, User as UserIcon, Settings, Home, LogOut
+  Pencil, ChevronDown, RotateCcw, RotateCw, Minus, Plus, User as UserIcon, Settings, Home, LogOut,
+  Move, Hand, ChevronRight, ChevronLeft, MessageSquareHeart
 } from 'lucide-react';
 import TemplateRenderer, { defaultSampleData } from '@/components/TemplateRenderer';
 import ResumeBuilderForm from '@/components/ResumeBuilderForm';
 import DesignWorkspace from '@/components/DesignWorkspace';
 import AIChatPanel, { AIPanelMode } from '@/components/AIChatPanel';
 import FloatingAIAssistant from '@/components/FloatingAIAssistant';
+import FeedbackModal from '@/components/FeedbackModal';
 import { ColorMeshBackdrop } from '@/components/ui/ColorMeshBackdrop';
 import { ResumeTemplate } from '@/types/database.types';
 import { AIService, ChatMessage } from '@/lib/ai/aiService';
@@ -38,6 +40,291 @@ const TEMPLATE_METADATA: ResumeTemplate[] = [
 
 type ViewMode = 'form' | 'design' | 'split' | 'preview';
 
+type CornerType = 'nw' | 'ne' | 'se' | 'sw';
+
+interface BuilderPreviewPaneProps {
+  viewMode: ViewMode;
+  selectedTemplate: any;
+  previewData: any;
+  zoom: number;
+  setZoom: React.Dispatch<React.SetStateAction<number>>;
+  isDragging: boolean;
+}
+
+function BuilderPreviewPane({
+  viewMode,
+  selectedTemplate,
+  previewData,
+  zoom,
+  setZoom,
+  isDragging,
+}: BuilderPreviewPaneProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState<number>(0.65);
+  const [canvasHeight, setCanvasHeight] = useState<number>(1123);
+
+  // Pan / Movable state: allows user to freely drag the canvas anywhere
+  const [panOffset, setPanOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [isPanning, setIsPanning] = useState(false);
+  const panStartRef = useRef<{ startX: number; startY: number; initPanX: number; initPanY: number }>({
+    startX: 0,
+    startY: 0,
+    initPanX: 0,
+    initPanY: 0,
+  });
+
+  // Corner resize state
+  const [isResizingCorner, setIsResizingCorner] = useState<CornerType | null>(null);
+
+  // Continuous ResizeObserver on container to track available width smoothly during divider drag
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const w = entry.contentRect.width;
+        if (w > 0) {
+          // Generous breathing room: 64px horizontal margin
+          const availableW = Math.max(100, w - 64);
+          // Scale to comfortable 72% fit (max 0.85 scale) so the document floats with spacious margins
+          const fit = Math.min(0.85, (availableW * 0.72) / 794);
+          setScale(Math.max(0.18, fit));
+        }
+      }
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  // Track dynamic height of rendered template canvas
+  useEffect(() => {
+    const cEl = canvasRef.current;
+    if (!cEl) return;
+
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const h = entry.contentRect.height;
+        if (h > 0) {
+          setCanvasHeight(h);
+        }
+      }
+    });
+    ro.observe(cEl);
+    return () => ro.disconnect();
+  }, [selectedTemplate, previewData]);
+
+  // Mouse pan handlers: drag canvas background to move anywhere
+  const handleCanvasMouseDown = (e: React.MouseEvent) => {
+    // Only left click on canvas background starts pan
+    if (e.button !== 0 || isResizingCorner) return;
+    setIsPanning(true);
+    panStartRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      initPanX: panOffset.x,
+      initPanY: panOffset.y,
+    };
+  };
+
+  const handleCanvasMouseMove = (e: React.MouseEvent) => {
+    if (!isPanning) return;
+    const dx = e.clientX - panStartRef.current.startX;
+    const dy = e.clientY - panStartRef.current.startY;
+    setPanOffset({
+      x: panStartRef.current.initPanX + dx,
+      y: panStartRef.current.initPanY + dy,
+    });
+  };
+
+  const handleCanvasMouseUp = () => {
+    setIsPanning(false);
+  };
+
+  const handleResetPosition = () => {
+    setPanOffset({ x: 0, y: 0 });
+    setZoom(100);
+  };
+
+  // Corner resize handler: drag corner handles to adjust document scale in real time
+  const handleCornerMouseDown = (e: React.MouseEvent, corner: CornerType) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setIsResizingCorner(corner);
+
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const startZoom = zoom;
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      const dx = moveEvent.clientX - startX;
+      const dy = moveEvent.clientY - startY;
+
+      let delta = 0;
+      if (corner === 'se') {
+        delta = (dx + dy) * 0.35;
+      } else if (corner === 'sw') {
+        delta = (-dx + dy) * 0.35;
+      } else if (corner === 'ne') {
+        delta = (dx - dy) * 0.35;
+      } else if (corner === 'nw') {
+        delta = (-dx - dy) * 0.35;
+      }
+
+      const newZoom = Math.round(Math.max(30, Math.min(200, startZoom + delta)));
+      setZoom(newZoom);
+    };
+
+    const onMouseUp = () => {
+      setIsResizingCorner(null);
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+  };
+
+  const effectiveScale = scale * (zoom / 100);
+  const scaledWidth = Math.round(794 * effectiveScale);
+  const scaledHeight = Math.round(canvasHeight * effectiveScale);
+
+  return (
+    <section
+      className={`flex flex-col relative rounded-2xl bg-[#F5EFEB] border border-[#E8DDD0] h-full min-h-0 overflow-hidden select-none ${
+        viewMode === 'preview' ? 'flex-1' : 'w-full lg:flex-1'
+      }`}
+    >
+      {/* ── Top Floating Mini Canvas Control Bar ──────────────── */}
+      <div className="absolute top-3 left-3 right-3 z-20 flex items-center justify-between pointer-events-none">
+        {/* Status / Drag Hint */}
+        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 backdrop-blur-md border border-[#E8DDD0] shadow-xs text-[11px] font-bold text-[#5C4E3E] pointer-events-auto">
+          <Move size={12} className="text-[#C2600E]" />
+          <span>Move & resize corners</span>
+          {(panOffset.x !== 0 || panOffset.y !== 0) && (
+            <span className="text-[10px] text-[#9A8C7E] font-mono">
+              ({panOffset.x > 0 ? `+${Math.round(panOffset.x)}` : Math.round(panOffset.x)}px, {panOffset.y > 0 ? `+${Math.round(panOffset.y)}` : Math.round(panOffset.y)}px)
+            </span>
+          )}
+        </div>
+
+        {/* Action buttons: Center / Fit */}
+        <div className="flex items-center gap-1.5 pointer-events-auto">
+          {(panOffset.x !== 0 || panOffset.y !== 0 || zoom !== 100) && (
+            <button
+              onClick={handleResetPosition}
+              className="px-2.5 py-1 rounded-full bg-white/95 hover:bg-white text-[11px] font-bold text-[#C2600E] border border-[#E8DDD0] hover:border-[#C2600E] shadow-xs flex items-center gap-1 transition cursor-pointer"
+              title="Reset position and center resume"
+            >
+              <RotateCcw size={11} />
+              <span>Center</span>
+            </button>
+          )}
+          <button
+            onClick={() => { setZoom(100); setPanOffset({ x: 0, y: 0 }); }}
+            className="px-2.5 py-1 rounded-full bg-white/95 hover:bg-white text-[11px] font-bold text-[#241C12] border border-[#E8DDD0] hover:border-[#C2600E] shadow-xs flex items-center gap-1 transition cursor-pointer"
+            title="Auto-fit to available window"
+          >
+            <Maximize2 size={11} className="text-slate-600" />
+            <span>Fit</span>
+          </button>
+        </div>
+      </div>
+
+      {/* ── Movable Infinite Preview Canvas ───────────────────── */}
+      <div
+        ref={containerRef}
+        id="resume-preview-container"
+        onMouseDown={handleCanvasMouseDown}
+        onMouseMove={handleCanvasMouseMove}
+        onMouseUp={handleCanvasMouseUp}
+        onMouseLeave={handleCanvasMouseUp}
+        onDoubleClick={handleResetPosition}
+        style={{
+          cursor: isPanning ? 'move' : 'default',
+        }}
+        className="flex-1 overflow-auto p-8 pt-14 pb-36 flex items-center justify-center custom-scrollbar min-h-0 relative touch-none select-none"
+      >
+        {selectedTemplate ? (
+          <div
+            className="relative shrink-0 flex items-center justify-center m-auto group/canvas"
+            style={{
+              width: `${scaledWidth}px`,
+              height: `${scaledHeight}px`,
+              minHeight: `${Math.round(1123 * effectiveScale)}px`,
+              transform: `translate3d(${panOffset.x}px, ${panOffset.y}px, 0)`,
+              transition: isPanning || isDragging || isResizingCorner ? 'none' : 'transform 0.15s ease-out, width 0.12s ease-out, height 0.12s ease-out',
+            }}
+          >
+            {/* Resume Document Paper */}
+            <div
+              ref={canvasRef}
+              id="resume-preview-document"
+              className="bg-white shadow-[0_16px_50px_rgba(36,28,18,0.12),0_2px_10px_rgba(36,28,18,0.06)] ring-1 ring-black/5 resume-paper origin-top-left absolute top-0 left-0"
+              style={{
+                width: '794px',
+                minHeight: '1123px',
+                transform: `scale(${effectiveScale})`,
+                transformOrigin: 'top left',
+                transition: isDragging || isResizingCorner ? 'none' : 'transform 0.12s ease-out',
+              }}
+            >
+              <TemplateRenderer templateId={selectedTemplate.id} data={previewData} zoom={100} />
+            </div>
+
+            {/* ── Interactive 4-Corner Size Adjusting Handles ──────── */}
+            {/* Top-Left Corner Handle */}
+            <div
+              onMouseDown={(e) => handleCornerMouseDown(e, 'nw')}
+              title="Drag to resize resume"
+              style={{ cursor: 'nwse-resize' }}
+              className="absolute -top-2 -left-2 h-4 w-4 rounded-full bg-white border-2 border-[#C2600E] shadow-md z-30 cursor-nwse-resize hover:scale-125 transition-transform opacity-70 group-hover/canvas:opacity-100 flex items-center justify-center"
+            >
+              <div className="h-1.5 w-1.5 rounded-full bg-[#C2600E]" />
+            </div>
+
+            {/* Top-Right Corner Handle */}
+            <div
+              onMouseDown={(e) => handleCornerMouseDown(e, 'ne')}
+              title="Drag to resize resume"
+              style={{ cursor: 'nesw-resize' }}
+              className="absolute -top-2 -right-2 h-4 w-4 rounded-full bg-white border-2 border-[#C2600E] shadow-md z-30 cursor-nesw-resize hover:scale-125 transition-transform opacity-70 group-hover/canvas:opacity-100 flex items-center justify-center"
+            >
+              <div className="h-1.5 w-1.5 rounded-full bg-[#C2600E]" />
+            </div>
+
+            {/* Bottom-Left Corner Handle */}
+            <div
+              onMouseDown={(e) => handleCornerMouseDown(e, 'sw')}
+              title="Drag to resize resume"
+              style={{ cursor: 'nesw-resize' }}
+              className="absolute -bottom-2 -left-2 h-4 w-4 rounded-full bg-white border-2 border-[#C2600E] shadow-md z-30 cursor-nesw-resize hover:scale-125 transition-transform opacity-70 group-hover/canvas:opacity-100 flex items-center justify-center"
+            >
+              <div className="h-1.5 w-1.5 rounded-full bg-[#C2600E]" />
+            </div>
+
+            {/* Bottom-Right Corner Handle */}
+            <div
+              onMouseDown={(e) => handleCornerMouseDown(e, 'se')}
+              title="Drag to resize resume"
+              style={{ cursor: 'nwse-resize' }}
+              className="absolute -bottom-2 -right-2 h-4 w-4 rounded-full bg-white border-2 border-[#C2600E] shadow-md z-30 cursor-nwse-resize hover:scale-125 transition-transform opacity-70 group-hover/canvas:opacity-100 flex items-center justify-center"
+            >
+              <div className="h-1.5 w-1.5 rounded-full bg-[#C2600E]" />
+            </div>
+          </div>
+        ) : (
+          <div className="h-full flex flex-col items-center justify-center text-slate-500 gap-3">
+            <Loader2 size={24} className="animate-spin text-[#C2600E]" />
+            <span className="text-xs font-medium">Preparing canvas…</span>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
 export default function BuilderPage() {
   const { user, profile, logout } = useAuth();
   const router = useRouter();
@@ -48,13 +335,14 @@ export default function BuilderPage() {
   const [loading, setLoading] = useState(true);
   const [selectedTemplate, setSelectedTemplate] = useState<ResumeTemplate | null>(null);
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved');
-  const [zoom, setZoom] = useState(65);
+  const [zoom, setZoom] = useState(100);
   const [viewMode, setViewMode] = useState<ViewMode>('split');
   const [isPreviewingPdf, setIsPreviewingPdf] = useState(false);
   const [pdfExporting, setPdfExporting] = useState(false);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState('');
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
   const [aiPanelOpen, setAiPanelOpen] = useState(false);
@@ -64,18 +352,19 @@ export default function BuilderPage() {
   const [history, setHistory] = useState<any[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
 
-  // Split pane resizer state & persistence
-  const [editorWidthPercent, setEditorWidthPercent] = useState<number>(38);
+  // Split pane resizer state & persistence (Balanced 46% form / 54% preview split)
+  const [editorWidthPercent, setEditorWidthPercent] = useState<number>(46);
   const [isDragging, setIsDragging] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Draggable right action rail state
   const [dockPosition, setDockPosition] = useState<{ x: number; y: number } | null>(null);
   const [isDockDragging, setIsDockDragging] = useState(false);
+  const [isDockCollapsed, setIsDockCollapsed] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      setDockPosition({ x: window.innerWidth - 86, y: 68 });
+      setDockPosition({ x: window.innerWidth - 82, y: 72 });
     }
   }, []);
 
@@ -85,7 +374,7 @@ export default function BuilderPage() {
       const saved = localStorage.getItem('smartcv-builder-panel-width');
       if (saved) {
         const parsed = parseFloat(saved);
-        if (!isNaN(parsed) && parsed >= 20 && parsed <= 65) {
+        if (!isNaN(parsed) && parsed >= 20 && parsed <= 75) {
           setEditorWidthPercent(parsed);
         }
       }
@@ -116,9 +405,9 @@ export default function BuilderPage() {
         if (containerWidth <= 0) return;
 
         const mouseX = e.clientX - rect.left;
-        const minEditorWidthPx = 340;
-        const minPreviewWidthPx = 500;
-        const maxEditorWidthPx = Math.min(containerWidth * 0.65, containerWidth - minPreviewWidthPx);
+        const minEditorWidthPx = 320;
+        const minPreviewWidthPx = 280;
+        const maxEditorWidthPx = Math.min(containerWidth * 0.75, containerWidth - minPreviewWidthPx);
 
         const clampedX = Math.max(minEditorWidthPx, Math.min(mouseX, maxEditorWidthPx));
         const newPercent = (clampedX / containerWidth) * 100;
@@ -659,33 +948,6 @@ export default function BuilderPage() {
     { id: 'preview', label: 'Preview', icon: Eye },
   ];
 
-  const PreviewPane = () => (
-    <section className={`flex flex-col relative rounded-2xl bg-[#F5EFEB] border border-[#E8DDD0] h-full min-h-0 overflow-hidden ${viewMode === 'preview' ? 'flex-1' : 'w-full lg:flex-1'}`}>
-      {/* Right Preview container is fixed; inside, it has its own independent scrollbar */}
-      <div className="flex-1 overflow-y-auto p-4 pb-24 flex justify-center items-start custom-scrollbar min-h-0">
-        {selectedTemplate ? (
-          <div
-            className="origin-top transition-all duration-200 bg-white resume-canvas-shadow shrink-0 resume-paper"
-            style={{
-              width: '794px',
-              transform: `scale(${zoom / 100})`,
-              transformOrigin: 'center top',
-              marginBottom: `${-(100 - zoom) * 7.94}px`,
-              minHeight: '1123px',
-            }}
-          >
-            <TemplateRenderer templateId={selectedTemplate.id} data={previewData} zoom={100} />
-          </div>
-        ) : (
-          <div className="h-full flex flex-col items-center justify-center text-slate-500 gap-3">
-            <Loader2 size={24} className="animate-spin text-[#C2600E]" />
-            <span className="text-xs font-medium">Preparing canvas…</span>
-          </div>
-        )}
-      </div>
-    </section>
-  );
-
   return (
     <div className="h-screen max-h-screen overflow-hidden flex flex-col font-[Inter,sans-serif] level-0-base text-[#241C12] relative color-mesh-backdrop">
       <ColorMeshBackdrop />
@@ -790,9 +1052,19 @@ export default function BuilderPage() {
           ))}
         </div>
 
-        {/* Right: Saved Status + Profile Dropdown Menu */}
-        <div className="flex items-center gap-3.5 shrink-0">
-          <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full badge-emerald font-bold text-[11px] shadow-xs">
+        {/* Right: Feedback + Saved Status + Profile Dropdown Menu */}
+        <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+          {/* Feedback Trigger Button */}
+          <button
+            onClick={() => setFeedbackModalOpen(true)}
+            className="h-8 px-3 rounded-full bg-[#FAF6F2] hover:bg-[#F5EFEB] border border-[#E8DDD0] hover:border-[#C2600E] text-xs font-bold text-[#5C4E3E] hover:text-[#C2600E] flex items-center gap-1.5 transition cursor-pointer shadow-2xs group"
+            title="Share feedback, feature ideas, or report a bug"
+          >
+            <MessageSquareHeart size={14} className="text-[#C2600E] group-hover:scale-110 transition-transform" />
+            <span className="hidden sm:inline">Feedback</span>
+          </button>
+
+          <span className="hidden md:inline-flex items-center gap-1 px-2.5 py-1 rounded-full badge-emerald font-bold text-[11px] shadow-xs">
             <Check size={12} className="text-[#1F7A3D]" /> Saved
           </span>
 
@@ -842,6 +1114,13 @@ export default function BuilderPage() {
                   <Home size={14} className="text-[#5C4E3E]" /> Dashboard
                 </button>
 
+                <button
+                  onClick={() => { setFeedbackModalOpen(true); setProfileMenuOpen(false); }}
+                  className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-[#C2600E] hover:bg-[#FAF6F2] cursor-pointer transition-colors"
+                >
+                  <MessageSquareHeart size={14} className="text-[#C2600E]" /> Send Feedback
+                </button>
+
                 <div className="my-1 border-t border-[#E8DDD0]" />
 
                 <button
@@ -869,10 +1148,10 @@ export default function BuilderPage() {
           onDragEnd={(_, info) => {
             setTimeout(() => setIsDockDragging(false), 50);
             if (typeof window === 'undefined') return;
-            const currentX = (dockPosition?.x ?? window.innerWidth - 86) + info.offset.x;
-            const currentY = (dockPosition?.y ?? 68) + info.offset.y;
+            const currentX = (dockPosition?.x ?? window.innerWidth - 82) + info.offset.x;
+            const currentY = (dockPosition?.y ?? 72) + info.offset.y;
             const snapToRight = currentX > window.innerWidth / 2;
-            const targetX = snapToRight ? window.innerWidth - 86 : 16;
+            const targetX = snapToRight ? window.innerWidth - (isDockCollapsed ? 48 : 82) : 16;
             const targetY = Math.max(56, Math.min(window.innerHeight - 250, currentY));
             setDockPosition({ x: targetX, y: targetY });
           }}
@@ -885,64 +1164,119 @@ export default function BuilderPage() {
             zIndex: 45,
             cursor: isDockDragging ? 'grabbing' : 'grab',
           }}
-          className="hidden xl:flex flex-col rounded-[26px] liquid-glass-surface border border-white/80 shadow-2xl p-2 items-center gap-2 touch-none select-none"
+          className={`hidden xl:flex flex-col rounded-[26px] liquid-glass-surface border border-white/80 shadow-2xl p-2 items-center gap-2 touch-none select-none transition-all ${
+            isDockCollapsed ? 'w-10' : 'w-auto'
+          }`}
           title="Drag to reposition action dock"
         >
-          {/* Subtle top drag handle bar */}
-          <div className="w-5 h-1 rounded-full bg-slate-400/50 mb-0.5" />
+          {/* Top Header with Drag Bar and Collapse Toggle */}
+          <div className="w-full flex items-center justify-between gap-1 px-1">
+            <div className="w-4 h-1 rounded-full bg-slate-400/50 mx-auto" />
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsDockCollapsed(prev => !prev);
+              }}
+              className="h-4 w-4 rounded-full bg-white/70 hover:bg-white flex items-center justify-center text-slate-600 hover:text-[#C2600E] shadow-2xs transition cursor-pointer"
+              title={isDockCollapsed ? 'Expand tool rail' : 'Collapse tool rail'}
+            >
+              {isDockCollapsed ? <ChevronLeft size={10} /> : <ChevronRight size={10} />}
+            </button>
+          </div>
 
-          {/* Section 1: ATS Analysis — Dynamic Score */}
-          <button
-            onClick={() => {
-              if (!isDockDragging) {
-                setAtsModalOpen(true);
-                if (!atsResults) runAtsAnalysis();
-              }
-            }}
-            className={`w-[62px] py-2.5 flex flex-col items-center justify-center text-center gap-1 rounded-2xl transition-all cursor-pointer group shadow-xs ${
-              currentAtsScore >= 75
-                ? 'bg-[#DCFCE7] border border-[#86EFAC] hover:bg-[#BBF7D0]'
-                : currentAtsScore >= 50
-                ? 'bg-[#FEF3C7] border border-[#FDE68A] hover:bg-[#FDE68A]'
-                : 'bg-[#FEE2E2] border border-[#FCA5A5] hover:bg-[#FECACA]'
-            }`}
-            title="Run Real-Time ATS Analysis (drag rail to move)"
-          >
-            <Shield size={16} className={`${currentAtsScore >= 75 ? 'text-[#1F7A3D]' : currentAtsScore >= 50 ? 'text-[#B5790C]' : 'text-[#B23A2E]'} group-hover:scale-105 transition-transform`} />
-            <span className={`font-bold text-[10px] ${currentAtsScore >= 75 ? 'text-[#1F7A3D]' : currentAtsScore >= 50 ? 'text-[#B5790C]' : 'text-[#B23A2E]'} leading-tight`}>ATS</span>
-            <span className={`px-2 py-0.5 rounded-full text-white font-extrabold text-[9px] shadow-xs ${
-              currentAtsScore >= 75 ? 'bg-[#1F7A3D]' : currentAtsScore >= 50 ? 'bg-[#B5790C]' : 'bg-[#B23A2E]'
-            }`}>
-              {currentAtsScore}%
-            </span>
-          </button>
+          {!isDockCollapsed ? (
+            <>
+              {/* Section 1: ATS Analysis — Dynamic Score */}
+              <button
+                onClick={() => {
+                  if (!isDockDragging) {
+                    setAtsModalOpen(true);
+                    if (!atsResults) runAtsAnalysis();
+                  }
+                }}
+                className={`w-[62px] py-2.5 flex flex-col items-center justify-center text-center gap-1 rounded-2xl transition-all cursor-pointer group shadow-xs ${
+                  currentAtsScore >= 75
+                    ? 'bg-[#DCFCE7] border border-[#86EFAC] hover:bg-[#BBF7D0]'
+                    : currentAtsScore >= 50
+                    ? 'bg-[#FEF3C7] border border-[#FDE68A] hover:bg-[#FDE68A]'
+                    : 'bg-[#FEE2E2] border border-[#FCA5A5] hover:bg-[#FECACA]'
+                }`}
+                title="Run Real-Time ATS Analysis (drag rail to move)"
+              >
+                <Shield size={16} className={`${currentAtsScore >= 75 ? 'text-[#1F7A3D]' : currentAtsScore >= 50 ? 'text-[#B5790C]' : 'text-[#B23A2E]'} group-hover:scale-105 transition-transform`} />
+                <span className={`font-bold text-[10px] ${currentAtsScore >= 75 ? 'text-[#1F7A3D]' : currentAtsScore >= 50 ? 'text-[#B5790C]' : 'text-[#B23A2E]'} leading-tight`}>ATS</span>
+                <span className={`px-2 py-0.5 rounded-full text-white font-extrabold text-[9px] shadow-xs ${
+                  currentAtsScore >= 75 ? 'bg-[#1F7A3D]' : currentAtsScore >= 50 ? 'bg-[#B5790C]' : 'bg-[#B23A2E]'
+                }`}>
+                  {currentAtsScore}%
+                </span>
+              </button>
 
-          {/* Section 2: Change Template — Blue/Sky Tone */}
-          <button
-            onClick={() => {
-              if (!isDockDragging) {
-                router.push(resumeId ? `/dashboard?tab=templates&source=builder&resumeId=${resumeId}` : '/dashboard?tab=templates');
-              }
-            }}
-            className="w-[62px] py-2.5 flex flex-col items-center justify-center text-center gap-1 rounded-2xl bg-[#C7E1F0] border border-[#9BC4DE] hover:bg-[#B3D7EC] transition-all cursor-pointer group shadow-xs"
-            title="Switch template"
-          >
-            <LayoutTemplate size={16} className="text-[#1E6FA8] group-hover:scale-105 transition-transform" />
-            <span className="font-bold text-[10px] text-[#1E6FA8] leading-tight">Template</span>
-          </button>
+              {/* Section 2: Change Template — Blue/Sky Tone */}
+              <button
+                onClick={() => {
+                  if (!isDockDragging) {
+                    router.push(resumeId ? `/dashboard?tab=templates&source=builder&resumeId=${resumeId}` : '/dashboard?tab=templates');
+                  }
+                }}
+                className="w-[62px] py-2.5 flex flex-col items-center justify-center text-center gap-1 rounded-2xl bg-[#C7E1F0] border border-[#9BC4DE] hover:bg-[#B3D7EC] transition-all cursor-pointer group shadow-xs"
+                title="Switch template"
+              >
+                <LayoutTemplate size={16} className="text-[#1E6FA8] group-hover:scale-105 transition-transform" />
+                <span className="font-bold text-[10px] text-[#1E6FA8] leading-tight">Template</span>
+              </button>
 
-          {/* Section 3: Export PDF — Orange Family */}
-          <button
-            onClick={() => {
-              if (!isDockDragging) handleExportPdf();
-            }}
-            disabled={pdfExporting}
-            className="w-[62px] py-2.5 flex flex-col items-center justify-center text-center gap-1 rounded-2xl bg-[#FCE3C7] border border-[#F4B77E] hover:bg-[#F9D0A8] transition-all cursor-pointer group disabled:opacity-50 shadow-xs"
-            title="Download PDF Resume"
-          >
-            {pdfExporting ? <Loader2 size={16} className="animate-spin text-[#C2600E]" /> : <Download size={16} className="text-[#C2600E] group-hover:scale-105 transition-transform" />}
-            <span className="font-bold text-[10px] text-[#C2600E] leading-tight">Export</span>
-          </button>
+              {/* Section 3: Export PDF — Orange Family */}
+              <button
+                onClick={() => {
+                  if (!isDockDragging) handleExportPdf();
+                }}
+                disabled={pdfExporting}
+                className="w-[62px] py-2.5 flex flex-col items-center justify-center text-center gap-1 rounded-2xl bg-[#FCE3C7] border border-[#F4B77E] hover:bg-[#F9D0A8] transition-all cursor-pointer group disabled:opacity-50 shadow-xs"
+                title="Download PDF Resume"
+              >
+                {pdfExporting ? <Loader2 size={16} className="animate-spin text-[#C2600E]" /> : <Download size={16} className="text-[#C2600E] group-hover:scale-105 transition-transform" />}
+                <span className="font-bold text-[10px] text-[#C2600E] leading-tight">Export</span>
+              </button>
+            </>
+          ) : (
+            /* Minimized Icon Stack */
+            <div className="flex flex-col items-center gap-2 py-1">
+              <button
+                onClick={() => {
+                  if (!isDockDragging) {
+                    setAtsModalOpen(true);
+                    if (!atsResults) runAtsAnalysis();
+                  }
+                }}
+                className="h-7 w-7 rounded-xl bg-emerald-100 text-[#1F7A3D] flex items-center justify-center shadow-xs cursor-pointer hover:scale-110 transition-transform"
+                title={`ATS Score: ${currentAtsScore}%`}
+              >
+                <Shield size={14} />
+              </button>
+              <button
+                onClick={() => {
+                  if (!isDockDragging) {
+                    router.push(resumeId ? `/dashboard?tab=templates&source=builder&resumeId=${resumeId}` : '/dashboard?tab=templates');
+                  }
+                }}
+                className="h-7 w-7 rounded-xl bg-sky-100 text-[#1E6FA8] flex items-center justify-center shadow-xs cursor-pointer hover:scale-110 transition-transform"
+                title="Change Template"
+              >
+                <LayoutTemplate size={14} />
+              </button>
+              <button
+                onClick={() => {
+                  if (!isDockDragging) handleExportPdf();
+                }}
+                disabled={pdfExporting}
+                className="h-7 w-7 rounded-xl bg-amber-100 text-[#C2600E] flex items-center justify-center shadow-xs cursor-pointer hover:scale-110 transition-transform disabled:opacity-50"
+                title="Export PDF"
+              >
+                <Download size={14} />
+              </button>
+            </div>
+          )}
         </motion.aside>
       )}
 
@@ -974,10 +1308,10 @@ export default function BuilderPage() {
             <Minus size={12} />
           </button>
           <span className="min-w-[34px] text-center select-none font-mono text-xs font-bold">{zoom}%</span>
-          <button onClick={() => setZoom(p => Math.min(p + 10, 150))} className="h-5 w-5 rounded-full hover:bg-white flex items-center justify-center text-slate-700 hover:text-[#241C12] transition-colors cursor-pointer" title="Zoom in">
+          <button onClick={() => setZoom(p => Math.min(p + 10, 180))} className="h-5 w-5 rounded-full hover:bg-white flex items-center justify-center text-slate-700 hover:text-[#241C12] transition-colors cursor-pointer" title="Zoom in">
             <Plus size={12} />
           </button>
-          <button onClick={() => setZoom(65)} className="h-5 w-5 rounded-full hover:bg-white flex items-center justify-center text-slate-700 hover:text-[#241C12] transition-colors cursor-pointer" title="Reset zoom">
+          <button onClick={() => setZoom(100)} className="h-5 w-5 rounded-full hover:bg-white flex items-center justify-center text-slate-700 hover:text-[#241C12] transition-colors cursor-pointer" title="Reset zoom">
             <Maximize2 size={11} />
           </button>
         </div>
@@ -1072,7 +1406,7 @@ export default function BuilderPage() {
                   isDragging ? 'bg-[#C2600E]/10' : 'hover:bg-[#C2600E]/5'
                 }`}
                 title="Drag to resize workspace panels (double click to reset)"
-                onDoubleClick={() => setEditorWidthPercent(40)}
+                onDoubleClick={() => setEditorWidthPercent(46)}
               >
                 <div
                   style={{ cursor: 'col-resize' }}
@@ -1088,15 +1422,24 @@ export default function BuilderPage() {
                       : 'bg-white border border-[#E8DDD0] group-hover:bg-[#C2600E] group-hover:border-[#C2600E] group-hover:scale-110 group-hover:ring-4 group-hover:ring-[#C2600E]/15'
                   }`}
                 >
-                  <div className={`w-1 h-1 rounded-full ${isDragging ? 'bg-white' : 'bg-[#9A8C7E] group-hover:bg-white'}`} />
-                  <div className={`w-1 h-1 rounded-full ${isDragging ? 'bg-white' : 'bg-[#9A8C7E] group-hover:bg-white'}`} />
-                  <div className={`w-1 h-1 rounded-full ${isDragging ? 'bg-white' : 'bg-[#9A8C7E] group-hover:bg-white'}`} />
+                  <div className={`w-1 h-1 rounded-full pointer-events-none ${isDragging ? 'bg-white' : 'bg-[#9A8C7E] group-hover:bg-white'}`} />
+                  <div className={`w-1 h-1 rounded-full pointer-events-none ${isDragging ? 'bg-white' : 'bg-[#9A8C7E] group-hover:bg-white'}`} />
+                  <div className={`w-1 h-1 rounded-full pointer-events-none ${isDragging ? 'bg-white' : 'bg-[#9A8C7E] group-hover:bg-white'}`} />
                 </div>
               </div>
             )}
 
             {/* Preview panel — shown in 'split', 'design', and 'preview' modes */}
-            {(viewMode === 'split' || viewMode === 'design' || viewMode === 'preview') && <PreviewPane />}
+            {(viewMode === 'split' || viewMode === 'design' || viewMode === 'preview') && (
+              <BuilderPreviewPane
+                viewMode={viewMode}
+                selectedTemplate={selectedTemplate}
+                previewData={previewData}
+                zoom={zoom}
+                setZoom={setZoom}
+                isDragging={isDragging}
+              />
+            )}
 
           </div>
         )}
@@ -1332,6 +1675,14 @@ export default function BuilderPage() {
           </div>
         </div>
       )}
+
+      {/* Feedback Modal */}
+      <FeedbackModal
+        isOpen={feedbackModalOpen}
+        onClose={() => setFeedbackModalOpen(false)}
+        userEmail={user?.email || ''}
+        userName={profile?.full_name || ''}
+      />
     </div>
   );
 }

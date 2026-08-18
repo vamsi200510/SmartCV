@@ -435,8 +435,8 @@ export default function ResumeBuilderForm({
       <div className="flex-1 flex flex-col min-w-0 relative overflow-hidden bg-white">
 
         {/* Content area */}
-        <div className="flex-1 overflow-y-auto p-4 custom-scrollbar pb-20">
-          <div className="max-w-2xl mx-auto space-y-4">
+        <div className="flex-1 overflow-y-auto p-5 md:p-6 custom-scrollbar pb-24">
+          <div className="max-w-2xl mx-auto space-y-5">
 
             {/* ── STEP 1: Personal Information ─────────────── */}
             {activeStep === 1 && (

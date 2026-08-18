@@ -13,12 +13,13 @@ import {
   Shield, Upload, Eye, BadgeCheck, LayoutTemplate,
   PenTool, Paperclip, ClipboardCheck, Bookmark, Star,
   Zap, User, Heart, GraduationCap, Briefcase, Compass,
-  BookOpen, CheckCircle2
+  BookOpen, CheckCircle2, MessageSquareHeart
 } from 'lucide-react';
 import TemplateRenderer from '@/components/TemplateRenderer';
 import A4ResumePreview from '@/components/A4ResumePreview';
 import TemplateDetailsDrawer from '@/components/TemplateDetailsDrawer';
 import TemplatePreviewModal from '@/components/TemplatePreviewModal';
+import FeedbackModal from '@/components/FeedbackModal';
 import { ResumeTemplate } from '@/types/database.types';
 import { Button, Badge, ATSRing } from '@/components/ui/design-system';
 import { ColorMeshBackdrop } from '@/components/ui/ColorMeshBackdrop';
@@ -199,6 +200,7 @@ export default function DashboardPage() {
   const [migrationRequired, setMigrationRequired] = useState(false);
   const [migrationSql, setMigrationSql] = useState<string | null>(null);
   const [isCreatingResume, setIsCreatingResume] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   const [profileName, setProfileName] = useState('');
   const [profileDept, setProfileDept] = useState('IT / Software');
@@ -607,8 +609,17 @@ export default function DashboardPage() {
             })}
           </div>
 
-          {/* Right: Search, Bell, Avatar */}
+          {/* Right: Feedback, Search, Bell, Avatar */}
           <div className="flex items-center gap-2.5">
+            <button
+              onClick={() => setFeedbackOpen(true)}
+              className="h-9 px-3 rounded-full bg-white/60 hover:bg-white border border-[#E8DDD0] hover:border-[#C2600E] text-xs font-bold text-[#5C4E3E] hover:text-[#C2600E] flex items-center gap-1.5 transition cursor-pointer shadow-xs group"
+              title="Share feedback or report an issue"
+            >
+              <MessageSquareHeart size={14} className="text-[#C2600E] group-hover:scale-110 transition-transform" />
+              <span className="hidden sm:inline">Feedback</span>
+            </button>
+
             <button
               onClick={() => setSearchOpen(true)}
               className="h-9 w-9 rounded-full bg-white/50 hover:bg-white/70 border border-white/70 text-slate-700 hover:text-[#241C12] flex items-center justify-center transition cursor-pointer shadow-xs"
@@ -673,6 +684,9 @@ export default function DashboardPage() {
                   </button>
                   <button onClick={() => { setActiveTab('settings'); setStep('dashboard'); setProfileMenuOpen(false); }} className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-[#FCE3C7]/40 hover:text-[#C2600E] cursor-pointer transition-colors">
                     <Settings size={14} /> Settings
+                  </button>
+                  <button onClick={() => { setFeedbackOpen(true); setProfileMenuOpen(false); }} className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-[#C2600E] hover:bg-[#FAF6F2] cursor-pointer transition-colors">
+                    <MessageSquareHeart size={14} className="text-[#C2600E]" /> Send Feedback
                   </button>
                   <button onClick={logout} className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 cursor-pointer transition-colors">
                     <LogOut size={14} /> Log Out
@@ -1914,6 +1928,14 @@ export default function DashboardPage() {
           {toastMsg.text}
         </div>
       )}
+
+      {/* Feedback Modal */}
+      <FeedbackModal
+        isOpen={feedbackOpen}
+        onClose={() => setFeedbackOpen(false)}
+        userEmail={user?.email || ''}
+        userName={profile?.full_name || ''}
+      />
     </div>
   );
 }

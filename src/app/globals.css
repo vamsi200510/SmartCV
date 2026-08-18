@@ -590,7 +590,15 @@ body {
    ============================================================ */
 
 .resume-paper,
-.resume-canvas-paper,
+.resume-canvas-paper {
+  background: #ffffff !important;
+  color: #000000 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+  opacity: 1 !important;
+}
+
 #resume-print-root,
 .print-viewport-document {
   background: #ffffff !important;
@@ -1097,21 +1105,20 @@ button:disabled,
 
 /* Explicit priority cursor classes to prevent button / generic inheritance override */
 .cursor-col-resize,
-[style*="col-resize"],
-div[title*="resize"] {
+[style*="cursor: col-resize"],
+[style*="cursor:col-resize"],
+div[title*="workspace panels"] {
   cursor: col-resize !important;
 }
 
-.cursor-grab,
-button.cursor-grab,
-[style*="grab"] {
-  cursor: grab !important;
-  cursor: -webkit-grab !important;
+.cursor-nwse-resize,
+[style*="cursor: nwse-resize"],
+[style*="cursor:nwse-resize"] {
+  cursor: nwse-resize !important;
 }
 
-.cursor-grabbing,
-button.cursor-grabbing,
-[style*="grabbing"] {
-  cursor: grabbing !important;
-  cursor: -webkit-grabbing !important;
+.cursor-nesw-resize,
+[style*="cursor: nesw-resize"],
+[style*="cursor:nesw-resize"] {
+  cursor: nesw-resize !important;
 }
