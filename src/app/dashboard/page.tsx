@@ -153,21 +153,24 @@ export default function DashboardPage() {
       formData.append('file', file);
       const response = await fetch('/api/resumes/import', { method: 'POST', body: formData });
       const text = await response.text();
-      let result: any = {};
+      let result: any = null;
       try {
         result = JSON.parse(text);
       } catch {
-        throw new Error(`Server returned status ${response.status}. Please check file size and format.`);
+        if (response.status === 504 || response.status === 408) {
+          throw new Error("Resume processing timed out. Please try uploading another file or choose a template.");
+        }
+        throw new Error(`Unable to process document (Server status ${response.status}). Please try another file or select a template.`);
       }
-      if (!response.ok) {
-        throw new Error(result.error || 'Unable to extract resume data. Please complete fields manually.');
+      if (!response.ok || result.success === false) {
+        throw new Error(result?.error || 'Unable to extract resume data from this document. Please try another file.');
       }
       setImportedData(result);
       setSelectedCategoryOverride(result.detectedType);
       setStep('import-summary');
     } catch (err: any) {
-      console.error(err);
-      setImportError(err.message || 'Unable to extract resume data. Please complete fields manually.');
+      console.error('[Dashboard Import Error]', err);
+      setImportError(err.message || 'Unable to extract resume data. Please try another file.');
     } finally {
       setIsImporting(false);
       clearTimeout(warningTimer);

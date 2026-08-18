@@ -2,14 +2,65 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
-// @ts-expect-error -- pdf-parse lacks proper type exports
-import { PDFParse } from 'pdf-parse';
 import * as mammoth from 'mammoth';
 import * as crypto from 'crypto';
 import { extractResume, resemblesResume } from '@/lib/ai/resumeExtractor';
 
+export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
+
+/**
+ * Pure JavaScript PDF text extraction using pdfjs-dist legacy build
+ * Safe for serverless environments (no native Rust/C++ binary addons)
+ */
+async function extractTextFromPdf(buffer: Buffer): Promise<string> {
+  try {
+    const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
+    const uint8 = new Uint8Array(buffer);
+    const doc = await pdfjs.getDocument({
+      data: uint8,
+      isEvalSupported: false,
+      useSystemFonts: true,
+      disableFontFace: true,
+    }).promise;
+
+    let fullText = '';
+    for (let i = 1; i <= doc.numPages; i++) {
+      const page = await doc.getPage(i);
+      const content = await page.getTextContent();
+      const strings = content.items.map((item: any) => item.str || '');
+      fullText += strings.join(' ') + '\n';
+    }
+    return fullText.trim();
+  } catch (err: any) {
+    console.warn('[API-IMPORT] PDF.js extraction warning/error:', err?.message || err);
+    // Fallback: scan for standard text streams if pdfjs encounters an unhandled structure
+    try {
+      const latin1 = buffer.toString('latin1');
+      const textMatches = latin1.match(/\(([^()]{2,})\)[\s]*Tj/g) || latin1.match(/\[([^\[\]]+)\][\s]*TJ/g);
+      if (textMatches && textMatches.length > 5) {
+        return textMatches.map(m => m.replace(/[\(\)\[\]]|Tj|TJ/g, '').trim()).filter(Boolean).join(' ');
+      }
+    } catch {
+      // ignore
+    }
+    return '';
+  }
+}
+
+/**
+ * DOCX text extraction using mammoth
+ */
+async function extractTextFromDocx(buffer: Buffer): Promise<string> {
+  try {
+    const docxResult = await mammoth.extractRawText({ buffer });
+    return docxResult.value || '';
+  } catch (docxErr: any) {
+    console.error('[API-IMPORT] DOCX extraction error:', docxErr?.message || docxErr);
+    return '';
+  }
+}
 
 export async function POST(request: NextRequest) {
   console.log('[API-IMPORT] Received request at /api/resumes/import');
@@ -31,16 +82,25 @@ export async function POST(request: NextRequest) {
       }
     );
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized. Please sign in to import resumes.' }, { status: 401 });
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      console.warn('[API-IMPORT] Unauthorized upload attempt');
+      return NextResponse.json({
+        success: false,
+        code: 'UNAUTHORIZED',
+        error: 'Unauthorized. Please sign in to import resumes.'
+      }, { status: 401 });
     }
 
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
 
     if (!file) {
-      return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
+      return NextResponse.json({
+        success: false,
+        code: 'NO_FILE',
+        error: 'No file was uploaded. Please select a PDF or DOCX file.'
+      }, { status: 400 });
     }
 
     console.log('[DEBUG-STAGE-1] Received upload:', {
@@ -51,14 +111,18 @@ export async function POST(request: NextRequest) {
 
     // 10MB size limit validation
     if (file.size > 10 * 1024 * 1024) {
-      return NextResponse.json({ error: 'File exceeds maximum size limit of 10MB.' }, { status: 400 });
+      return NextResponse.json({
+        success: false,
+        code: 'FILE_TOO_LARGE',
+        error: 'File exceeds maximum size limit of 10MB.'
+      }, { status: 400 });
     }
 
     const extractionStart = Date.now();
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
     
-    // Calculate SHA-256 file hash
+    // Calculate SHA-256 file hash for caching
     const fileHash = crypto.createHash('sha256').update(buffer).digest('hex');
 
     // --- SHA-256 Content-Hash Caching ---
@@ -100,7 +164,7 @@ export async function POST(request: NextRequest) {
         };
 
         // Create a brand-new draft
-        let newResume = null;
+        let newResume: any = null;
         const insertPayload: any = {
           user_id: user.id,
           title: `Imported - ${file.name.replace(/\.[^/.]+$/, '')}`,
@@ -151,25 +215,25 @@ export async function POST(request: NextRequest) {
 
     // --- Extract Document Content ---
     let rawText = '';
+    const lowerFilename = file.name.toLowerCase();
 
-    if (file.name.endsWith('.pdf')) {
-      try {
-        const parser = new PDFParse({ data: buffer });
-        const pdfData = await parser.getText();
-        rawText = pdfData?.text || '';
-      } catch (parseErr: any) {
-        console.warn('[API-IMPORT] PDFParse text extraction warning:', parseErr?.message);
-      }
-    } else if (file.name.endsWith('.docx')) {
-      try {
-        const docxResult = await mammoth.extractRawText({ buffer });
-        rawText = docxResult.value || '';
-      } catch (docxErr: any) {
-        console.error('[API-IMPORT] DOCX parsing error:', docxErr?.message);
-        return NextResponse.json({ error: 'Please upload a valid DOCX file.' }, { status: 422 });
+    if (lowerFilename.endsWith('.pdf')) {
+      rawText = await extractTextFromPdf(buffer);
+    } else if (lowerFilename.endsWith('.docx') || lowerFilename.endsWith('.doc')) {
+      rawText = await extractTextFromDocx(buffer);
+      if (!rawText.trim()) {
+        return NextResponse.json({
+          success: false,
+          code: 'UNREADABLE_DOCX',
+          error: 'We could not extract readable text from this DOCX file. Please verify the document format.'
+        }, { status: 422 });
       }
     } else {
-      return NextResponse.json({ error: 'Unsupported file format. Please upload PDF or DOCX only.' }, { status: 400 });
+      return NextResponse.json({
+        success: false,
+        code: 'UNSUPPORTED_FORMAT',
+        error: 'Unsupported file format. Please upload PDF or DOCX only.'
+      }, { status: 400 });
     }
 
     console.log('[DEBUG-STAGE-2] PDF/DOCX text extraction completed. Length:', rawText.length);
@@ -178,10 +242,31 @@ export async function POST(request: NextRequest) {
     const result = await extractResume(rawText, buffer);
     const { data, stats } = result;
 
+    // Check if extraction produced any valid resume content
+    const hasAnyContent = !!(
+      data.personal?.fullName ||
+      (data.experience && data.experience.length > 0) ||
+      (data.education && data.education.length > 0) ||
+      (data.skills && Object.keys(data.skills).length > 0) ||
+      (data.projects && data.projects.length > 0)
+    );
+
+    if (!rawText.trim() && !hasAnyContent) {
+      return NextResponse.json({
+        success: false,
+        code: 'UNREADABLE_FILE',
+        error: 'We could not extract readable text from this document. Please make sure the PDF has selectable text or try a DOCX file.'
+      }, { status: 422 });
+    }
+
     // Strict non-resume rejection for text documents (and successfully processed scanned files)
     const isDocResume = data.classification?.isResume !== false && (data as any).isResume !== false;
     if (!isDocResume && !resemblesResume(rawText, data)) {
-      return NextResponse.json({ error: 'Please upload a valid resume or CV document.' }, { status: 422 });
+      return NextResponse.json({
+        success: false,
+        code: 'NOT_A_RESUME',
+        error: 'We could not detect resume content in this file. Please make sure you have uploaded a standard resume or CV document.'
+      }, { status: 422 });
     }
 
     // Process Skills Categories
@@ -343,7 +428,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (insertError) {
-      console.warn('[API-IMPORT] Standard insert failed, retrying without file_hash:', insertError.message);
+      console.warn('[API-IMPORT] Standard insert with file_hash failed, retrying without file_hash:', insertError.message);
       const { data: retryDoc, error: retryErr } = await supabaseAdmin
         .from('resumes')
         .insert(basePayload)
@@ -351,13 +436,19 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (retryErr) {
-        console.error('[API-IMPORT] Failed to insert resume draft:', retryErr.message);
-        return NextResponse.json({ error: `Database error: ${retryErr.message}` }, { status: 500 });
+        console.error('[API-IMPORT] Failed to insert resume draft in DB:', retryErr.message);
+        return NextResponse.json({
+          success: false,
+          code: 'DATABASE_ERROR',
+          error: `Database save error: ${retryErr.message}`
+        }, { status: 500 });
       }
       resumeRecord = retryDoc;
     } else {
       resumeRecord = insertedDoc;
     }
+
+    console.log('[API-IMPORT] Successfully imported resume:', resumeRecord.id);
 
     return NextResponse.json({
       success: true,
@@ -373,7 +464,11 @@ export async function POST(request: NextRequest) {
       }
     });
   } catch (err: any) {
-    console.error('[API-IMPORT] Unexpected error caught in outer handler:', err?.message || err);
-    return NextResponse.json({ error: err?.message || 'An unexpected error occurred while processing your resume.' }, { status: 500 });
+    console.error('[API-IMPORT] Unexpected error caught in import handler:', err?.message || err, err?.stack);
+    return NextResponse.json({
+      success: false,
+      code: 'SERVER_ERROR',
+      error: err?.message || 'An unexpected error occurred while processing your resume. Please try another file.'
+    }, { status: 500 });
   }
 }

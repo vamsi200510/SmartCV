@@ -8,7 +8,7 @@ const envOrigins = process.env.ALLOWED_DEV_ORIGINS
 
 const nextConfig: NextConfig = {
   /* config options here */
-  serverExternalPackages: ["pdf-parse"],
+  serverExternalPackages: ["pdfjs-dist", "mammoth"],
 
   // Permit cross-origin dev server requests from ngrok tunnels, LAN IPs,
   // and other external hostnames. Without this, Next.js 16 blocks
