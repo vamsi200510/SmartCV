@@ -1162,7 +1162,7 @@ export default function BuilderPage() {
             top: 0,
             left: 0,
             zIndex: 45,
-            cursor: isDockDragging ? 'grabbing' : 'grab',
+            cursor: isDockDragging ? 'move' : 'default',
           }}
           className={`hidden xl:flex flex-col rounded-[26px] liquid-glass-surface border border-white/80 shadow-2xl p-2 items-center gap-2 touch-none select-none transition-all ${
             isDockCollapsed ? 'w-10' : 'w-auto'
@@ -1171,7 +1171,7 @@ export default function BuilderPage() {
         >
           {/* Top Header with Drag Bar and Collapse Toggle */}
           <div className="w-full flex items-center justify-between gap-1 px-1">
-            <div className="w-4 h-1 rounded-full bg-slate-400/50 mx-auto" />
+            <div className="w-4 h-1 rounded-full bg-slate-400/50 mx-auto cursor-move" />
             <button
               onClick={(e) => {
                 e.stopPropagation();

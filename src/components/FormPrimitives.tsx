@@ -64,7 +64,7 @@ export function SectionCard({
       {/* Card header */}
       <div className="flex items-center justify-between px-3.5 py-2 border-b border-white/60 bg-white/40">
         <div className="flex items-center gap-2">
-          <div className="cursor-grab text-[#94A3B8] hover:text-[#241C12] transition-colors">
+          <div className="cursor-move text-[#94A3B8] hover:text-[#241C12] transition-colors" title="Drag to reorder">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="9" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="19" r="1"/>
               <circle cx="15" cy="5" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="19" r="1"/>

@@ -117,7 +117,7 @@ function DraggableSectionRow({
     >
       <button
         onPointerDown={(e) => controls.start(e)}
-        className="text-[#94A3B8] hover:text-[#241C12] transition-colors cursor-grab active:cursor-grabbing touch-none p-0.5 shrink-0"
+        className="text-[#94A3B8] hover:text-[#241C12] transition-colors cursor-move active:cursor-move touch-none p-0.5 shrink-0"
         aria-label="Drag to reorder"
       >
         <GripVertical size={14} />
