@@ -5,10 +5,28 @@ import {
   User, FileText, GraduationCap, Code2, FolderGit2, Briefcase,
   Award, Trophy, HelpCircle, Plus, Trash2, ArrowUp, ArrowDown,
   Check, AlertCircle, ChevronRight, Loader2, Camera, X, Globe,
-  Link as LinkIcon, ExternalLink, Layers
+  Link as LinkIcon, ExternalLink
 } from 'lucide-react';
 
-// Custom inline SVG icons for GitHub and LinkedIn
+// Custom inline SVG icons
+const LayersIcon = ({ size = 16, className = "" }: { size?: number; className?: string }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z" />
+    <path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65" />
+    <path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65" />
+  </svg>
+);
+
 const GithubIcon = ({ className = "h-3.5 w-3.5" }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
@@ -390,7 +408,7 @@ export default function ResumeBuilderForm({
                     <span className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r-full bg-[#C2600E]" />
                   )}
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <Layers size={15} className={`stroke-[2] shrink-0 transition-colors ${isActive ? 'text-[#C2600E]' : hasItems ? 'text-[#1E6FA8]' : 'text-[#9A8C7E]'}`} />
+                    <LayersIcon size={15} className={`shrink-0 transition-colors ${isActive ? 'text-[#C2600E]' : hasItems ? 'text-[#1E6FA8]' : 'text-[#9A8C7E]'}`} />
                     <span className="truncate">{sec.title}</span>
                   </div>
                   {hasItems && <Check size={13} className="text-[#1E6FA8] shrink-0 stroke-[2.5]" />}
@@ -981,7 +999,7 @@ export default function ResumeBuilderForm({
                   <div className="flex items-center justify-between pb-2.5 border-b border-[#E8DDD0]/80">
                     <div className="flex items-center gap-2.5">
                       <div className="h-8 w-8 rounded-xl bg-[#FAF6F2] border border-[#E8DDD0] flex items-center justify-center text-[#C2600E] shrink-0 shadow-2xs">
-                        <Layers size={16} />
+                        <LayersIcon size={16} />
                       </div>
                       <div>
                         <h3 className="text-[14px] font-bold text-[#241C12] tracking-tight">{sec.title}</h3>
