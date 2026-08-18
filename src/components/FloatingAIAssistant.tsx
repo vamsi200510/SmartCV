@@ -78,13 +78,13 @@ export default function FloatingAIAssistant({ onOpen, isOpen }: FloatingAIAssist
         }}
       >
         {/* Specular Gloss Overlay */}
-        <span className="liquid-glass-specular" aria-hidden="true" />
+        <span className="liquid-glass-specular pointer-events-none" aria-hidden="true" />
         
         {/* Chromatic Edge Dispersion Refraction */}
-        <span className="liquid-glass-refraction" aria-hidden="true" />
+        <span className="liquid-glass-refraction pointer-events-none" aria-hidden="true" />
 
         {/* Embedded Robot Icon with subtle drop shadow */}
-        <div className="relative z-10 flex items-center justify-center p-2 liquid-glass-content">
+        <div className="relative z-10 flex items-center justify-center p-2 liquid-glass-content pointer-events-none">
           <img
             src="/Chatbot_logo_transparent.png"
             alt="AI"

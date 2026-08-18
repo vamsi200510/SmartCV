@@ -213,6 +213,9 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scrollbar-gutter: stable;
 }
 
 body {
@@ -1090,4 +1093,25 @@ button:disabled,
 [role="button"][aria-disabled="true"] {
   cursor: not-allowed;
   opacity: 0.5;
+}
+
+/* Explicit priority cursor classes to prevent button / generic inheritance override */
+.cursor-col-resize,
+[style*="col-resize"],
+div[title*="resize"] {
+  cursor: col-resize !important;
+}
+
+.cursor-grab,
+button.cursor-grab,
+[style*="grab"] {
+  cursor: grab !important;
+  cursor: -webkit-grab !important;
+}
+
+.cursor-grabbing,
+button.cursor-grabbing,
+[style*="grabbing"] {
+  cursor: grabbing !important;
+  cursor: -webkit-grabbing !important;
 }

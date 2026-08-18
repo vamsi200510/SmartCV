@@ -693,18 +693,18 @@ export default function BuilderPage() {
       <div className="fixed inset-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #D5D2A0 0.8px, transparent 0.8px)', backgroundSize: '22px 22px', opacity: 0.35 }} />
 
       {/* ── TOP BAR ─────────────── */}
-      <header className="h-[52px] border-b border-[#E8DDD0] bg-white/95 backdrop-blur-md px-5 flex items-center justify-between sticky top-0 z-40 shrink-0 shadow-xs">
+      <header className="min-h-[64px] border-b border-[#E8DDD0] bg-white/95 backdrop-blur-md px-6 py-2 flex items-center justify-between sticky top-0 z-40 shrink-0 shadow-xs">
         {/* Left: Back button + Title & ATS Sub-metadata */}
-        <div className="flex items-center gap-3 min-w-0">
+        <div className="flex items-center gap-3.5 min-w-0">
           <button
             onClick={() => router.replace('/dashboard')}
-            className="h-8 w-8 rounded-xl bg-white border border-[#E8DDD0] text-slate-700 hover:text-[#241C12] flex items-center justify-center transition-all cursor-pointer shadow-xs"
+            className="h-9 w-9 rounded-xl bg-[#FAF6F2] hover:bg-[#F5EFEB] border border-[#E8DDD0] text-slate-700 hover:text-[#241C12] flex items-center justify-center transition-all cursor-pointer shadow-xs shrink-0"
             title="Back to Dashboard"
           >
-            <ArrowLeft size={15} />
+            <ArrowLeft size={16} />
           </button>
 
-          <div className="flex flex-col min-w-0 py-0.5">
+          <div className="flex flex-col min-w-0 justify-center">
             {/* Title Row */}
             <div className="flex items-center gap-2">
               {isEditingTitle ? (
@@ -718,7 +718,7 @@ export default function BuilderPage() {
                     if (e.key === 'Escape') setIsEditingTitle(false);
                   }}
                   autoFocus
-                  className="h-7 px-2.5 py-0.5 rounded-lg border border-[#C2600E] bg-white text-[13.5px] font-black text-[#241C12] focus:outline-none focus:ring-2 focus:ring-[#C2600E]/20 max-w-[240px]"
+                  className="h-7 px-2.5 py-0.5 rounded-lg border border-[#C2600E] bg-white text-[14px] font-semibold text-[#241C12] focus:outline-none focus:ring-2 focus:ring-[#C2600E]/20 max-w-[260px]"
                 />
               ) : (
                 <div
@@ -729,21 +729,21 @@ export default function BuilderPage() {
                   }}
                   title="Click to edit resume title"
                 >
-                  <span className="text-[14px] font-black text-[#241C12] truncate max-w-[220px] tracking-tight">
+                  <span className="text-[15px] font-semibold text-[#241C12] truncate max-w-[240px] tracking-tight">
                     {resumeDetails?.title || 'My Resume'}
                   </span>
                   <div
                     className="h-6 w-6 rounded-md hover:bg-black/5 text-slate-400 group-hover:text-[#241C12] flex items-center justify-center transition-colors shrink-0"
                     title="Edit Resume Title"
                   >
-                    <Pencil size={12} />
+                    <Pencil size={13} />
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Status Row: 2 Clearly Separated, Properly Padded Chips */}
-            <div className="flex items-center flex-wrap gap-2 text-[11px] font-medium pt-1.5">
+            {/* Status Row: 2 Clearly Separated, Properly Padded Chips (12-16px margin from header bottom) */}
+            <div className="flex items-center flex-wrap gap-2 text-[11px] font-medium pt-1">
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#DCFCE7] text-[#1F7A3D] border border-[#86EFAC]/70 text-[10.5px] font-bold shadow-2xs">
                 <Check size={11} className="stroke-[2.5]" />
                 <span>Saved just now</span>
@@ -771,15 +771,16 @@ export default function BuilderPage() {
         </div>
 
         {/* Center: Floating Pill Tabs (Form | Design | Split | Preview) */}
-        <div className="hidden lg:flex items-center gap-1 bg-[#F5EFEB] p-1 rounded-full border border-[#E8DDD0] shadow-xs">
+        <div className="hidden lg:flex items-center gap-1 bg-[#FAF6F2] p-1 rounded-full border border-[#E8DDD0] shadow-xs">
           {viewModes.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
               onClick={() => setViewMode(id)}
-              className={`px-3.5 py-1 rounded-full text-[11px] font-bold transition-all duration-150 cursor-pointer ${viewMode === id
+              className={`px-4 py-1.5 rounded-full text-[11.5px] font-bold transition-all duration-150 cursor-pointer ${
+                viewMode === id
                   ? 'bg-white text-[#C2600E] shadow-xs border border-[#E8DDD0]'
                   : 'text-slate-600 hover:text-[#241C12] hover:bg-white/60'
-                }`}
+              }`}
             >
               <span className="flex items-center gap-1.5">
                 <Icon size={13} />
@@ -790,7 +791,7 @@ export default function BuilderPage() {
         </div>
 
         {/* Right: Saved Status + Profile Dropdown Menu */}
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-3.5 shrink-0">
           <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full badge-emerald font-bold text-[11px] shadow-xs">
             <Check size={12} className="text-[#1F7A3D]" /> Saved
           </span>
@@ -798,10 +799,10 @@ export default function BuilderPage() {
           <div className="relative" ref={profileMenuRef}>
             <div
               onClick={() => setProfileMenuOpen(o => !o)}
-              className="flex items-center gap-1.5 cursor-pointer group select-none"
+              className="flex items-center gap-1.5 cursor-pointer group select-none p-0.5 rounded-full hover:bg-black/5 transition"
               title="User Profile & Account Menu"
             >
-              <div className="h-8 w-8 rounded-full text-white bg-[#C2600E] font-bold text-[10px] flex items-center justify-center shadow-xs overflow-hidden border border-white/60">
+              <div className="h-8 w-8 rounded-full text-white bg-[#C2600E] font-bold text-[10.5px] flex items-center justify-center shadow-xs overflow-hidden border border-white/60">
                 <span className="flex items-center justify-center w-full h-full">
                   {profile?.profile_image ? (
                     <img src={profile.profile_image} alt={profile?.full_name || 'User'} className="w-full h-full object-cover" />
@@ -1009,7 +1010,7 @@ export default function BuilderPage() {
       </div>
 
       {/* ── Main Workspace ───────────────────────────────────── */}
-      <main className="flex-1 flex flex-col overflow-hidden" style={{ height: 'calc(100vh - 52px)' }}>
+      <main className="flex-1 flex flex-col overflow-hidden" style={{ height: 'calc(100vh - 64px)' }}>
         {loading ? (
           <div className="flex-1 flex flex-col items-center justify-center gap-3 text-slate-500">
             <Loader2 size={28} className="animate-spin text-[#C2600E]" />
@@ -1018,15 +1019,17 @@ export default function BuilderPage() {
         ) : (
           <div
             ref={containerRef}
-            className={`flex-1 flex p-4 overflow-hidden h-full min-h-0 ${viewMode === 'preview' ? 'flex-col gap-4' : 'flex-row gap-2'
-              }`}
+            className={`flex-1 flex p-4 overflow-hidden h-full min-h-0 ${
+              viewMode === 'preview' ? 'flex-col gap-4' : 'flex-row gap-1'
+            }`}
           >
 
             {/* Form panel — shown in 'form' and 'split' modes */}
             {(viewMode === 'form' || viewMode === 'split') && (
               <section
-                className={`flex flex-col overflow-hidden h-full min-h-0 shrink-0 ${viewMode === 'form' ? 'flex-1' : 'w-full'
-                  }`}
+                className={`flex flex-col overflow-hidden h-full min-h-0 shrink-0 ${
+                  viewMode === 'form' ? 'flex-1' : 'w-full'
+                }`}
                 style={
                   viewMode === 'split'
                     ? { width: `${editorWidthPercent}%` }
@@ -1060,17 +1063,35 @@ export default function BuilderPage() {
               </section>
             )}
 
-            {/* Draggable Divider Handle (shown in split/design modes on desktop) */}
+            {/* Draggable Divider Handle with soft color, grip pill, and hover glow */}
             {(viewMode === 'split' || viewMode === 'design') && (
               <div
                 onMouseDown={handleMouseDown}
-                className="hidden lg:flex w-2.5 relative items-center justify-center shrink-0 cursor-col-resize group select-none py-2"
-                title="Drag to resize workspace panels"
+                style={{ cursor: 'col-resize' }}
+                className={`hidden lg:flex w-4 relative items-center justify-center shrink-0 cursor-col-resize group select-none py-1 z-30 transition-all ${
+                  isDragging ? 'bg-[#C2600E]/10' : 'hover:bg-[#C2600E]/5'
+                }`}
+                title="Drag to resize workspace panels (double click to reset)"
+                onDoubleClick={() => setEditorWidthPercent(40)}
               >
                 <div
-                  className={`w-px h-full transition-colors duration-150 ${isDragging ? 'bg-[#C2600E]' : 'bg-[#E8DDD0] group-hover:bg-[#C2600E]'
-                    }`}
+                  style={{ cursor: 'col-resize' }}
+                  className={`w-[2px] h-full rounded-full pointer-events-none transition-colors duration-200 ${
+                    isDragging ? 'bg-[#C2600E]' : 'bg-[#E8DDD0] group-hover:bg-[#C2600E]'
+                  }`}
                 />
+                <div
+                  style={{ cursor: 'col-resize' }}
+                  className={`absolute top-1/2 -translate-y-1/2 h-8 w-2.5 rounded-full pointer-events-none flex flex-col items-center justify-center gap-1 shadow-sm transition-all duration-200 ${
+                    isDragging
+                      ? 'bg-[#C2600E] scale-110 ring-4 ring-[#C2600E]/20'
+                      : 'bg-white border border-[#E8DDD0] group-hover:bg-[#C2600E] group-hover:border-[#C2600E] group-hover:scale-110 group-hover:ring-4 group-hover:ring-[#C2600E]/15'
+                  }`}
+                >
+                  <div className={`w-1 h-1 rounded-full ${isDragging ? 'bg-white' : 'bg-[#9A8C7E] group-hover:bg-white'}`} />
+                  <div className={`w-1 h-1 rounded-full ${isDragging ? 'bg-white' : 'bg-[#9A8C7E] group-hover:bg-white'}`} />
+                  <div className={`w-1 h-1 rounded-full ${isDragging ? 'bg-white' : 'bg-[#9A8C7E] group-hover:bg-white'}`} />
+                </div>
               </div>
             )}
 

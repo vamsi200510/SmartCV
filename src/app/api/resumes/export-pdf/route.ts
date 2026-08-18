@@ -60,7 +60,19 @@ export async function GET(request: NextRequest) {
       }
     );
 
-    const { data: { user } } = await supabase.auth.getUser();
+    let user = null;
+    const authHeader = request.headers.get('Authorization') || request.headers.get('authorization');
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.replace('Bearer ', '').trim();
+      const { data: userData } = await supabaseAdmin.auth.getUser(token);
+      user = userData?.user || null;
+    }
+
+    if (!user) {
+      const { data: cookieUserData } = await supabase.auth.getUser();
+      user = cookieUserData?.user || null;
+    }
+
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

@@ -21,6 +21,29 @@ const LinkedinIcon = ({ className = "h-4 w-4" }: { className?: string }) => (
   </svg>
 );
 
+// Custom section item and section structure
+export interface CustomSectionItem {
+  id?: string;
+  heading: string;
+  duration?: string;
+  description: string;
+}
+
+export interface CustomSection {
+  id: string;
+  title: string;
+  items: CustomSectionItem[];
+}
+
+// URL formatter helper for live clickable links
+export function formatUrl(url?: string): string {
+  if (!url || !url.trim()) return '';
+  const trimmed = url.trim();
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  if (/^mailto:/i.test(trimmed) || /^tel:/i.test(trimmed)) return trimmed;
+  return `https://${trimmed}`;
+}
+
 // Resume data structure
 export interface ResumeData {
   personalInfo: {
@@ -53,6 +76,9 @@ export interface ResumeData {
     technologies: string[];
     description: string;
     bullets?: string[];
+    url?: string;
+    liveLink?: string;
+    github?: string;
   }>;
   skills: Array<{
     category: string;
@@ -67,6 +93,7 @@ export interface ResumeData {
     title: string;
     description: string;
   }>;
+  customSections?: CustomSection[];
   additionalInfo?: {
     languages?: string;
     interests?: string;
@@ -262,11 +289,13 @@ export function sanitizeResumeData(data: any): ResumeData {
         const technologies = (proj?.technologies || []).map((t: any) => cleanStr(t)).filter(Boolean);
         const description = cleanStr(proj?.description);
         const bullets = (proj?.bullets || []).map((b: any) => cleanStr(b)).filter(Boolean);
+        const url = cleanStr(proj?.url || proj?.liveLink);
+        const github = cleanStr(proj?.github);
         
-        if (!name && !description && technologies.length === 0 && bullets.length === 0) {
+        if (!name && !description && technologies.length === 0 && bullets.length === 0 && !url && !github) {
           return null;
         }
-        return { name, technologies, description, bullets };
+        return { name, technologies, description, bullets, url, github };
       })
       .filter(Boolean) as any[];
   };
@@ -311,6 +340,26 @@ export function sanitizeResumeData(data: any): ResumeData {
       .filter(Boolean) as any[];
   };
 
+  const cleanCustomSections = (secList: any[]) => {
+    return (secList || [])
+      .map((sec: any) => {
+        const id = cleanStr(sec?.id) || `custom-${Math.random().toString(36).slice(2, 8)}`;
+        const title = cleanStr(sec?.title);
+        const items = (sec?.items || [])
+          .map((it: any) => {
+            const heading = cleanStr(it?.heading);
+            const duration = cleanStr(it?.duration);
+            const description = cleanStr(it?.description);
+            if (!heading && !duration && !description) return null;
+            return { heading, duration, description };
+          })
+          .filter(Boolean);
+        if (!title && items.length === 0) return null;
+        return { id, title: title || 'Custom Section', items };
+      })
+      .filter(Boolean) as any[];
+  };
+
   return {
     personalInfo: {
       fullName: cleanStr(data?.personalInfo?.fullName),
@@ -330,6 +379,7 @@ export function sanitizeResumeData(data: any): ResumeData {
     skills: cleanSkills(data?.skills),
     certifications: cleanCertifications(data?.certifications),
     achievements: cleanAchievements(data?.achievements),
+    customSections: cleanCustomSections(data?.customSections),
     additionalInfo: {
       languages: cleanStr(data?.additionalInfo?.languages),
       interests: cleanStr(data?.additionalInfo?.interests),
@@ -732,6 +782,48 @@ const TemplateRenderer = React.memo(TemplateRendererComponent, (prevProps, nextP
 });
 export default TemplateRenderer;
 
+/* ── Universal Custom Sections Component ───────────────────────────── */
+export function RenderCustomSections({
+  customSections,
+  className = "mb-5",
+  headerClassName = "text-[12px] font-bold uppercase border-b border-black pb-0.5 mb-2",
+  tagPrefix = ""
+}: {
+  customSections?: CustomSection[];
+  className?: string;
+  headerClassName?: string;
+  tagPrefix?: string;
+}) {
+  if (!customSections || customSections.length === 0) return null;
+  return (
+    <>
+      {customSections.map((sec, sIdx) => {
+        if (!sec.items || sec.items.length === 0) return null;
+        return (
+          <div className={`resume-section resume-section-${sec.id || sIdx} ${className}`} key={sec.id || sIdx}>
+            <h2 className={headerClassName}>
+              {tagPrefix ? `${tagPrefix} ` : ''}{sec.title}
+            </h2>
+            <div className="space-y-2">
+              {sec.items.map((item, idx) => (
+                <div key={idx}>
+                  <div className="flex justify-between font-bold text-inherit">
+                    <span>{item.heading}</span>
+                    {item.duration && <span className="text-[10px] opacity-80 font-semibold">{item.duration}</span>}
+                  </div>
+                  {item.description && (
+                    <p className="mt-0.5 text-justify whitespace-pre-line opacity-90">{item.description}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </>
+  );
+}
+
 /* -------------------------------------------------------------------------
    1. ATS PROFESSIONAL TEMPLATE (Single Column - Maps sectionOrder)
    ------------------------------------------------------------------------- */
@@ -745,6 +837,29 @@ function ATSProfessional({ data }: { data: ResumeData }) {
 
   const renderSection = (sec: string) => {
     if (!isVisible(sec)) return null;
+
+    if (sec.startsWith('custom-')) {
+      const customSec = (data.customSections || []).find(c => c.id === sec || `custom-${c.id}` === sec);
+      if (customSec && customSec.items && customSec.items.length > 0) {
+        return (
+          <div className={`mb-5 resume-section resume-section-${sec}`} key={sec}>
+            <h2 className="text-[12px] font-bold uppercase border-b border-black pb-0.5 mb-2">{customSec.title}</h2>
+            <div className="space-y-2">
+              {customSec.items.map((item, idx) => (
+                <div key={idx}>
+                  <div className="flex justify-between font-bold">
+                    <span>{item.heading}</span>
+                    {item.duration && <span>{item.duration}</span>}
+                  </div>
+                  {item.description && <p className="mt-0.5 text-justify whitespace-pre-line">{item.description}</p>}
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      }
+      return null;
+    }
 
     switch (sec) {
       case 'summary':
@@ -786,7 +901,21 @@ function ATSProfessional({ data }: { data: ResumeData }) {
               {data.projects.map((proj, idx) => (
                 <div key={idx}>
                   <div className="flex justify-between font-bold">
-                    <span>{proj.name} ({proj.technologies.join(', ')})</span>
+                    <span>
+                      {proj.name} ({proj.technologies.join(', ')})
+                    </span>
+                    <div className="flex items-center gap-2 font-normal text-[10px]">
+                      {(proj.url || proj.liveLink) && (
+                        <a href={formatUrl(proj.url || proj.liveLink)} target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:underline">
+                          [Live Demo]
+                        </a>
+                      )}
+                      {proj.github && (
+                        <a href={formatUrl(proj.github)} target="_blank" rel="noopener noreferrer" className="text-slate-700 hover:underline">
+                          [GitHub]
+                        </a>
+                      )}
+                    </div>
                   </div>
                   <p className="mt-0.5 text-justify">{proj.description}</p>
                 </div>
@@ -882,26 +1011,59 @@ function ATSProfessional({ data }: { data: ResumeData }) {
 
   return (
     <div className="p-12 font-serif text-[11px] leading-relaxed text-black">
-      {/* Header */}
+      {/* Header with Clickable Contact & Profile Links */}
       <div className="text-center mb-6">
         <h1 className="text-2xl font-bold uppercase tracking-wide mb-1">{data.personalInfo.fullName}</h1>
         <p className="text-[12px] italic text-slate-700 mb-2">{data.personalInfo.title}</p>
         <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-slate-600 text-[10px]">
-          <span className="resume-target-email">{data.personalInfo.email}</span>
-          <span>•</span>
-          <span className="resume-target-phone">{data.personalInfo.phone}</span>
-          <span>•</span>
-          <span className="resume-target-location">{data.personalInfo.location}</span>
+          {data.personalInfo.email && (
+            <a href={`mailto:${data.personalInfo.email}`} className="resume-target-email hover:underline text-inherit">
+              {data.personalInfo.email}
+            </a>
+          )}
+          {data.personalInfo.email && data.personalInfo.phone && <span>•</span>}
+          {data.personalInfo.phone && (
+            <a href={`tel:${data.personalInfo.phone.replace(/\s+/g, '')}`} className="resume-target-phone hover:underline text-inherit">
+              {data.personalInfo.phone}
+            </a>
+          )}
+          {data.personalInfo.phone && data.personalInfo.location && <span>•</span>}
+          {data.personalInfo.location && (
+            <span className="resume-target-location">{data.personalInfo.location}</span>
+          )}
           {data.personalInfo.website && (
             <>
               <span>•</span>
-              <span>{data.personalInfo.website}</span>
+              <a href={formatUrl(data.personalInfo.website)} target="_blank" rel="noopener noreferrer" className="hover:underline text-inherit">
+                {data.personalInfo.website}
+              </a>
+            </>
+          )}
+          {data.personalInfo.github && (
+            <>
+              <span>•</span>
+              <a href={formatUrl(data.personalInfo.github)} target="_blank" rel="noopener noreferrer" className="hover:underline text-inherit">
+                {data.personalInfo.github}
+              </a>
+            </>
+          )}
+          {data.personalInfo.linkedin && (
+            <>
+              <span>•</span>
+              <a href={formatUrl(data.personalInfo.linkedin)} target="_blank" rel="noopener noreferrer" className="hover:underline text-inherit">
+                {data.personalInfo.linkedin}
+              </a>
             </>
           )}
         </div>
       </div>
 
       {sectionOrder.map(sec => renderSection(sec))}
+
+      {/* Render any custom sections not explicitly specified in sectionOrder */}
+      <RenderCustomSections
+        customSections={(data.customSections || []).filter(c => !sectionOrder.includes(c.id) && !sectionOrder.includes(`custom-${c.id}`))}
+      />
     </div>
   );
 }
@@ -994,7 +1156,21 @@ function TechMinimal({ data }: { data: ResumeData }) {
             <div className="mt-3 space-y-3">
               {data.projects.map((proj, idx) => (
                 <div key={idx} className="space-y-1">
-                  <div className="font-bold text-slate-900">{proj.name}</div>
+                  <div className="flex justify-between items-center">
+                    <span className="font-bold text-slate-900">{proj.name}</span>
+                    <div className="flex items-center gap-2 text-[9px]">
+                      {(proj.url || proj.liveLink) && (
+                        <a href={formatUrl(proj.url || proj.liveLink)} target="_blank" rel="noopener noreferrer" className="text-teal-600 hover:underline">
+                          [Live]
+                        </a>
+                      )}
+                      {proj.github && (
+                        <a href={formatUrl(proj.github)} target="_blank" rel="noopener noreferrer" className="text-slate-600 hover:underline">
+                          [Repo]
+                        </a>
+                      )}
+                    </div>
+                  </div>
                   <div className="text-[9px] text-teal-600 font-semibold">[{proj.technologies.join(' / ')}]</div>
                   <p className="text-[9.5px] text-justify">{proj.description}</p>
                 </div>
@@ -1021,10 +1197,10 @@ function TechMinimal({ data }: { data: ResumeData }) {
       case 'achievements':
         return data.achievements && data.achievements.length > 0 ? (
           <div className="resume-section resume-section-achievements" key="achievements">
-            <h3 className="text-xs font-bold text-slate-900 border-b-2 border-slate-900 pb-1 uppercase tracking-wider">// KEY ACHIEVEMENTS</h3>
+            <h3 className="text-xs font-bold text-slate-900 border-b-2 border-slate-900 pb-1 uppercase tracking-wider">// ACHIEVEMENTS</h3>
             <div className="mt-3 space-y-1.5 text-[9.5px]">
               {data.achievements.map((ach, idx) => (
-                <div key={idx}>
+                <div key={idx} className="text-justify">
                   <span className="font-bold">• {ach.title}</span>{ach.description ? ` — ${ach.description}` : ''}
                 </div>
               ))}
@@ -1035,8 +1211,8 @@ function TechMinimal({ data }: { data: ResumeData }) {
       case 'additionalInfo':
         return data.additionalInfo && (data.additionalInfo.languages || data.additionalInfo.interests) ? (
           <div className="resume-section resume-section-additionalInfo" key="additionalInfo">
-            <h3 className="text-xs font-bold text-slate-900 border-b-2 border-slate-900 pb-1 uppercase tracking-wider">// ADDITIONAL INFO</h3>
-            <div className="mt-3 space-y-1.5 text-[9.5px]">
+            <h3 className="text-xs font-bold text-slate-900 border-b-2 border-slate-900 pb-1 uppercase tracking-wider">// ADDITIONAL</h3>
+            <div className="mt-2 space-y-1 text-[9.5px]">
               {data.additionalInfo.languages && (
                 <div><span className="font-bold">Languages:</span> {data.additionalInfo.languages}</div>
               )}
@@ -1048,6 +1224,27 @@ function TechMinimal({ data }: { data: ResumeData }) {
         ) : null;
 
       default:
+        if (sec.startsWith('custom-')) {
+          const customSec = (data.customSections || []).find(c => c.id === sec || `custom-${c.id}` === sec);
+          if (customSec && customSec.items && customSec.items.length > 0) {
+            return (
+              <div className={`resume-section resume-section-${sec}`} key={sec}>
+                <h3 className="text-xs font-bold text-slate-900 border-b-2 border-slate-900 pb-1 uppercase tracking-wider">// {customSec.title.toUpperCase()}</h3>
+                <div className="mt-3 space-y-2 text-[9.5px]">
+                  {customSec.items.map((item, idx) => (
+                    <div key={idx}>
+                      <div className="flex justify-between font-bold">
+                        <span>{item.heading}</span>
+                        {item.duration && <span className="text-teal-600 font-semibold">{item.duration}</span>}
+                      </div>
+                      {item.description && <p className="mt-0.5 text-justify whitespace-pre-line">{item.description}</p>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          }
+        }
         return null;
     }
   };
@@ -1069,13 +1266,54 @@ function TechMinimal({ data }: { data: ResumeData }) {
           </div>
         </div>
 
-        {/* Contact info */}
+        {/* Contact info with live links */}
         <div className="space-y-2 text-[10px] text-slate-600">
-          <div className="flex items-center gap-2"><Mail size={12} className="text-teal-600" /> <span className="break-all resume-target-email">{data.personalInfo.email}</span></div>
-          <div className="flex items-center gap-2"><Phone size={12} className="text-teal-600" /> <span className="resume-target-phone">{data.personalInfo.phone}</span></div>
-          <div className="flex items-center gap-2"><MapPin size={12} className="text-teal-600" /> <span className="resume-target-location">{data.personalInfo.location}</span></div>
-          {data.personalInfo.github && <div className="flex items-center gap-2"><GithubIcon className="text-teal-600 h-3 w-3" /> <span>{data.personalInfo.github}</span></div>}
-          {data.personalInfo.linkedin && <div className="flex items-center gap-2"><LinkedinIcon className="text-teal-600 h-3 w-3" /> <span>{data.personalInfo.linkedin}</span></div>}
+          {data.personalInfo.email && (
+            <div className="flex items-center gap-2">
+              <Mail size={12} className="text-teal-600 shrink-0" />
+              <a href={`mailto:${data.personalInfo.email}`} className="break-all resume-target-email hover:underline text-inherit">
+                {data.personalInfo.email}
+              </a>
+            </div>
+          )}
+          {data.personalInfo.phone && (
+            <div className="flex items-center gap-2">
+              <Phone size={12} className="text-teal-600 shrink-0" />
+              <a href={`tel:${data.personalInfo.phone.replace(/\s+/g, '')}`} className="resume-target-phone hover:underline text-inherit">
+                {data.personalInfo.phone}
+              </a>
+            </div>
+          )}
+          {data.personalInfo.location && (
+            <div className="flex items-center gap-2">
+              <MapPin size={12} className="text-teal-600 shrink-0" />
+              <span className="resume-target-location">{data.personalInfo.location}</span>
+            </div>
+          )}
+          {data.personalInfo.website && (
+            <div className="flex items-center gap-2">
+              <Globe size={12} className="text-teal-600 shrink-0" />
+              <a href={formatUrl(data.personalInfo.website)} target="_blank" rel="noopener noreferrer" className="hover:underline text-inherit truncate">
+                {data.personalInfo.website}
+              </a>
+            </div>
+          )}
+          {data.personalInfo.github && (
+            <div className="flex items-center gap-2">
+              <GithubIcon className="text-teal-600 h-3 w-3 shrink-0" />
+              <a href={formatUrl(data.personalInfo.github)} target="_blank" rel="noopener noreferrer" className="hover:underline text-inherit truncate">
+                {data.personalInfo.github}
+              </a>
+            </div>
+          )}
+          {data.personalInfo.linkedin && (
+            <div className="flex items-center gap-2">
+              <LinkedinIcon className="text-teal-600 h-3 w-3 shrink-0" />
+              <a href={formatUrl(data.personalInfo.linkedin)} target="_blank" rel="noopener noreferrer" className="hover:underline text-inherit truncate">
+                {data.personalInfo.linkedin}
+              </a>
+            </div>
+          )}
         </div>
 
         {leftSections.map(sec => renderSection(sec))}
@@ -1084,6 +1322,11 @@ function TechMinimal({ data }: { data: ResumeData }) {
       {/* Right Content (65%) */}
       <div className="w-[65%] flex flex-col gap-6">
         {rightSections.map(sec => renderSection(sec))}
+        <RenderCustomSections
+          customSections={(data.customSections || []).filter(c => !sectionOrder.includes(c.id) && !sectionOrder.includes(`custom-${c.id}`))}
+          headerClassName="text-xs font-bold text-slate-900 border-b-2 border-slate-900 pb-1 uppercase tracking-wider"
+          tagPrefix="//"
+        />
       </div>
     </div>
   );
